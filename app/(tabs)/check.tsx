@@ -7,11 +7,11 @@ import * as ImagePicker from 'expo-image-picker';
 import { Feather } from '@expo/vector-icons';
 import Colors from '@/constants/Colors';
 import { useTheme } from '@/components/ThemeContext';
+import { SafeAreaView } from 'react-native-safe-area-context'; // 1. Import SafeAreaView
 
 const { width } = Dimensions.get('window');
 const IMAGE_CONTAINER_SIZE = width * 0.8;
 
-// Placeholder untuk kelas penyakit
 const diseaseClasses = ['Grape___Black_rot', 'Grape___Esca_(Black_Measles)', 'Grape___healthy', 'Grape___Leaf_blight_(Isariopsis_Leaf_Spot)'];
 
 export default function CheckScreen() {
@@ -22,6 +22,7 @@ export default function CheckScreen() {
   const colors = Colors[theme];
 
   const pickImage = async (useCamera: boolean) => {
+    // ... (fungsi pickImage tetap sama)
     let result;
     const options: ImagePicker.ImagePickerOptions = {
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -46,11 +47,11 @@ export default function CheckScreen() {
   };
   
   const classifyImage = async (uri: string) => {
+    // ... (fungsi classifyImage tetap sama)
     setLoading(true);
-    // --- GANTI DENGAN LOGIKA KLASIFIKASI CNN ANDA ---
     setTimeout(() => {
       const randomLabel = diseaseClasses[Math.floor(Math.random() * diseaseClasses.length)];
-      const randomConfidence = Math.random() * (0.99 - 0.85) + 0.85; // Simulasi skor kepercayaan
+      const randomConfidence = Math.random() * (0.99 - 0.85) + 0.85;
       
       setPrediction({
         label: randomLabel.replace(/___/g, ' - ').replace(/_/g, ' '),
@@ -61,30 +62,25 @@ export default function CheckScreen() {
   };
 
   const renderResult = () => {
+    // ... (fungsi renderResult tetap sama)
     if (loading) {
       return <ActivityIndicator size="large" color={colors.tint} style={{ marginTop: 40 }} />;
     }
-
     if (!prediction) return null;
-    
     const isHealthy = prediction.label.toLowerCase().includes('healthy');
     const resultColor = isHealthy ? colors.success : '#E74C3C';
-
     return (
       <View style={[styles.resultCard, { backgroundColor: colors.surface }]}>
         <Text style={[styles.resultTitle, { color: colors.text }]}>Hasil Klasifikasi</Text>
-        
         <View style={[styles.predictionBox, { borderColor: resultColor }]}>
             <Text style={[styles.predictionLabel, { color: resultColor }]}>{prediction.label}</Text>
         </View>
-
         <Text style={[styles.confidenceText, { color: colors.tabIconDefault }]}>
             Tingkat Kepercayaan: 
             <Text style={{ fontWeight: 'bold', color: colors.text }}>
                 {` ${(prediction.confidence * 100).toFixed(2)}%`}
             </Text>
         </Text>
-        
         {isHealthy ? (
             <Text style={styles.resultInfo}>Daun anggur Anda dalam kondisi baik.</Text>
         ) : (
@@ -95,43 +91,51 @@ export default function CheckScreen() {
   };
 
   return (
-    <ScrollView contentContainerStyle={[styles.scrollContainer, { backgroundColor: colors.background }]}>
-      <View style={[styles.container, { backgroundColor: colors.background }]}>
+    // 2. Bungkus semua konten dengan SafeAreaView
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
+        {/* 3. Hapus backgroundColor dari View ini */}
+        <View style={styles.container}>
 
-        <TouchableOpacity onPress={() => pickImage(false)} style={[styles.imageContainer, { borderColor: colors.primaryLight, backgroundColor: colors.surface }]}>
-          {image ? (
-            <Image source={{ uri: image }} style={styles.image} />
-          ) : (
-            <View style={{ alignItems: 'center' }}>
-              <Feather name="upload-cloud" size={40} color={colors.tabIconDefault} />
-              <Text style={[styles.placeholderText, { color: colors.tabIconDefault }]}>Ketuk untuk mengunggah gambar</Text>
-            </View>
-          )}
-        </TouchableOpacity>
+          <TouchableOpacity onPress={() => pickImage(false)} style={[styles.imageContainer, { borderColor: colors.primaryLight, backgroundColor: colors.surface }]}>
+            {image ? (
+              <Image source={{ uri: image }} style={styles.image} />
+            ) : (
+              <View style={{ alignItems: 'center' }}>
+                <Feather name="upload-cloud" size={40} color={colors.tabIconDefault} />
+                <Text style={[styles.placeholderText, { color: colors.tabIconDefault }]}>Ketuk untuk mengunggah gambar</Text>
+              </View>
+            )}
+          </TouchableOpacity>
 
-        <View style={styles.buttonRow}>
-            <TouchableOpacity style={styles.actionButton} onPress={() => pickImage(false)}>
-                <Feather name="folder-plus" size={24} color={colors.tint} />
-                <Text style={[styles.actionButtonText, {color: colors.tint}]}>Galeri</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.actionButton} onPress={() => pickImage(true)}>
-                <Feather name="camera" size={24} color={colors.tint} />
-                <Text style={[styles.actionButtonText, {color: colors.tint}]}>Kamera</Text>
-            </TouchableOpacity>
+          <View style={styles.buttonRow}>
+              <TouchableOpacity style={styles.actionButton} onPress={() => pickImage(false)}>
+                  <Feather name="folder-plus" size={24} color={colors.tint} />
+                  <Text style={[styles.actionButtonText, {color: colors.tint}]}>Galeri</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.actionButton} onPress={() => pickImage(true)}>
+                  <Feather name="camera" size={24} color={colors.tint} />
+                  <Text style={[styles.actionButtonText, {color: colors.tint}]}>Kamera</Text>
+              </TouchableOpacity>
+          </View>
+
+          {renderResult()}
         </View>
-
-        {renderResult()}
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  // 4. Tambahkan style untuk SafeAreaView
+  safeArea: {
+    flex: 1,
+  },
   scrollContainer: {
     flexGrow: 1,
   },
   container: {
-    flex: 1,
+    // Hapus flex: 1 dari sini agar tidak konflik
     alignItems: 'center',
     padding: 20,
   },
