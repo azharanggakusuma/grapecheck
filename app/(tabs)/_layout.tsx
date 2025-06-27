@@ -6,9 +6,9 @@ import { Feather } from '@expo/vector-icons';
 import { View, StyleSheet, Animated, TouchableOpacity, Text } from 'react-native';
 import { CustomHeader } from '@/components/CustomHeader';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-// --- BARU: Import LinearGradient ---
 import { LinearGradient } from 'expo-linear-gradient';
 
+// Komponen TabBarIcon tidak berubah
 function TabBarIcon({ name, color, focused }: {
   name: React.ComponentProps<typeof Feather>['name'];
   color: string;
@@ -43,6 +43,7 @@ function TabBarIcon({ name, color, focused }: {
   );
 }
 
+// Komponen CustomTabBar tidak berubah
 function CustomTabBar({ state, descriptors, navigation, insets }: any) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
@@ -167,11 +168,10 @@ function CustomTabBar({ state, descriptors, navigation, insets }: any) {
             onLayout={(event) => handleLayout(event, index)}
           >
             {isCenterButton ? (
-              // --- PERUBAHAN: Struktur Tombol Tengah Diperbarui ---
               <Animated.View style={{ transform: [{ scale: centerButtonScale }] }}>
                 <View style={[styles.centerButtonWrapper, { backgroundColor: colors.surface, shadowColor: '#000' }]}>
                   <LinearGradient
-                    colors={['#22C55E', '#00880C']} // Warna gradasi hijau
+                    colors={['#22C55E', '#00880C']}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}
                     style={styles.centerButtonGradient}
@@ -227,7 +227,6 @@ const styles = StyleSheet.create({
   tabBarContainer: {
     flexDirection: 'row',
     borderTopWidth: StyleSheet.hairlineWidth,
-    // Menambah zIndex agar bayangan tombol tengah tidak terpotong di iOS
     zIndex: 10,
   },
   tabItem: {
@@ -239,10 +238,10 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 6,
   },
-  // --- PERUBAHAN: Style untuk tombol tengah diperbarui ---
+  // --- PERUBAHAN: Tombol tengah dinaikkan ---
   centerButtonWrapper: {
-    // Wrapper ini berfungsi sebagai bingkai/cincin dan pengatur posisi
-    transform: [{ translateY: -28 }], 
+    // Nilai translateY diubah menjadi lebih negatif untuk menaikkan posisi
+    transform: [{ translateY: -32 }], 
     width: 68,
     height: 68,
     borderRadius: 34,
@@ -254,7 +253,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 6 },
   },
   centerButtonGradient: {
-    // Ini adalah view gradasi di dalam bingkai
     width: 60,
     height: 60,
     borderRadius: 30,
