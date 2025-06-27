@@ -153,9 +153,10 @@ export default function HomeScreen() {
 
   const scrollY = useRef(new Animated.Value(0)).current;
   const [scrollThreshold, setScrollThreshold] = useState(300);
-
-  // --- AWAL PERUBAHAN: Animasi & Haptic untuk Tombol ---
+  
   const ctaButtonScale = useRef(new Animated.Value(1)).current;
+  // --- AWAL PERUBAHAN: Animated value baru untuk ikon ---
+  const ctaIconScale = useRef(new Animated.Value(1)).current;
 
   const handleCtaPress = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -163,20 +164,32 @@ export default function HomeScreen() {
   };
 
   const handlePressIn = () => {
+    // Animasikan tombol dan ikon secara bersamaan saat ditekan
     Animated.spring(ctaButtonScale, {
-      toValue: 0.95,
+      toValue: 0.96,
       useNativeDriver: true,
-      speed: 20,
-      bounciness: 8,
+      bounciness: 10,
+    }).start();
+    Animated.spring(ctaIconScale, {
+      toValue: 1.15,
+      useNativeDriver: true,
+      bounciness: 10,
     }).start();
   };
 
   const handlePressOut = () => {
+    // Kembalikan tombol dan ikon ke kondisi semula saat dilepas
     Animated.spring(ctaButtonScale, {
       toValue: 1,
       useNativeDriver: true,
-      speed: 20,
-      bounciness: 8,
+      friction: 5,
+      tension: 60,
+    }).start();
+    Animated.spring(ctaIconScale, {
+      toValue: 1,
+      useNativeDriver: true,
+      friction: 5,
+      tension: 60,
     }).start();
   };
   // --- AKHIR PERUBAHAN ---
@@ -247,14 +260,13 @@ export default function HomeScreen() {
             mendukung kesehatan tanaman Anda.
           </Text>
 
-          {/* --- AWAL PERUBAHAN: Terapkan Animasi pada Tombol --- */}
           <Animated.View style={[ styles.inlineCTAWrapper, { transform: [{ scale: ctaButtonScale }] }]}>
             <TouchableOpacity
               style={styles.ctaButtonShadow}
               onPress={handleCtaPress}
               onPressIn={handlePressIn}
               onPressOut={handlePressOut}
-              activeOpacity={1} // Matikan opacity default agar animasi spring terlihat
+              activeOpacity={1}
             >
               <LinearGradient
                 colors={buttonGradient}
@@ -262,12 +274,15 @@ export default function HomeScreen() {
                 end={{ x: 1, y: 1 }}
                 style={styles.inlineCTAButton}
               >
-                <Feather name="camera" size={22} color="#FFFFFF" />
+                {/* --- AWAL PERUBAHAN: Bungkus Ikon dengan Animated.View --- */}
+                <Animated.View style={{ transform: [{ scale: ctaIconScale }] }}>
+                  <Feather name="camera" size={24} color="#FFFFFF" />
+                </Animated.View>
+                {/* --- AKHIR PERUBAHAN --- */}
                 <Text style={styles.inlineCTAButtonText}>Mulai Analisis</Text>
               </LinearGradient>
             </TouchableOpacity>
           </Animated.View>
-          {/* --- AKHIR PERUBAHAN --- */}
 
         </LinearGradient>
 
@@ -297,7 +312,6 @@ export default function HomeScreen() {
   );
 }
 
-// --- Tambahkan dan sesuaikan style untuk tombol ---
 const styles = StyleSheet.create({
   headerContainer: {
     position: 'absolute',
@@ -364,29 +378,27 @@ const styles = StyleSheet.create({
     fontWeight: "400",
   },
   inlineCTAWrapper: {
-    marginTop: 20, // Beri sedikit jarak tambahan
+    marginTop: 20,
     alignSelf: "flex-start",
   },
   inlineCTAButton: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 16, // Sedikit lebih tebal
-    paddingHorizontal: 28, // Sedikit lebih lebar
+    paddingVertical: 16,
+    paddingHorizontal: 28,
     borderRadius: 30,
-    // Tambahkan border halus untuk efek 'shine'
     borderWidth: 1.5,
     borderColor: 'rgba(255, 255, 255, 0.25)',
   },
   inlineCTAButtonText: {
-    fontSize: 17, // Sedikit lebih besar
-    fontWeight: "700", // Lebih tebal
-    marginLeft: 10,
+    fontSize: 17,
+    fontWeight: "700",
+    marginLeft: 12, // Beri jarak lebih antara ikon dan teks
     color: "#fff",
   },
   ctaButtonShadow: {
     borderRadius: 30,
-    // Perhalus bayangan
     shadowColor: "#166534",
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.3,
