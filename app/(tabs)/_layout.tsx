@@ -42,7 +42,7 @@ function TabBarIcon({ name, color, focused }: {
   );
 }
 
-// Komponen TabBar Kustom dengan penyesuaian ukuran pill
+// Komponen TabBar Kustom tetap sama
 function CustomTabBar({ state, descriptors, navigation, insets }: any) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
@@ -51,16 +51,13 @@ function CustomTabBar({ state, descriptors, navigation, insets }: any) {
   
   const translateX = useRef(new Animated.Value(0)).current;
   
-  // --- AWAL PERUBAHAN: Menentukan ukuran pill ---
-  const PILL_WIDTH = 60; // Lebar pill yang lebih kecil
-  const PILL_HEIGHT = 38; // Tinggi pill yang lebih kecil
-  // --- AKHIR PERUBAHAN ---
+  const PILL_WIDTH = 60;
+  const PILL_HEIGHT = 38;
 
   useEffect(() => {
     if (tabLayouts.length === state.routes.length) {
       const currentTabLayout = tabLayouts[state.index];
       if (currentTabLayout) {
-        // --- PERUBAHAN: Kalkulasi untuk memusatkan pill ---
         const targetX = currentTabLayout.x + (currentTabLayout.width - PILL_WIDTH) / 2;
         Animated.spring(translateX, {
           toValue: targetX,
@@ -109,7 +106,6 @@ function CustomTabBar({ state, descriptors, navigation, insets }: any) {
            style={[
              styles.slidingPill,
              { 
-               // --- PERUBAHAN: Gunakan konstanta untuk ukuran ---
                width: PILL_WIDTH,
                height: PILL_HEIGHT,
                backgroundColor: colors.primaryLight + '33',
@@ -200,24 +196,22 @@ const styles = StyleSheet.create({
   tabBarContainer: {
     flexDirection: 'row',
     borderTopWidth: StyleSheet.hairlineWidth,
-    paddingTop: 10,
     elevation: 8,
     shadowColor: '#000',
     shadowOpacity: 0.1,
     shadowRadius: 10,
     shadowOffset: { width: 0, height: -5 },
   },
+  // --- AWAL PERUBAHAN ---
   tabItem: {
     flex: 1,
     alignItems: 'center',
-    justifyContent: 'center',
+    paddingTop: 20, // Menambah jarak dari atas untuk menurunkan ikon
   },
-  // --- AWAL PERUBAHAN: Penyesuaian gaya pill ---
   slidingPill: {
     position: 'absolute',
-    // (Tinggi total content area (55) - tinggi pill (38)) / 2 + paddingTop (10)
-    top: (55 - 38) / 2 + 10, 
-    // border-radius setengah dari tinggi agar bentuknya sempurna
+    top: 14, // Menyesuaikan posisi pill agar tetap di belakang ikon
+    height: 38,
     borderRadius: 19,
   },
   // --- AKHIR PERUBAHAN ---
