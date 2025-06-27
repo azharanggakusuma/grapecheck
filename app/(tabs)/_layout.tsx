@@ -6,6 +6,8 @@ import { Feather } from '@expo/vector-icons';
 import { View, StyleSheet, Animated, TouchableOpacity, Text } from 'react-native';
 import { CustomHeader } from '@/components/CustomHeader';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+// --- BARU: Import LinearGradient ---
+import { LinearGradient } from 'expo-linear-gradient';
 
 function TabBarIcon({ name, color, focused }: {
   name: React.ComponentProps<typeof Feather>['name'];
@@ -129,11 +131,11 @@ function CustomTabBar({ state, descriptors, navigation, insets }: any) {
              styles.slidingPill,
              { 
                width: 60,
-               // --- PERUBAHAN: Tinggi dan posisi pill diubah ---
-               height: 32, // Tinggi pill dikurangi
-               borderRadius: 16, // Disesuaikan agar tetap bulat
+               height: 32,
+               borderRadius: 16,
                backgroundColor: colors.primaryLight + '33',
-               transform: [{ translateX }]
+               transform: [{ translateX }],
+               opacity: pillOpacity,
              }
            ]}
          />
@@ -165,10 +167,18 @@ function CustomTabBar({ state, descriptors, navigation, insets }: any) {
             onLayout={(event) => handleLayout(event, index)}
           >
             {isCenterButton ? (
+              // --- PERUBAHAN: Struktur Tombol Tengah Diperbarui ---
               <Animated.View style={{ transform: [{ scale: centerButtonScale }] }}>
-                  <View style={[styles.centerButton, { backgroundColor: colors.tint, shadowColor: colors.tint }]}>
-                    <Feather name={getIcon(route.name)} size={24} color="#FFFFFF" />
-                  </View>
+                <View style={[styles.centerButtonWrapper, { backgroundColor: colors.surface, shadowColor: '#000' }]}>
+                  <LinearGradient
+                    colors={['#22C55E', '#00880C']} // Warna gradasi hijau
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.centerButtonGradient}
+                  >
+                    <Feather name={getIcon(route.name)} size={28} color="#FFFFFF" />
+                  </LinearGradient>
+                </View>
               </Animated.View>
             ) : (
               <>
@@ -217,40 +227,43 @@ const styles = StyleSheet.create({
   tabBarContainer: {
     flexDirection: 'row',
     borderTopWidth: StyleSheet.hairlineWidth,
-    elevation: 8,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: -5 },
+    // Menambah zIndex agar bayangan tombol tengah tidak terpotong di iOS
+    zIndex: 10,
   },
-  // --- PERUBAHAN: Penyesuaian layout item tab ---
   tabItem: {
     flex: 1,
     alignItems: 'center',
-    paddingTop: 8, // Memberi jarak dari atas untuk menempatkan grup ikon+label
-    // justifyContent: 'center' dihapus untuk kontrol manual
+    paddingTop: 8,
   },
   slidingPill: {
     position: 'absolute',
-    // Posisi top disesuaikan agar pas di belakang ikon
     top: 6,
-    // Tinggi dan borderRadius akan diatur secara dinamis di atas
   },
-  centerButton: {
-    transform: [{ translateY: -25 }], 
+  // --- PERUBAHAN: Style untuk tombol tengah diperbarui ---
+  centerButtonWrapper: {
+    // Wrapper ini berfungsi sebagai bingkai/cincin dan pengatur posisi
+    transform: [{ translateY: -28 }], 
+    width: 68,
+    height: 68,
+    borderRadius: 34,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 8,
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 6 },
+  },
+  centerButtonGradient: {
+    // Ini adalah view gradasi di dalam bingkai
     width: 60,
     height: 60,
     borderRadius: 30,
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 4,
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
-    shadowOffset: { width: 0, height: 5 },
   },
   labelText: {
     fontSize: 10,
-    marginTop: 4, // Jarak dari ikon ke teks sedikit ditambah
+    marginTop: 4,
     fontWeight: '600',
   },
 });
