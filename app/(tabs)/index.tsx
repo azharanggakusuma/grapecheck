@@ -132,7 +132,7 @@ export default function HomeScreen() {
             mendukung kesehatan tanaman Anda.
           </Text>
 
-          {/* Tombol Mulai Analisis */}
+          {/* Tombol rata kiri */}
           <View style={styles.inlineCTAWrapper}>
             <TouchableOpacity
               style={styles.ctaButtonShadow}
@@ -204,10 +204,8 @@ const styles = StyleSheet.create({
   },
 
   inlineCTAWrapper: {
-    marginTop: 24,
-    alignSelf: "center",
-    zIndex: 99,
-    elevation: 99,
+    marginTop: 20,
+    alignSelf: "flex-start",
     backgroundColor: "transparent",
   },
   inlineCTAButton: {
