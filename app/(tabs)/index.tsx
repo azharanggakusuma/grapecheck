@@ -2,54 +2,40 @@ import { StyleSheet, Text, View, SafeAreaView, TouchableOpacity, StatusBar } fro
 import { Feather } from '@expo/vector-icons';
 import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/useColorScheme';
-import { Link } from 'expo-router';
 
 export default function HomeScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-      <View style={styles.container}>
-        <View style={styles.header}>
-          <Text style={[styles.title, { color: colors.text }]}>GrapeCheck</Text>
-          <Link href="/settings">
-            <Feather name="settings" size={24} color={colors.text} />
-          </Link>
-        </View>
-
-        <View style={styles.content}>
-          <Text style={[styles.subtitle, { color: colors.text }]}>Analisis Kualitas Anggur dengan Mudah</Text>
-          <Text style={[styles.description, { color: Colors.light.tabIconDefault }]}>
-            Dapatkan hasil instan tentang kematangan dan kualitas anggur langsung dari kamera Anda.
-          </Text>
-        </View>
-
-        <TouchableOpacity style={[styles.ctaButton, { backgroundColor: colors.tint }]}>
-          <Feather name="camera" size={20} color="#fff" />
-          <Text style={styles.ctaText}>Mulai Pengecekan</Text>
-        </TouchableOpacity>
+    // SafeAreaView tidak lagi dibutuhkan di sini karena sudah ditangani oleh CustomHeader
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      {/* Hapus View header manual dari sini */}
+      
+      <View style={styles.content}>
+        <Text style={[styles.subtitle, { color: colors.text }]}>Analisis Kualitas Anggur dengan Mudah</Text>
+        <Text style={[styles.description, { color: Colors.light.tabIconDefault }]}>
+          Dapatkan hasil instan tentang kematangan dan kualitas anggur langsung dari kamera Anda.
+        </Text>
       </View>
-    </SafeAreaView>
+
+      <TouchableOpacity style={[styles.ctaButton, { backgroundColor: colors.tint }]}>
+        <Feather name="camera" size={20} color="#fff" />
+        <Text style={styles.ctaText}>Mulai Pengecekan</Text>
+      </TouchableOpacity>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    paddingTop: StatusBar.currentHeight,
-  },
+  // Hapus style safeArea
   container: {
     flex: 1,
     paddingHorizontal: 25,
     paddingVertical: 20,
+    justifyContent: 'space-between', // Untuk mengatur posisi tombol
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 40,
-  },
+  // Hapus style header
   title: {
     fontSize: 28,
     fontWeight: 'bold',
@@ -74,7 +60,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 20,
     borderRadius: 15,
-    marginTop: 40,
+    marginBottom: 20, // Tambah margin bawah
   },
   ctaText: {
     color: '#fff',

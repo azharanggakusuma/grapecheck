@@ -4,6 +4,7 @@ import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
 import { Feather } from '@expo/vector-icons';
 import { Animated, View, StyleSheet } from 'react-native';
+import { CustomHeader } from '@/components/CustomHeader'; // Import header kustom
 
 function TabBarIcon({ name, color, focused }: {
   name: React.ComponentProps<typeof Feather>['name'];
@@ -57,6 +58,7 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={({ route }) => ({
+        header: (props) => <CustomHeader {...props} />, // Gunakan header kustom
         tabBarActiveTintColor: colors.tabIconSelected,
         tabBarInactiveTintColor: colors.tabIconDefault,
         tabBarStyle: {
