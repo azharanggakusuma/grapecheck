@@ -1,14 +1,12 @@
-// constants/Colors.ts
-
-const primary = '#6C63FF'; // Ungu yang lebih lembut dan modern
-const primaryLight = '#A3A0FF';
+const primary = '#00880C'; // Warna hijau Gojek
+const primaryLight = '#A3E6A5';
 const textLight = '#1D2A32';
 const textDark = '#F0F2F5';
-const backgroundLight = '#F4F7F9'; // Putih keabuan yang tidak silau
+const backgroundLight = '#FFFFFF';
 const backgroundDark = '#121212';
-const surfaceLight = '#FFFFFF'; // Warna untuk card/komponen di atas background
+const surfaceLight = '#FFFFFF';
 const surfaceDark = '#1E1E1E';
-const success = '#28A745'; // Warna hijau untuk status sehat
+const success = '#00880C';
 const tabIconDefaultLight = '#8A94A6';
 const tabIconDefaultDark = '#6E7A8A';
 
