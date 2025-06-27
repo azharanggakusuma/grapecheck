@@ -103,7 +103,7 @@ export default function HomeScreen() {
     {
       icon: "cpu",
       title: "Akurasi Tinggi",
-      description: "Didukung model AI canggih untuk hasil presisi.",
+      description: "Didukung model Deep Learning untuk hasil presisi.",
     },
     {
       icon: "zap",
@@ -113,7 +113,7 @@ export default function HomeScreen() {
     {
       icon: "clock",
       title: "Riwayat Lengkap",
-      description: "Simpan dan lihat kembali semua hasil pengecekan.",
+      description: "Simpan dan lihat kembali semua hasil Analisis.",
     },
   ];
 
@@ -181,7 +181,7 @@ export default function HomeScreen() {
             style={styles.ctaButton}
           >
             <Feather name="camera" size={24} color="#FFFFFF" />
-            <Text style={styles.ctaText}>Mulai Pengecekan Baru</Text>
+            <Text style={styles.ctaText}>Mulai Analisis</Text>
           </LinearGradient>
         </TouchableOpacity>
       </View>
