@@ -78,7 +78,7 @@ export default function HomeScreen() {
         {/* --- BARU: Header dengan gradient dan bentuk melengkung --- */}
         <LinearGradient
           colors={gradientColors}
-          style={[styles.header, { paddingTop: insets.top + 80 }]} // Disesuaikan untuk Safe Area
+          style={[styles.header, { paddingTop: insets.top + 80, paddingBottom: insets.bottom + 80 }]} // Disesuaikan untuk Safe Area
         >
           {/* --- BARU: Dekorasi lingkaran untuk efek visual --- */}
           <View style={[styles.circle, styles.circle1]} />
