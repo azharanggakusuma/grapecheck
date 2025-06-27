@@ -232,12 +232,12 @@ const styles = StyleSheet.create({
   tabItem: {
     flex: 1,
     alignItems: 'center',
-    paddingTop: 8,
+    paddingTop: 12,
   },
   slidingPill: {
     position: 'absolute',
     // --- PERUBAHAN: Dinaikkan sedikit ---
-    top: 4, 
+    top: 8, 
   },
   centerButtonWrapper: {
     transform: [{ translateY: -32 }], 
