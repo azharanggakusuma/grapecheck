@@ -10,11 +10,13 @@ import {
 import { Feather } from "@expo/vector-icons";
 import Colors from "@/constants/Colors";
 import { useTheme } from "@/components/ThemeContext";
-import { View as DefaultView } from '@/components/Themed'; 
+import { View as DefaultView } from '@/components/Themed';
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
+import * as Haptics from 'expo-haptics';
 
+// Komponen FeatureCard tidak berubah
 const FeatureCard = ({
   icon,
   title,
@@ -78,6 +80,7 @@ const FeatureCard = ({
   );
 };
 
+// Komponen Header Animasi tidak berubah
 const AnimatedHeader = ({ scrollY, threshold, onThemeToggle }: {
   scrollY: Animated.Value,
   threshold: number,
@@ -151,6 +154,33 @@ export default function HomeScreen() {
   const scrollY = useRef(new Animated.Value(0)).current;
   const [scrollThreshold, setScrollThreshold] = useState(300);
 
+  // --- AWAL PERUBAHAN: Animasi & Haptic untuk Tombol ---
+  const ctaButtonScale = useRef(new Animated.Value(1)).current;
+
+  const handleCtaPress = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    router.push("/(tabs)/check");
+  };
+
+  const handlePressIn = () => {
+    Animated.spring(ctaButtonScale, {
+      toValue: 0.95,
+      useNativeDriver: true,
+      speed: 20,
+      bounciness: 8,
+    }).start();
+  };
+
+  const handlePressOut = () => {
+    Animated.spring(ctaButtonScale, {
+      toValue: 1,
+      useNativeDriver: true,
+      speed: 20,
+      bounciness: 8,
+    }).start();
+  };
+  // --- AKHIR PERUBAHAN ---
+
   const onTitleLayout = (event: LayoutChangeEvent) => {
     const { y } = event.nativeEvent.layout;
     const headerHeight = 60 + insets.top;
@@ -217,11 +247,14 @@ export default function HomeScreen() {
             mendukung kesehatan tanaman Anda.
           </Text>
 
-          <DefaultView style={styles.inlineCTAWrapper}>
+          {/* --- AWAL PERUBAHAN: Terapkan Animasi pada Tombol --- */}
+          <Animated.View style={[ styles.inlineCTAWrapper, { transform: [{ scale: ctaButtonScale }] }]}>
             <TouchableOpacity
               style={styles.ctaButtonShadow}
-              onPress={() => router.push("/(tabs)/check")}
-              activeOpacity={0.85}
+              onPress={handleCtaPress}
+              onPressIn={handlePressIn}
+              onPressOut={handlePressOut}
+              activeOpacity={1} // Matikan opacity default agar animasi spring terlihat
             >
               <LinearGradient
                 colors={buttonGradient}
@@ -233,7 +266,9 @@ export default function HomeScreen() {
                 <Text style={styles.inlineCTAButtonText}>Mulai Analisis</Text>
               </LinearGradient>
             </TouchableOpacity>
-          </DefaultView>
+          </Animated.View>
+          {/* --- AKHIR PERUBAHAN --- */}
+
         </LinearGradient>
 
         <DefaultView style={[styles.featuresSection, { backgroundColor: colors.background }]}>
@@ -262,6 +297,7 @@ export default function HomeScreen() {
   );
 }
 
+// --- Tambahkan dan sesuaikan style untuk tombol ---
 const styles = StyleSheet.create({
   headerContainer: {
     position: 'absolute',
@@ -328,33 +364,34 @@ const styles = StyleSheet.create({
     fontWeight: "400",
   },
   inlineCTAWrapper: {
-    marginTop: 4,
+    marginTop: 20, // Beri sedikit jarak tambahan
     alignSelf: "flex-start",
-    backgroundColor: "transparent",
   },
   inlineCTAButton: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 14,
-    paddingHorizontal: 24,
+    paddingVertical: 16, // Sedikit lebih tebal
+    paddingHorizontal: 28, // Sedikit lebih lebar
     borderRadius: 30,
-    minWidth: 220,
+    // Tambahkan border halus untuk efek 'shine'
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.25)',
   },
   inlineCTAButtonText: {
-    fontSize: 16,
-    fontWeight: "600",
+    fontSize: 17, // Sedikit lebih besar
+    fontWeight: "700", // Lebih tebal
     marginLeft: 10,
     color: "#fff",
   },
   ctaButtonShadow: {
     borderRadius: 30,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 10,
-    elevation: 6,
-    backgroundColor: "transparent",
+    // Perhalus bayangan
+    shadowColor: "#166534",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 15,
+    elevation: 8,
   },
   featuresSection: {
     paddingTop: 40,
