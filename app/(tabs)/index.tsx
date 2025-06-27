@@ -1,15 +1,34 @@
-import React, { useEffect, useRef } from 'react';
-import { StyleSheet, Text, TouchableOpacity, ScrollView, Animated, Image } from 'react-native';
-import { Feather } from '@expo/vector-icons';
-import Colors from '@/constants/Colors';
-import { useTheme } from '@/components/ThemeContext';
-import { View } from '@/components/Themed';
-import { useRouter } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
+import React, { useEffect, useRef } from "react";
+import {
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  Animated,
+  Image,
+} from "react-native";
+import { Feather } from "@expo/vector-icons";
+import Colors from "@/constants/Colors";
+import { useTheme } from "@/components/ThemeContext";
+import { View } from "@/components/Themed";
+import { useRouter } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { LinearGradient } from "expo-linear-gradient";
 
 // --- BARU: Komponen untuk kartu fitur dengan desain yang lebih baik ---
-const FeatureCard = ({ icon, title, description, colors, index }: { icon: any, title: string, description: string, colors: any, index: number }) => {
+const FeatureCard = ({
+  icon,
+  title,
+  description,
+  colors,
+  index,
+}: {
+  icon: any;
+  title: string;
+  description: string;
+  colors: any;
+  index: number;
+}) => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
 
@@ -31,17 +50,36 @@ const FeatureCard = ({ icon, title, description, colors, index }: { icon: any, t
   }, [fadeAnim, slideAnim, index]);
 
   return (
-    <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
-      <View style={[styles.featureCard, { backgroundColor: colors.surface, borderColor: colors.tabIconDefault + '20' }]}>
+    <Animated.View
+      style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}
+    >
+      <View
+        style={[
+          styles.featureCard,
+          {
+            backgroundColor: colors.surface,
+            borderColor: colors.tabIconDefault + "20",
+          },
+        ]}
+      >
         <LinearGradient
-          colors={[colors.tint + '1A', colors.tint + '05']}
+          colors={[colors.tint + "1A", colors.tint + "05"]}
           style={styles.featureIconContainer}
         >
           <Feather name={icon} size={24} color={colors.tint} />
         </LinearGradient>
         <View style={styles.featureTextContainer}>
-          <Text style={[styles.featureTitle, { color: colors.text }]}>{title}</Text>
-          <Text style={[styles.featureDescription, { color: colors.tabIconDefault }]}>{description}</Text>
+          <Text style={[styles.featureTitle, { color: colors.text }]}>
+            {title}
+          </Text>
+          <Text
+            style={[
+              styles.featureDescription,
+              { color: colors.tabIconDefault },
+            ]}
+          >
+            {description}
+          </Text>
         </View>
       </View>
     </Animated.View>
@@ -53,19 +91,30 @@ export default function HomeScreen() {
   const colors = Colors[theme];
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  
+
   // --- BARU: Gradient yang lebih menarik untuk header ---
-  const gradientColors = theme === 'dark' 
-    ? ['#00640A', '#1A4D2E'] 
-    : ['#00990E', '#22C55E'];
+  const gradientColors =
+    theme === "dark" ? ["#00640A", "#1A4D2E"] : ["#00990E", "#22C55E"];
 
   // --- BARU: Gradient untuk tombol utama ---
-  const buttonGradient = ['#22C55E', '#00880C'];
+  const buttonGradient = ["#22C55E", "#00880C"];
 
   const features = [
-    { icon: "cpu", title: "Akurasi Tinggi", description: "Didukung model AI canggih untuk hasil presisi." },
-    { icon: "zap", title: "Deteksi Cepat", description: "Dapatkan hasil klasifikasi dalam hitungan detik." },
-    { icon: "clock", title: "Riwayat Lengkap", description: "Simpan dan lihat kembali semua hasil pengecekan." },
+    {
+      icon: "cpu",
+      title: "Akurasi Tinggi",
+      description: "Didukung model AI canggih untuk hasil presisi.",
+    },
+    {
+      icon: "zap",
+      title: "Deteksi Cepat",
+      description: "Dapatkan hasil klasifikasi dalam hitungan detik.",
+    },
+    {
+      icon: "clock",
+      title: "Riwayat Lengkap",
+      description: "Simpan dan lihat kembali semua hasil pengecekan.",
+    },
   ];
 
   return (
@@ -73,12 +122,15 @@ export default function HomeScreen() {
       <ScrollView
         contentContainerStyle={{ paddingBottom: 100 }} // Padding bawah agar konten terakhir tidak terpotong
         showsVerticalScrollIndicator={false}
-        contentInsetAdjustmentBehavior="automatic" 
+        contentInsetAdjustmentBehavior="automatic"
       >
         {/* --- BARU: Header dengan gradient dan bentuk melengkung --- */}
         <LinearGradient
           colors={gradientColors}
-          style={[styles.header, { paddingTop: insets.top + 80, paddingBottom: insets.bottom + 80 }]} // Disesuaikan untuk Safe Area
+          style={[
+            styles.header,
+            { paddingTop: insets.top + 80, paddingBottom: insets.bottom + 80 },
+          ]} // Disesuaikan untuk Safe Area
         >
           {/* --- BARU: Dekorasi lingkaran untuk efek visual --- */}
           <View style={[styles.circle, styles.circle1]} />
@@ -87,15 +139,23 @@ export default function HomeScreen() {
 
           <Text style={styles.title}>Klasifikasi Daun Anggur</Text>
           <Text style={styles.subtitle}>
-            Deteksi dini penyakit daun anggur melalui analisis gambar untuk mendukung kesehatan tanaman Anda.
+            Deteksi dini penyakit daun anggur melalui analisis gambar untuk
+            mendukung kesehatan tanaman Anda.
           </Text>
         </LinearGradient>
-        
+
         {/* --- BARU: Konten utama dengan latar belakang yang pas dengan header --- */}
-        <View style={[styles.featuresSection, { backgroundColor: colors.background }]}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>Fitur Unggulan</Text>
+        <View
+          style={[
+            styles.featuresSection,
+            { backgroundColor: colors.background },
+          ]}
+        >
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>
+            Fitur Unggulan
+          </Text>
           {features.map((feature, index) => (
-            <FeatureCard 
+            <FeatureCard
               key={index}
               index={index}
               icon={feature.icon}
@@ -109,9 +169,9 @@ export default function HomeScreen() {
 
       {/* --- BARU: Posisi tombol CTA disesuaikan agar lebih baik --- */}
       <View style={[styles.ctaButtonContainer, { bottom: insets.bottom + 5 }]}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.ctaButtonShadow}
-          onPress={() => router.push('/(tabs)/check')}
+          onPress={() => router.push("/(tabs)/check")}
           activeOpacity={0.8}
         >
           <LinearGradient
@@ -138,35 +198,32 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 0,
     borderBottomLeftRadius: 50, // Membuat lengkungan di bawah
     borderBottomRightRadius: 50,
-    overflow: 'hidden', // Penting untuk efek lingkaran
+    overflow: "hidden", // Penting untuk efek lingkaran
   },
   circle: {
-    position: 'absolute',
+    position: "absolute",
     borderRadius: 100,
-    backgroundColor: 'rgba(255, 255, 255, 0.07)',
+    backgroundColor: "rgba(255, 255, 255, 0.07)",
     aspectRatio: 1,
   },
   circle1: { width: 200, right: -50, top: -30 },
   circle2: { width: 150, left: -40, bottom: -60 },
   circle3: { width: 80, right: 80, bottom: -20 },
   title: {
-    fontSize: 34,
-    fontWeight: '800',
-    color: '#FFFFFF',
-    textShadowColor: 'rgba(0, 0, 0, 0.15)',
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 4,
+    fontSize: 32,
+    fontWeight: "800",
+    color: "#FFFFFF",
+    lineHeight: 38,
   },
   subtitle: {
-    fontSize: 18,
-    color: 'rgba(255, 255, 255, 0.9)',
-    marginTop: 8,
-    maxWidth: '90%',
-    fontWeight: '400',
+    fontSize: 16,
+    color: "rgba(255, 255, 255, 0.9)",
+    marginTop: 10,
     lineHeight: 24,
   },
+
   ctaButtonContainer: {
-    position: 'absolute',
+    position: "absolute",
     left: 20,
     right: 20,
   },
@@ -179,18 +236,18 @@ const styles = StyleSheet.create({
     elevation: 12,
   },
   ctaButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     paddingVertical: 18,
     paddingHorizontal: 20,
     borderRadius: 20,
   },
   ctaText: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
     marginLeft: 12,
-    color: '#FFFFFF',
+    color: "#FFFFFF",
   },
   featuresSection: {
     paddingTop: 40,
@@ -201,12 +258,12 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 24,
-    fontWeight: '700',
+    fontWeight: "700",
     marginBottom: 20,
   },
   featureCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     borderRadius: 16,
     padding: 15,
     marginBottom: 15,
@@ -216,17 +273,17 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginRight: 15,
   },
   featureTextContainer: {
     flex: 1,
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
   },
   featureTitle: {
     fontSize: 17,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   featureDescription: {
     fontSize: 14,
