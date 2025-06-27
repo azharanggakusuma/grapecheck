@@ -1,9 +1,9 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
-import { CustomThemeProvider } from '@/components/ThemeContext'; // Import provider baru
+import { CustomThemeProvider } from '@/components/ThemeContext';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 export {
   ErrorBoundary,
@@ -31,11 +31,13 @@ function RootLayoutNav() {
   );
 }
 
-// Bungkus aplikasi dengan provider tema kustom
+// Bungkus aplikasi dengan SafeAreaProvider dan provider tema kustom
 export default function AppWrapper() {
   return (
-    <CustomThemeProvider>
-      <RootLayout />
-    </CustomThemeProvider>
-  )
+    <SafeAreaProvider>
+      <CustomThemeProvider>
+        <RootLayout />
+      </CustomThemeProvider>
+    </SafeAreaProvider>
+  );
 }

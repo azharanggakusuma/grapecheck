@@ -4,7 +4,8 @@ import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
 import { Feather } from '@expo/vector-icons';
 import { Animated, View, StyleSheet } from 'react-native';
-import { CustomHeader } from '@/components/CustomHeader'; // Import header kustom
+import { CustomHeader } from '@/components/CustomHeader';
+import { useSafeAreaInsets } from 'react-native-safe-area-context'; // Import hook
 
 function TabBarIcon({ name, color, focused }: {
   name: React.ComponentProps<typeof Feather>['name'];
@@ -37,6 +38,7 @@ function TabBarIcon({ name, color, focused }: {
 export default function TabLayout() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
+  const insets = useSafeAreaInsets(); // Dapatkan insets
 
   const getIconName = (routeName: string): React.ComponentProps<typeof Feather>['name'] => {
     switch (routeName) {
@@ -58,14 +60,15 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={({ route }) => ({
-        header: (props) => <CustomHeader {...props} />, // Gunakan header kustom
+        header: (props) => <CustomHeader {...props} />,
         tabBarActiveTintColor: colors.tabIconSelected,
         tabBarInactiveTintColor: colors.tabIconDefault,
         tabBarStyle: {
           backgroundColor: colors.background,
           borderTopWidth: 0,
           elevation: 0,
-          height: 80,
+          height: 60 + insets.bottom, // Sesuaikan tinggi dengan inset bawah
+          paddingBottom: insets.bottom, // Tambahkan padding bawah
         },
         tabBarShowLabel: false,
         tabBarIcon: ({ color, focused }) => (
