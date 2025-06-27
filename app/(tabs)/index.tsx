@@ -211,16 +211,16 @@ const styles = StyleSheet.create({
   circle3: { width: 80, right: 80, bottom: -20 },
  
   title: {
-    fontSize: 30,
+    fontSize: 32,
     fontWeight: "800",
     color: "#fff",
-    lineHeight: 36,
+    lineHeight: 38,
   },
   subtitle: {
-    fontSize: 15,
+    fontSize: 16,
     color: "rgba(255,255,255,0.92)",
-    marginTop: 12,
-    lineHeight: 22,
+    marginTop: 10,
+    lineHeight: 24,
   },
 
   ctaButtonContainer: {
