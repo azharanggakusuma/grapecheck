@@ -57,7 +57,7 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-      <ScrollView contentContainerStyle={[styles.container, { paddingBottom: 100 }]}>
+      <ScrollView contentContainerStyle={styles.container}>
 
         {/* Header Ilustratif */}
         <LinearGradient
@@ -111,7 +111,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   container: {
-    // paddingBottom sudah ditambahkan secara inline di ScrollView
+    paddingBottom: 40, // <-- KEMBALIKAN KE NILAI SEMULA
   },
   header: {
     paddingHorizontal: 25,
