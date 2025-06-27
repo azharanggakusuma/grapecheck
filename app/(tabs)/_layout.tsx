@@ -240,7 +240,7 @@ const styles = StyleSheet.create({
     top: 8, 
   },
   centerButtonWrapper: {
-    transform: [{ translateY: -32 }], 
+    transform: [{ translateY: -40 }], 
     width: 68,
     height: 68,
     borderRadius: 34,
