@@ -70,17 +70,15 @@ export default function HomeScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <ScrollView
-        contentContainerStyle={{ paddingBottom: 120 }} 
+        // Padding bawah disesuaikan agar konten terakhir tidak terpotong
+        contentContainerStyle={{ paddingBottom: 100 }} 
         showsVerticalScrollIndicator={false}
         contentInsetAdjustmentBehavior="automatic" 
       >
-        {/* --- AWAL PERUBAHAN PADDING --- */}
         <LinearGradient
           colors={gradientColors}
-          // Padding atas ditambah untuk memberi jarak lebih dari status bar
           style={[styles.header, { paddingTop: insets.top + 80 }]} 
         >
-        {/* --- AKHIR PERUBAHAN PADDING --- */}
           <View style={[styles.circle, styles.circle1]} />
           <View style={[styles.circle, styles.circle2]} />
           <View style={[styles.circle, styles.circle3]} />
@@ -106,7 +104,10 @@ export default function HomeScreen() {
         </View>
       </ScrollView>
 
-      <View style={[styles.ctaButtonContainer, { bottom: insets.bottom + 20 }]}>
+      {/* --- AWAL PERUBAHAN POSISI TOMBOL --- */}
+      {/* Nilai `bottom` dikurangi agar tombol sedikit lebih ke bawah */}
+      <View style={[styles.ctaButtonContainer, { bottom: insets.bottom + 5 }]}>
+      {/* --- AKHIR PERUBAHAN POSISI TOMBOL --- */}
         <TouchableOpacity 
           style={styles.ctaButtonShadow}
           onPress={() => router.push('/(tabs)/check')}
@@ -127,12 +128,13 @@ export default function HomeScreen() {
   );
 }
 
+// Stylesheet tidak ada perubahan selain yang sudah disebutkan di atas
 const styles = StyleSheet.create({
   header: {
     paddingHorizontal: 25,
-    // --- AWAL PERUBAHAN PADDING BAWAH ---
-    paddingBottom: 90, // Ditambah agar lengkungan tetap proporsional
-    // --- AKHIR PERUBAHAN PADDING BAWAH ---
+    paddingBottom: 90,
+    borderTopLeftRadius: 0,
+    borderTopRightRadius: 0,
     borderBottomLeftRadius: 50,
     borderBottomRightRadius: 50,
     overflow: 'hidden',
@@ -192,9 +194,7 @@ const styles = StyleSheet.create({
   featuresSection: {
     paddingTop: 40,
     paddingHorizontal: 20,
-    // --- AWAL PERUBAHAN MARGIN ---
-    marginTop: -40, // Disesuaikan agar tumpang tindih tetap pas
-    // --- AKHIR PERUBAHAN MARGIN ---
+    marginTop: -40,
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
   },
