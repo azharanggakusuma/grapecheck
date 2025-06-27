@@ -5,8 +5,9 @@ import Colors from '@/constants/Colors';
 import { Feather } from '@expo/vector-icons';
 import { Animated, View, StyleSheet } from 'react-native';
 import { CustomHeader } from '@/components/CustomHeader';
-import { useSafeAreaInsets } from 'react-native-safe-area-context'; // Import hook
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+// Komponen TabBarIcon (tidak ada perubahan)
 function TabBarIcon({ name, color, focused }: {
   name: React.ComponentProps<typeof Feather>['name'];
   color: string;
@@ -38,22 +39,16 @@ function TabBarIcon({ name, color, focused }: {
 export default function TabLayout() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
-  const insets = useSafeAreaInsets(); // Dapatkan insets
+  const insets = useSafeAreaInsets();
 
   const getIconName = (routeName: string): React.ComponentProps<typeof Feather>['name'] => {
     switch (routeName) {
-      case 'index':
-        return 'home';
-      case 'check':
-        return 'camera';
-      case 'history':
-        return 'clock';
-      case 'notifications':
-        return 'bell';
-      case 'profile':
-        return 'user';
-      default:
-        return 'home';
+      case 'index': return 'home';
+      case 'check': return 'camera';
+      case 'history': return 'clock';
+      case 'notifications': return 'bell';
+      case 'profile': return 'user';
+      default: return 'home';
     }
   };
 
@@ -61,14 +56,23 @@ export default function TabLayout() {
     <Tabs
       screenOptions={({ route }) => ({
         header: (props) => <CustomHeader {...props} />,
+        
+        // KUNCI PERBAIKAN: Menghilangkan celah di bawah header
+        headerStyle: {
+          backgroundColor: colors.background,
+          elevation: 0,
+          shadowOpacity: 0,
+          borderBottomWidth: 0,
+        },
+
         tabBarActiveTintColor: colors.tabIconSelected,
         tabBarInactiveTintColor: colors.tabIconDefault,
         tabBarStyle: {
           backgroundColor: colors.background,
           borderTopWidth: 0,
           elevation: 0,
-          height: 60 + insets.bottom, // Sesuaikan tinggi dengan inset bawah
-          paddingBottom: insets.bottom, // Tambahkan padding bawah
+          height: 60 + insets.bottom,
+          paddingBottom: insets.bottom,
         },
         tabBarShowLabel: false,
         tabBarIcon: ({ color, focused }) => (
@@ -76,7 +80,8 @@ export default function TabLayout() {
         ),
       })}
     >
-      <Tabs.Screen name="index" options={{ title: 'Beranda' }} />
+      {/* KEMBALIKAN HEADER DI SINI */}
+      <Tabs.Screen name="index" options={{ title: 'Beranda' }} /> 
       <Tabs.Screen name="check" options={{ title: 'Klasifikasi' }} />
       <Tabs.Screen name="history" options={{ title: 'Riwayat' }} />
       <Tabs.Screen name="notifications" options={{ title: 'Notifikasi' }} />
