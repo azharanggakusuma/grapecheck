@@ -5,15 +5,13 @@ import {
   TouchableOpacity,
   ScrollView,
   Animated,
-  NativeSyntheticEvent,
-  NativeScrollEvent,
-  LayoutChangeEvent, // <-- Impor tipe ini
+  LayoutChangeEvent,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import Colors from "@/constants/Colors";
 import { useTheme } from "@/components/ThemeContext";
-import { View } from "@/components/Themed";
-import { useRouter, useNavigation } from "expo-router";
+import { View as DefaultView } from '@/components/Themed'; 
+import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 
@@ -52,7 +50,7 @@ const FeatureCard = ({
 
   return (
     <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
-      <View
+      <DefaultView
         style={[
           styles.featureCard,
           {
@@ -67,63 +65,105 @@ const FeatureCard = ({
         >
           <Feather name={icon} size={24} color={colors.tint} />
         </LinearGradient>
-        <View style={styles.featureTextContainer}>
+        <DefaultView style={styles.featureTextContainer}>
           <Text style={[styles.featureTitle, { color: colors.text }]}>{title}</Text>
           <Text
             style={[styles.featureDescription, { color: colors.tabIconDefault }]}
           >
             {description}
           </Text>
-        </View>
-      </View>
+        </DefaultView>
+      </DefaultView>
     </Animated.View>
   );
 };
 
-export default function HomeScreen() {
+const AnimatedHeader = ({ scrollY, threshold, onThemeToggle }: {
+  scrollY: Animated.Value,
+  threshold: number,
+  onThemeToggle: () => void
+}) => {
   const { theme } = useTheme();
+  const colors = Colors[theme];
+  const insets = useSafeAreaInsets();
+  const headerHeight = 60 + insets.top;
+
+  const headerBackgroundOpacity = scrollY.interpolate({
+    inputRange: [threshold, threshold + 30],
+    outputRange: [0, 1],
+    extrapolate: 'clamp',
+  });
+
+  const solidContentOpacity = scrollY.interpolate({
+    inputRange: [threshold + 10, threshold + 40],
+    outputRange: [0, 1],
+    extrapolate: 'clamp',
+  });
+  
+  const transparentContentOpacity = scrollY.interpolate({
+    inputRange: [threshold, threshold + 20],
+    outputRange: [1, 0],
+    extrapolate: 'clamp',
+  });
+
+  const shadowOpacity = scrollY.interpolate({
+    inputRange: [threshold, threshold + 50],
+    outputRange: [0, theme === 'dark' ? 0.2 : 0.05],
+    extrapolate: 'clamp',
+  });
+
+  return (
+    <Animated.View style={[styles.headerContainer, { height: headerHeight, paddingTop: insets.top }]}>
+      <Animated.View style={[
+        StyleSheet.absoluteFillObject,
+        { backgroundColor: colors.background, opacity: headerBackgroundOpacity },
+        styles.headerShadow,
+        { shadowOpacity: shadowOpacity }
+      ]}/>
+
+      <DefaultView style={styles.headerContent}>
+        <Animated.View style={[styles.headerIcons, { opacity: transparentContentOpacity }]}>
+          <Feather name="menu" size={24} color="#FFFFFF" />
+          <Text style={styles.headerLogoText}>GrapeCheck</Text>
+          <TouchableOpacity onPress={onThemeToggle}>
+            <Feather name={theme === 'light' ? 'moon' : 'sun'} size={24} color="#FFFFFF" />
+          </TouchableOpacity>
+        </Animated.View>
+
+        <Animated.View style={[styles.headerIcons, { opacity: solidContentOpacity }]}>
+          <Feather name="menu" size={24} color={colors.text} />
+          <Text style={[styles.headerLogoText, { color: colors.text }]}>GrapeCheck</Text>
+          <TouchableOpacity onPress={onThemeToggle}>
+            <Feather name={theme === 'light' ? 'moon' : 'sun'} size={24} color={colors.text} />
+          </TouchableOpacity>
+        </Animated.View>
+      </DefaultView>
+    </Animated.View>
+  )
+}
+
+export default function HomeScreen() {
+  const { theme, toggleTheme } = useTheme();
   const colors = Colors[theme];
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const navigation = useNavigation();
 
-  const headerTransparent = useRef(true);
-  // State untuk menyimpan ambang batas scroll yang dinamis
-  const [scrollThreshold, setScrollThreshold] = useState(300); // Nilai awal yang tinggi
+  const scrollY = useRef(new Animated.Value(0)).current;
+  const [scrollThreshold, setScrollThreshold] = useState(300);
 
-  useEffect(() => {
-    navigation.setOptions({
-      headerTransparent: true,
-      headerTitle: '',
-    });
-  }, [navigation]);
-
-  // Fungsi ini akan dipanggil saat komponen judul selesai di-render
-  // untuk mendapatkan posisi pastinya.
   const onTitleLayout = (event: LayoutChangeEvent) => {
     const { y } = event.nativeEvent.layout;
-    const headerHeight = 60 + insets.top; // Tinggi header dari CustomHeader.tsx
-    setScrollThreshold(y - headerHeight);
+    const headerHeight = 60 + insets.top;
+    setScrollThreshold(y - headerHeight - 10); 
   };
-
-  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const scrollY = event.nativeEvent.contentOffset.y;
-    
-    // Gunakan ambang batas dinamis yang telah dihitung
-    const shouldBeTransparent = scrollY < scrollThreshold;
-
-    if (shouldBeTransparent !== headerTransparent.current) {
-      headerTransparent.current = shouldBeTransparent;
-      navigation.setOptions({
-        headerTransparent: shouldBeTransparent,
-        headerTitle: shouldBeTransparent ? '' : 'Beranda',
-      });
-    }
-  };
+  
+  const handleScroll = Animated.event(
+    [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+    { useNativeDriver: true }
+  );
 
   const gradientColors =
     theme === "dark" ? ["#00640A", "#1A4D2E"] : ["#00990E", "#22C55E"];
-
   const buttonGradient =
     theme === "dark" ? ["#00B86B", "#007A47"] : ["#4ADE80", "#16A34A"];
 
@@ -146,8 +186,8 @@ export default function HomeScreen() {
   ];
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.background }}>
-      <ScrollView
+    <DefaultView style={{ flex: 1, backgroundColor: colors.background }}>
+      <Animated.ScrollView
         onScroll={handleScroll}
         scrollEventThrottle={16}
         contentContainerStyle={{ paddingBottom: 100 }}
@@ -165,12 +205,11 @@ export default function HomeScreen() {
             },
           ]}
         >
-          <View style={[styles.circle, styles.circle1]} />
-          <View style={[styles.circle, styles.circle2]} />
-          <View style={[styles.circle, styles.circle3]} />
+          <DefaultView style={[styles.circle, styles.circle1]} />
+          <DefaultView style={[styles.circle, styles.circle2]} />
+          <DefaultView style={[styles.circle, styles.circle3]} />
 
-          {/* Tambahkan onLayout di sini */}
-          <Text style={styles.title} onLayout={onTitleLayout}> 
+          <Text style={styles.title} onLayout={onTitleLayout}>
             Klasifikasi Daun Anggur
           </Text>
           <Text style={styles.subtitle}>
@@ -178,7 +217,7 @@ export default function HomeScreen() {
             mendukung kesehatan tanaman Anda.
           </Text>
 
-          <View style={styles.inlineCTAWrapper}>
+          <DefaultView style={styles.inlineCTAWrapper}>
             <TouchableOpacity
               style={styles.ctaButtonShadow}
               onPress={() => router.push("/(tabs)/check")}
@@ -194,10 +233,10 @@ export default function HomeScreen() {
                 <Text style={styles.inlineCTAButtonText}>Mulai Analisis</Text>
               </LinearGradient>
             </TouchableOpacity>
-          </View>
+          </DefaultView>
         </LinearGradient>
 
-        <View style={[styles.featuresSection, { backgroundColor: colors.background }]}>
+        <DefaultView style={[styles.featuresSection, { backgroundColor: colors.background }]}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>
             Fitur Unggulan
           </Text>
@@ -211,19 +250,56 @@ export default function HomeScreen() {
               colors={colors}
             />
           ))}
-        </View>
-      </ScrollView>
-    </View>
+        </DefaultView>
+      </Animated.ScrollView>
+
+      <AnimatedHeader 
+        scrollY={scrollY}
+        threshold={scrollThreshold}
+        onThemeToggle={toggleTheme}
+      />
+    </DefaultView>
   );
 }
 
-// ... (Kode styles tetap sama)
 const styles = StyleSheet.create({
+  headerContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 10,
+  },
+  headerShadow: {
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 5,
+    elevation: 4,
+  },
+  headerContent: {
+    flex: 1,
+    paddingHorizontal: 10,
+    backgroundColor: 'transparent',
+  },
+  headerIcons: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    position: 'absolute',
+    top: 0,
+    left: 10,
+    right: 10,
+    bottom: 0,
+  },
+  headerLogoText: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#FFFFFF'
+  },
   header: {
     paddingHorizontal: 25,
     paddingBottom: 60,
-    borderTopLeftRadius: 0,
-    borderTopRightRadius: 0,
     borderBottomLeftRadius: 10,
     borderBottomRightRadius: 10,
     overflow: "visible",
@@ -237,7 +313,6 @@ const styles = StyleSheet.create({
   circle1: { width: 200, right: -50, top: -30 },
   circle2: { width: 150, left: -40, bottom: -60 },
   circle3: { width: 80, right: 80, bottom: -20 },
-
   title: {
     fontSize: 32,
     fontWeight: "800",
@@ -252,7 +327,6 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     fontWeight: "400",
   },
-
   inlineCTAWrapper: {
     marginTop: 4,
     alignSelf: "flex-start",
@@ -282,7 +356,6 @@ const styles = StyleSheet.create({
     elevation: 6,
     backgroundColor: "transparent",
   },
-
   featuresSection: {
     paddingTop: 40,
     paddingHorizontal: 20,

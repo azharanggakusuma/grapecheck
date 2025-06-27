@@ -209,11 +209,13 @@ export default function TabLayout() {
     <Tabs
       tabBar={(props) => <CustomTabBar {...props} insets={insets} />}
       screenOptions={{
-        header: (props) => <CustomHeader {...props} />, 
+        header: (props) => <CustomHeader {...props} />,
         tabBarShowLabel: false,
       }}
     >
-      <Tabs.Screen name="index" options={{ title: 'Beranda', headerTransparent: true, headerTitle: '' }} /> 
+      {/* --- UBAH BARIS INI --- */}
+      <Tabs.Screen name="index" options={{ title: 'Beranda', headerShown: false }} /> 
+      {/* -------------------- */}
       <Tabs.Screen name="history" options={{ title: 'Riwayat' }} />
       <Tabs.Screen name="check" options={{ title: 'Klasifikasi' }} />
       <Tabs.Screen name="notifications" options={{ title: 'Notifikasi' }} />
