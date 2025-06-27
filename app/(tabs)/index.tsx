@@ -181,8 +181,8 @@ const styles = StyleSheet.create({
     paddingBottom: 60,
     borderTopLeftRadius: 0,
     borderTopRightRadius: 0,
-    borderBottomLeftRadius: 50,
-    borderBottomRightRadius: 50,
+    borderBottomLeftRadius: 10,
+    borderBottomRightRadius: 10,
     overflow: "visible",
   },
   circle: {
@@ -243,7 +243,7 @@ const styles = StyleSheet.create({
   featuresSection: {
     paddingTop: 40,
     paddingHorizontal: 20,
-    marginTop: -40,
+    marginTop: -30,
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
   },
