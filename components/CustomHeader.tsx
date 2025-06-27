@@ -13,11 +13,9 @@ export function CustomHeader(props: any) {
   const { top } = useSafeAreaInsets();
   
   const title = getHeaderTitle(options, route.name);
-
   const isTransparent = options.headerTransparent === true;
   const headerTintColor = isTransparent ? '#FFFFFF' : colors.text;
 
-  // Cek apakah judul halaman ada atau tidak. Jika tidak, kita akan menampilkan logo.
   const isLogo = !title;
   const displayTitle = title || 'GrapeCheck';
 
@@ -39,12 +37,19 @@ export function CustomHeader(props: any) {
           })
         }
       ]}>
-        {/* Kontainer Kiri: Hanya untuk tombol kembali */}
-        <View style={styles.sideContainer}>
-          {navigation.canGoBack() && (
+        {/* Kontainer Kiri: Tombol kembali atau tombol menu */}
+        <View style={[styles.sideContainer, { alignItems: 'flex-start' }]}>
+          {navigation.canGoBack() ? (
             <TouchableOpacity onPress={() => navigation.goBack()} style={styles.button}>
               <Feather name="arrow-left" size={24} color={headerTintColor} />
             </TouchableOpacity>
+          ) : (
+            // --- AWAL PERUBAHAN ---
+            // Isi dengan tombol menu untuk menyeimbangkan tampilan
+            <TouchableOpacity style={styles.button} onPress={() => { /* Aksi menu bisa ditambahkan di sini nanti */ }}>
+              <Feather name="menu" size={24} color={headerTintColor} />
+            </TouchableOpacity>
+            // --- AKHIR PERUBAHAN ---
           )}
         </View>
 
@@ -77,15 +82,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 15,
+    paddingHorizontal: 10,
   },
-  // --- AWAL PERUBAHAN STYLE ---
   sideContainer: {
-    flex: 1,
+    width: 50,
     justifyContent: 'center',
   },
   centerContainer: {
-    flex: 2,
+    flex: 1,
     alignItems: 'center',
   },
   titleText: {
@@ -96,8 +100,10 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: '700',
   },
-  // --- AKHIR PERUBAHAN STYLE ---
   button: {
-    padding: 5,
+    width: 44,
+    height: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
