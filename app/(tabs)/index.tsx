@@ -83,8 +83,11 @@ export default function HomeScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
-  const gradientColors = theme === "dark" ? ["#00640A", "#1A4D2E"] : ["#00990E", "#22C55E"];
-  const buttonGradient = ["#22C55E", "#00880C"];
+  const gradientColors =
+    theme === "dark" ? ["#00640A", "#1A4D2E"] : ["#00990E", "#22C55E"];
+
+  const buttonGradient =
+    theme === "dark" ? ["#00B86B", "#007A47"] : ["#4ADE80", "#16A34A"];
 
   const features = [
     {
@@ -118,7 +121,7 @@ export default function HomeScreen() {
             styles.header,
             {
               paddingTop: insets.top + 100,
-              paddingBottom: insets.bottom + 80,
+              paddingBottom: insets.bottom + 60, // lebih proporsional
             },
           ]}
         >
@@ -153,7 +156,9 @@ export default function HomeScreen() {
         </LinearGradient>
 
         <View style={[styles.featuresSection, { backgroundColor: colors.background }]}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>Fitur Unggulan</Text>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>
+            Fitur Unggulan
+          </Text>
           {features.map((feature, index) => (
             <FeatureCard
               key={index}
@@ -173,7 +178,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   header: {
     paddingHorizontal: 25,
-    paddingBottom: 90,
+    paddingBottom: 60,
     borderTopLeftRadius: 0,
     borderTopRightRadius: 0,
     borderBottomLeftRadius: 50,
@@ -200,11 +205,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "rgba(255,255,255,0.92)",
     marginTop: 10,
+    marginBottom: 12,
     lineHeight: 24,
+    fontWeight: "400",
   },
 
   inlineCTAWrapper: {
-    marginTop: 20,
+    marginTop: 4,
     alignSelf: "flex-start",
     backgroundColor: "transparent",
   },
@@ -226,10 +233,10 @@ const styles = StyleSheet.create({
   ctaButtonShadow: {
     borderRadius: 30,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.12,
-    shadowRadius: 16,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    elevation: 6,
     backgroundColor: "transparent",
   },
 
