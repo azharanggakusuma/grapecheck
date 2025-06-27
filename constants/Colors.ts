@@ -1,19 +1,20 @@
-const tintColorLight = '#2f95dc';
-const tintColorDark = '#fff';
+const grapePurple = '#6a3d9a';
+const grapeGreen = '#72a06a';
+const lightBackground = '#f5f3f7';
 
 export default {
   light: {
     text: '#000',
     background: '#fff',
-    tint: tintColorLight,
+    tint: grapePurple,
     tabIconDefault: '#ccc',
-    tabIconSelected: tintColorLight,
+    tabIconSelected: grapePurple,
   },
   dark: {
     text: '#fff',
-    background: '#000',
-    tint: tintColorDark,
+    background: '#120b1c', // Latar belakang gelap dengan nuansa ungu
+    tint: '#fff',
     tabIconDefault: '#ccc',
-    tabIconSelected: tintColorDark,
+    tabIconSelected: '#e3d7f0', // Warna ikon aktif yang lebih lembut
   },
 };
