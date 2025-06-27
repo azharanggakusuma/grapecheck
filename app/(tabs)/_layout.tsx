@@ -236,11 +236,10 @@ const styles = StyleSheet.create({
   },
   slidingPill: {
     position: 'absolute',
-    top: 6,
+    // --- PERUBAHAN: Dinaikkan sedikit ---
+    top: 4, 
   },
-  // --- PERUBAHAN: Tombol tengah dinaikkan ---
   centerButtonWrapper: {
-    // Nilai translateY diubah menjadi lebih negatif untuk menaikkan posisi
     transform: [{ translateY: -32 }], 
     width: 68,
     height: 68,
