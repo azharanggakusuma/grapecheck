@@ -3,11 +3,10 @@ import { Tabs } from 'expo-router';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
 import { Feather } from '@expo/vector-icons';
-import { View, StyleSheet, Animated } from 'react-native'; // 1. Import Animated
+import { View, StyleSheet, Animated } from 'react-native';
 import { CustomHeader } from '@/components/CustomHeader';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-// --- KUNCI PERUBAHAN: Animasi ditambahkan ke TabBarIcon ---
 function TabBarIcon({ name, color, focused }: {
   name: React.ComponentProps<typeof Feather>['name'];
   color: string;
@@ -16,20 +15,17 @@ function TabBarIcon({ name, color, focused }: {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   
-  // 2. Setup nilai animasi dan referensi
   const animValue = useRef(new Animated.Value(focused ? 1 : 0)).current;
 
-  // 3. Jalankan animasi ketika status 'focused' berubah
   useEffect(() => {
     Animated.spring(animValue, {
       toValue: focused ? 1 : 0,
       useNativeDriver: true,
-      bounciness: 10, // Menambahkan sedikit efek pantulan
+      bounciness: 10,
       speed: 12,
     }).start();
   }, [focused]);
 
-  // 4. Interpolasi nilai animasi untuk gaya yang berbeda
   const pillStyle = {
     opacity: animValue,
     transform: [{ scale: animValue }],
@@ -40,7 +36,7 @@ function TabBarIcon({ name, color, focused }: {
       {
         scale: animValue.interpolate({
           inputRange: [0, 1],
-          outputRange: [1, 1.15], // Ikon membesar saat aktif
+          outputRange: [1, 1.15],
         }),
       },
     ],
@@ -48,13 +44,11 @@ function TabBarIcon({ name, color, focused }: {
 
   return (
     <View style={styles.iconWrapper}>
-      {/* Latar belakang pil yang dianimasikan */}
       <Animated.View style={[
         styles.pillBackground, 
         { backgroundColor: colors.primaryLight + '33' },
         pillStyle
       ]}/>
-      {/* Ikon yang dianimasikan */}
       <Animated.View style={iconStyle}>
         <Feather size={24} name={name} color={color} />
       </Animated.View>
@@ -82,22 +76,19 @@ export default function TabLayout() {
     <Tabs
       screenOptions={({ route }) => ({
         header: (props) => <CustomHeader {...props} />,
-        headerStyle: {
-          backgroundColor: colors.background,
-          elevation: 0,
-          shadowOpacity: 0,
-          borderBottomWidth: 0,
-        },
-        tabBarActiveTintColor: colors.tabIconSelected,
+        tabBarActiveTintColor: colors.tint,
         tabBarInactiveTintColor: colors.tabIconDefault,
-        tabBarStyle: {
-          backgroundColor: colors.background,
-          borderTopWidth: 0,
-          elevation: 0,
-          height: 60 + insets.bottom,
-          paddingBottom: insets.bottom,
-        },
         tabBarShowLabel: false,
+        // --- AWAL PERUBAHAN ---
+        tabBarStyle: {
+          backgroundColor: colors.surface,
+          borderTopWidth: StyleSheet.hairlineWidth,
+          borderTopColor: colorScheme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+          height: 65 + insets.bottom, // Tinggi ditambah untuk mengakomodasi padding
+          paddingBottom: insets.bottom,
+          paddingTop: 15,
+        },
+        // --- AKHIR PERUBAHAN ---
         tabBarIcon: ({ color, focused }) => (
           <TabBarIcon name={getIconName(route.name)} color={color} focused={focused} />
         ),
@@ -113,7 +104,6 @@ export default function TabLayout() {
 }
 
 const styles = StyleSheet.create({
-  // 5. Gaya baru untuk mendukung tata letak animasi
   iconWrapper: {
     alignItems: 'center',
     justifyContent: 'center',
