@@ -129,7 +129,7 @@ export default function HomeScreen() {
           colors={gradientColors}
           style={[
             styles.header,
-            { paddingTop: insets.top + 80, paddingBottom: insets.bottom + 80 },
+            { paddingTop: insets.top + 100, paddingBottom: insets.bottom + 80 },
           ]} // Disesuaikan untuk Safe Area
         >
           {/* --- BARU: Dekorasi lingkaran untuk efek visual --- */}
@@ -209,17 +209,18 @@ const styles = StyleSheet.create({
   circle1: { width: 200, right: -50, top: -30 },
   circle2: { width: 150, left: -40, bottom: -60 },
   circle3: { width: 80, right: 80, bottom: -20 },
+ 
   title: {
-    fontSize: 32,
+    fontSize: 30,
     fontWeight: "800",
-    color: "#FFFFFF",
-    lineHeight: 38,
+    color: "#fff",
+    lineHeight: 36,
   },
   subtitle: {
-    fontSize: 16,
-    color: "rgba(255, 255, 255, 0.9)",
-    marginTop: 10,
-    lineHeight: 24,
+    fontSize: 15,
+    color: "rgba(255,255,255,0.92)",
+    marginTop: 12,
+    lineHeight: 22,
   },
 
   ctaButtonContainer: {
