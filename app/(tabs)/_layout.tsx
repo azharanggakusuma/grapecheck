@@ -3,35 +3,23 @@ import { Tabs } from 'expo-router';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
 import { Feather } from '@expo/vector-icons';
-import { Animated, View, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { CustomHeader } from '@/components/CustomHeader';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-// Komponen TabBarIcon (tidak ada perubahan)
+// --- KUNCI PERUBAHAN: Desain Ulang TabBarIcon ---
+// Menggunakan latar belakang berbentuk pil untuk tab yang aktif
 function TabBarIcon({ name, color, focused }: {
   name: React.ComponentProps<typeof Feather>['name'];
   color: string;
   focused: boolean;
 }) {
-  const lineAnimation = React.useRef(new Animated.Value(focused ? 1 : 0)).current;
-
-  React.useEffect(() => {
-    Animated.timing(lineAnimation, {
-      toValue: focused ? 1 : 0,
-      duration: 200,
-      useNativeDriver: false,
-    }).start();
-  }, [focused]);
-
-  const lineWidth = lineAnimation.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0%', '60%'],
-  });
+  const colorScheme = useColorScheme();
+  const colors = Colors[colorScheme ?? 'light'];
 
   return (
-    <View style={styles.iconContainer}>
+    <View style={[styles.iconContainer, focused && { backgroundColor: colors.primaryLight + '33' }]}>
       <Feather size={24} name={name} color={color} />
-      <Animated.View style={[styles.indicator, { width: lineWidth, backgroundColor: color }]} />
     </View>
   );
 }
@@ -55,9 +43,11 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={({ route }) => ({
+        // Menggunakan header kustom
         header: (props) => <CustomHeader {...props} />,
         
-        // KUNCI PERBAIKAN: Menghilangkan celah di bawah header
+        // --- KUNCI PERUBAHAN: Header yang Lebih Bersih ---
+        // Menghilangkan bayangan dan garis bawah dari header
         headerStyle: {
           backgroundColor: colors.background,
           elevation: 0,
@@ -67,6 +57,9 @@ export default function TabLayout() {
 
         tabBarActiveTintColor: colors.tabIconSelected,
         tabBarInactiveTintColor: colors.tabIconDefault,
+        
+        // --- KUNCI PERUBAHAN: Tab Bar yang Lebih Bersih ---
+        // Menghilangkan garis atas dan menyesuaikan tinggi
         tabBarStyle: {
           backgroundColor: colors.background,
           borderTopWidth: 0,
@@ -80,7 +73,6 @@ export default function TabLayout() {
         ),
       })}
     >
-      {/* KEMBALIKAN HEADER DI SINI */}
       <Tabs.Screen name="index" options={{ title: 'Beranda' }} /> 
       <Tabs.Screen name="check" options={{ title: 'Klasifikasi' }} />
       <Tabs.Screen name="history" options={{ title: 'Riwayat' }} />
@@ -91,14 +83,13 @@ export default function TabLayout() {
 }
 
 const styles = StyleSheet.create({
+  // --- KUNCI PERUBAHAN: Gaya untuk ikon berbentuk pil ---
   iconContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingTop: 10,
+    width: 50,
+    height: 38,
+    borderRadius: 30, // Membuat bentuk pil
   },
-  indicator: {
-    height: 2,
-    marginTop: 6,
-    borderRadius: 2,
-  },
+  // Gaya untuk indikator garis bawah dihapus karena tidak lagi digunakan
 });
