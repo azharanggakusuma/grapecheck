@@ -3,11 +3,10 @@ import { Tabs } from 'expo-router';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
 import { Feather } from '@expo/vector-icons';
-import { View, StyleSheet, Animated, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, Animated, TouchableOpacity, Text } from 'react-native';
 import { CustomHeader } from '@/components/CustomHeader';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-// --- PERUBAHAN: Penyesuaian pada animasi skala ---
 function TabBarIcon({ name, color, focused }: {
   name: React.ComponentProps<typeof Feather>['name'];
   color: string;
@@ -29,9 +28,7 @@ function TabBarIcon({ name, color, focused }: {
       {
         scale: animValue.interpolate({
           inputRange: [0, 1],
-          // Ukuran ikon aktif dikurangi dari 1.2x menjadi 1.15x
-          // agar perbedaannya tidak terlalu mencolok.
-          outputRange: [1, 1.15], 
+          outputRange: [1, 1.15],
         }),
       },
     ],
@@ -43,8 +40,6 @@ function TabBarIcon({ name, color, focused }: {
     </Animated.View>
   );
 }
-
-// Tidak ada perubahan pada sisa kode di bawah ini
 
 function CustomTabBar({ state, descriptors, navigation, insets }: any) {
   const colorScheme = useColorScheme();
@@ -105,7 +100,7 @@ function CustomTabBar({ state, descriptors, navigation, insets }: any) {
     });
   };
 
-  const getIconName = (routeName: string): React.ComponentProps<typeof Feather>['name'] => {
+  const getIcon = (routeName: string): React.ComponentProps<typeof Feather>['name'] => {
     switch (routeName) {
       case 'index': return 'home';
       case 'check': return 'camera';
@@ -114,7 +109,7 @@ function CustomTabBar({ state, descriptors, navigation, insets }: any) {
       case 'profile': return 'user';
       default: return 'home';
     }
-  };
+  }
 
   return (
     <View 
@@ -134,8 +129,9 @@ function CustomTabBar({ state, descriptors, navigation, insets }: any) {
              styles.slidingPill,
              { 
                width: 60,
-               height: 38,
-               opacity: pillOpacity,
+               // --- PERUBAHAN: Tinggi dan posisi pill diubah ---
+               height: 32, // Tinggi pill dikurangi
+               borderRadius: 16, // Disesuaikan agar tetap bulat
                backgroundColor: colors.primaryLight + '33',
                transform: [{ translateX }]
              }
@@ -147,6 +143,10 @@ function CustomTabBar({ state, descriptors, navigation, insets }: any) {
         const { options } = descriptors[route.key];
         const isFocused = state.index === index;
         const isCenterButton = route.name === centerRouteName;
+        
+        const label = options.title !== undefined
+          ? options.title
+          : route.name;
 
         const onPress = () => {
           const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
@@ -167,15 +167,20 @@ function CustomTabBar({ state, descriptors, navigation, insets }: any) {
             {isCenterButton ? (
               <Animated.View style={{ transform: [{ scale: centerButtonScale }] }}>
                   <View style={[styles.centerButton, { backgroundColor: colors.tint, shadowColor: colors.tint }]}>
-                    <Feather name={getIconName(route.name)} size={24} color="#FFFFFF" />
+                    <Feather name={getIcon(route.name)} size={24} color="#FFFFFF" />
                   </View>
               </Animated.View>
             ) : (
-              <TabBarIcon
-                name={getIconName(route.name)}
-                color={isFocused ? colors.tint : colors.tabIconDefault}
-                focused={isFocused}
-              />
+              <>
+                <TabBarIcon
+                  name={getIcon(route.name)}
+                  color={isFocused ? colors.tint : colors.tabIconDefault}
+                  focused={isFocused}
+                />
+                <Text style={[styles.labelText, { color: isFocused ? colors.tint : colors.tabIconDefault }]}>
+                  {label}
+                </Text>
+              </>
             )}
           </TouchableOpacity>
         );
@@ -218,16 +223,18 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     shadowOffset: { width: 0, height: -5 },
   },
+  // --- PERUBAHAN: Penyesuaian layout item tab ---
   tabItem: {
     flex: 1,
     alignItems: 'center',
-    justifyContent: 'center',
+    paddingTop: 8, // Memberi jarak dari atas untuk menempatkan grup ikon+label
+    // justifyContent: 'center' dihapus untuk kontrol manual
   },
   slidingPill: {
     position: 'absolute',
-    top: (65 - 38) / 2,
-    height: 38,
-    borderRadius: 19,
+    // Posisi top disesuaikan agar pas di belakang ikon
+    top: 6,
+    // Tinggi dan borderRadius akan diatur secara dinamis di atas
   },
   centerButton: {
     transform: [{ translateY: -25 }], 
@@ -240,5 +247,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 5,
     shadowOffset: { width: 0, height: 5 },
+  },
+  labelText: {
+    fontSize: 10,
+    marginTop: 4, // Jarak dari ikon ke teks sedikit ditambah
+    fontWeight: '600',
   },
 });
