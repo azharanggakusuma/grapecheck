@@ -169,12 +169,12 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   featuresSection: {
-    paddingTop: 35,
+    paddingTop: 45,
     paddingHorizontal: 20,
     borderTopLeftRadius: 40,
     borderTopRightRadius: 40,
-    paddingTop: 35,
-    paddingBottom: 20, // Tambah padding bawah
+    marginTop: 10, 
+    paddingBottom: 10,
   },
   sectionTitle: {
     fontSize: 22,
