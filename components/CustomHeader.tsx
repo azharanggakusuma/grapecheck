@@ -17,6 +17,10 @@ export function CustomHeader(props: any) {
   const isTransparent = options.headerTransparent === true;
   const headerTintColor = isTransparent ? '#FFFFFF' : colors.text;
 
+  // Cek apakah judul halaman ada atau tidak. Jika tidak, kita akan menampilkan logo.
+  const isLogo = !title;
+  const displayTitle = title || 'GrapeCheck';
+
   return (
     <View style={{ 
       backgroundColor: isTransparent ? 'transparent' : colors.background 
@@ -28,37 +32,37 @@ export function CustomHeader(props: any) {
           height: 60 + top,
           ...(!isTransparent && {
             shadowColor: "#000",
-            shadowOffset: {
-              width: 0,
-              height: 4,
-            },
-            shadowOpacity: theme === 'dark' ? 0.25 : 0.05,
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: theme === 'dark' ? 0.1 : 0.04,
             shadowRadius: 5,
-            elevation: 7,
+            elevation: 4,
           })
         }
       ]}>
-        <View style={styles.leftContainer}>
-          {navigation.canGoBack() ? (
+        {/* Kontainer Kiri: Hanya untuk tombol kembali */}
+        <View style={styles.sideContainer}>
+          {navigation.canGoBack() && (
             <TouchableOpacity onPress={() => navigation.goBack()} style={styles.button}>
               <Feather name="arrow-left" size={24} color={headerTintColor} />
             </TouchableOpacity>
-          ) : (
-            // --- AWAL PERUBAHAN ---
-            // Ganti ikon dengan komponen Teks
-            <Text style={[styles.logoText, { color: headerTintColor }]}>
-              GrapeCheck
-            </Text>
-            // --- AKHIR PERUBAHAN ---
           )}
         </View>
 
-        {/* Container untuk judul ini sekarang bisa kosong, 
-          karena judul diatur per layar atau disembunyikan 
-        */}
-        <Text style={[styles.title, { color: headerTintColor }]}>{title}</Text>
+        {/* Kontainer Tengah: Untuk Judul Halaman atau Logo */}
+        <View style={styles.centerContainer}>
+           <Text 
+            style={[
+              isLogo ? styles.logoText : styles.titleText, 
+              { color: headerTintColor }
+            ]}
+            numberOfLines={1}
+          >
+            {displayTitle}
+          </Text>
+        </View>
         
-        <View style={styles.rightContainer}>
+        {/* Kontainer Kanan: Untuk tombol ganti tema */}
+        <View style={[styles.sideContainer, { alignItems: 'flex-end' }]}>
           <TouchableOpacity onPress={toggleTheme} style={styles.button}>
             <Feather name={theme === 'light' ? 'moon' : 'sun'} size={24} color={headerTintColor} />
           </TouchableOpacity>
@@ -75,26 +79,25 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 15,
   },
-  leftContainer: {
+  // --- AWAL PERUBAHAN STYLE ---
+  sideContainer: {
     flex: 1,
-    alignItems: 'flex-start',
+    justifyContent: 'center',
   },
-  rightContainer: {
-    flex: 1,
-    alignItems: 'flex-end',
+  centerContainer: {
+    flex: 2,
+    alignItems: 'center',
   },
-  title: {
+  titleText: {
     fontSize: 18,
     fontWeight: 'bold',
-    textAlign: 'center',
-    flex: 2, // Disesuaikan agar tetap center
   },
+  logoText: {
+    fontSize: 22,
+    fontWeight: '700',
+  },
+  // --- AKHIR PERUBAHAN STYLE ---
   button: {
     padding: 5,
   },
-  // --- BARU: Style untuk teks logo ---
-  logoText: {
-    fontSize: 20,
-    fontWeight: '700',
-  }
 });
