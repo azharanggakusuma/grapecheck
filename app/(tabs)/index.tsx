@@ -1,16 +1,19 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   StyleSheet,
   Text,
   TouchableOpacity,
   ScrollView,
   Animated,
+  NativeSyntheticEvent,
+  NativeScrollEvent,
+  LayoutChangeEvent, // <-- Impor tipe ini
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import Colors from "@/constants/Colors";
 import { useTheme } from "@/components/ThemeContext";
 import { View } from "@/components/Themed";
-import { useRouter } from "expo-router";
+import { useRouter, useNavigation } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 
@@ -82,6 +85,41 @@ export default function HomeScreen() {
   const colors = Colors[theme];
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const navigation = useNavigation();
+
+  const headerTransparent = useRef(true);
+  // State untuk menyimpan ambang batas scroll yang dinamis
+  const [scrollThreshold, setScrollThreshold] = useState(300); // Nilai awal yang tinggi
+
+  useEffect(() => {
+    navigation.setOptions({
+      headerTransparent: true,
+      headerTitle: '',
+    });
+  }, [navigation]);
+
+  // Fungsi ini akan dipanggil saat komponen judul selesai di-render
+  // untuk mendapatkan posisi pastinya.
+  const onTitleLayout = (event: LayoutChangeEvent) => {
+    const { y } = event.nativeEvent.layout;
+    const headerHeight = 60 + insets.top; // Tinggi header dari CustomHeader.tsx
+    setScrollThreshold(y - headerHeight);
+  };
+
+  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const scrollY = event.nativeEvent.contentOffset.y;
+    
+    // Gunakan ambang batas dinamis yang telah dihitung
+    const shouldBeTransparent = scrollY < scrollThreshold;
+
+    if (shouldBeTransparent !== headerTransparent.current) {
+      headerTransparent.current = shouldBeTransparent;
+      navigation.setOptions({
+        headerTransparent: shouldBeTransparent,
+        headerTitle: shouldBeTransparent ? '' : 'Beranda',
+      });
+    }
+  };
 
   const gradientColors =
     theme === "dark" ? ["#00640A", "#1A4D2E"] : ["#00990E", "#22C55E"];
@@ -110,6 +148,8 @@ export default function HomeScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <ScrollView
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
         contentContainerStyle={{ paddingBottom: 100 }}
         showsVerticalScrollIndicator={false}
         contentInsetAdjustmentBehavior="automatic"
@@ -121,7 +161,7 @@ export default function HomeScreen() {
             styles.header,
             {
               paddingTop: insets.top + 100,
-              paddingBottom: insets.bottom + 60, // lebih proporsional
+              paddingBottom: insets.bottom + 60,
             },
           ]}
         >
@@ -129,13 +169,15 @@ export default function HomeScreen() {
           <View style={[styles.circle, styles.circle2]} />
           <View style={[styles.circle, styles.circle3]} />
 
-          <Text style={styles.title}>Klasifikasi Daun Anggur</Text>
+          {/* Tambahkan onLayout di sini */}
+          <Text style={styles.title} onLayout={onTitleLayout}> 
+            Klasifikasi Daun Anggur
+          </Text>
           <Text style={styles.subtitle}>
             Deteksi dini penyakit daun anggur melalui analisis gambar untuk
             mendukung kesehatan tanaman Anda.
           </Text>
 
-          {/* Tombol rata kiri */}
           <View style={styles.inlineCTAWrapper}>
             <TouchableOpacity
               style={styles.ctaButtonShadow}
@@ -175,6 +217,7 @@ export default function HomeScreen() {
   );
 }
 
+// ... (Kode styles tetap sama)
 const styles = StyleSheet.create({
   header: {
     paddingHorizontal: 25,
