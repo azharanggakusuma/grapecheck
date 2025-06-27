@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import {
   StyleSheet,
   Text,
@@ -6,6 +6,7 @@ import {
   ScrollView,
   Animated,
   LayoutChangeEvent,
+  RefreshControl, // 1. Impor RefreshControl
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import Colors from "@/constants/Colors";
@@ -15,8 +16,9 @@ import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Haptics from 'expo-haptics';
+import { useGlobalRefresh } from "@/components/GlobalRefreshContext"; // Impor hook global refresh
 
-// Komponen FeatureCard tidak berubah
+// Komponen FeatureCard (tidak ada perubahan)
 const FeatureCard = ({
   icon,
   title,
@@ -80,7 +82,7 @@ const FeatureCard = ({
   );
 };
 
-// Komponen Header Animasi tidak berubah
+// Komponen AnimatedHeader (tidak ada perubahan)
 const AnimatedHeader = ({ scrollY, threshold, onThemeToggle }: {
   scrollY: Animated.Value,
   threshold: number,
@@ -150,13 +152,28 @@ export default function HomeScreen() {
   const colors = Colors[theme];
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { refreshApp } = useGlobalRefresh(); // 2. Dapatkan fungsi refresh global
 
   const scrollY = useRef(new Animated.Value(0)).current;
   const [scrollThreshold, setScrollThreshold] = useState(300);
   
   const ctaButtonScale = useRef(new Animated.Value(1)).current;
-  // --- AWAL PERUBAHAN: Animated value baru untuk ikon ---
   const ctaIconScale = useRef(new Animated.Value(1)).current;
+
+  // 3. State untuk mengontrol status loading dari RefreshControl
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // 4. Fungsi yang akan dipanggil saat pull-to-refresh
+  const handleRefresh = useCallback(() => {
+    setIsRefreshing(true); // Tampilkan indikator loading
+    refreshApp(); // Panggil fungsi refresh global
+    
+    // Sembunyikan indikator loading setelah beberapa saat
+    // Ini memberikan waktu bagi aplikasi untuk me-mount ulang
+    setTimeout(() => {
+      setIsRefreshing(false);
+    }, 1000);
+  }, [refreshApp]);
 
   const handleCtaPress = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -164,7 +181,6 @@ export default function HomeScreen() {
   };
 
   const handlePressIn = () => {
-    // Animasikan tombol dan ikon secara bersamaan saat ditekan
     Animated.spring(ctaButtonScale, {
       toValue: 0.96,
       useNativeDriver: true,
@@ -178,7 +194,6 @@ export default function HomeScreen() {
   };
 
   const handlePressOut = () => {
-    // Kembalikan tombol dan ikon ke kondisi semula saat dilepas
     Animated.spring(ctaButtonScale, {
       toValue: 1,
       useNativeDriver: true,
@@ -192,7 +207,6 @@ export default function HomeScreen() {
       tension: 60,
     }).start();
   };
-  // --- AKHIR PERUBAHAN ---
 
   const onTitleLayout = (event: LayoutChangeEvent) => {
     const { y } = event.nativeEvent.layout;
@@ -237,6 +251,15 @@ export default function HomeScreen() {
         showsVerticalScrollIndicator={false}
         contentInsetAdjustmentBehavior="automatic"
         style={{ overflow: "visible" }}
+        // 5. Tambahkan prop refreshControl
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={handleRefresh}
+            colors={[colors.tint]} // Warna indikator loading
+            tintColor={colors.tint} // Warna indikator loading untuk iOS
+          />
+        }
       >
         <LinearGradient
           colors={gradientColors}
@@ -274,11 +297,9 @@ export default function HomeScreen() {
                 end={{ x: 1, y: 1 }}
                 style={styles.inlineCTAButton}
               >
-                {/* --- AWAL PERUBAHAN: Bungkus Ikon dengan Animated.View --- */}
                 <Animated.View style={{ transform: [{ scale: ctaIconScale }] }}>
                   <Feather name="camera" size={24} color="#FFFFFF" />
                 </Animated.View>
-                {/* --- AKHIR PERUBAHAN --- */}
                 <Text style={styles.inlineCTAButtonText}>Mulai Analisis</Text>
               </LinearGradient>
             </TouchableOpacity>
@@ -394,7 +415,7 @@ const styles = StyleSheet.create({
   inlineCTAButtonText: {
     fontSize: 17,
     fontWeight: "700",
-    marginLeft: 12, // Beri jarak lebih antara ikon dan teks
+    marginLeft: 12,
     color: "#fff",
   },
   ctaButtonShadow: {
