@@ -5,7 +5,6 @@ import {
   TouchableOpacity,
   ScrollView,
   Animated,
-  Image,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import Colors from "@/constants/Colors";
@@ -15,7 +14,6 @@ import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 
-// --- BARU: Komponen untuk kartu fitur dengan desain yang lebih baik ---
 const FeatureCard = ({
   icon,
   title,
@@ -50,9 +48,7 @@ const FeatureCard = ({
   }, [fadeAnim, slideAnim, index]);
 
   return (
-    <Animated.View
-      style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}
-    >
+    <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
       <View
         style={[
           styles.featureCard,
@@ -69,14 +65,9 @@ const FeatureCard = ({
           <Feather name={icon} size={24} color={colors.tint} />
         </LinearGradient>
         <View style={styles.featureTextContainer}>
-          <Text style={[styles.featureTitle, { color: colors.text }]}>
-            {title}
-          </Text>
+          <Text style={[styles.featureTitle, { color: colors.text }]}>{title}</Text>
           <Text
-            style={[
-              styles.featureDescription,
-              { color: colors.tabIconDefault },
-            ]}
+            style={[styles.featureDescription, { color: colors.tabIconDefault }]}
           >
             {description}
           </Text>
@@ -92,11 +83,7 @@ export default function HomeScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
-  // --- BARU: Gradient yang lebih menarik untuk header ---
-  const gradientColors =
-    theme === "dark" ? ["#00640A", "#1A4D2E"] : ["#00990E", "#22C55E"];
-
-  // --- BARU: Gradient untuk tombol utama ---
+  const gradientColors = theme === "dark" ? ["#00640A", "#1A4D2E"] : ["#00990E", "#22C55E"];
   const buttonGradient = ["#22C55E", "#00880C"];
 
   const features = [
@@ -120,19 +107,21 @@ export default function HomeScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <ScrollView
-        contentContainerStyle={{ paddingBottom: 100 }} // Padding bawah agar konten terakhir tidak terpotong
+        contentContainerStyle={{ paddingBottom: 100 }}
         showsVerticalScrollIndicator={false}
         contentInsetAdjustmentBehavior="automatic"
+        style={{ overflow: "visible" }}
       >
-        {/* --- BARU: Header dengan gradient dan bentuk melengkung --- */}
         <LinearGradient
           colors={gradientColors}
           style={[
             styles.header,
-            { paddingTop: insets.top + 100, paddingBottom: insets.bottom + 80 },
-          ]} // Disesuaikan untuk Safe Area
+            {
+              paddingTop: insets.top + 100,
+              paddingBottom: insets.bottom + 80,
+            },
+          ]}
         >
-          {/* --- BARU: Dekorasi lingkaran untuk efek visual --- */}
           <View style={[styles.circle, styles.circle1]} />
           <View style={[styles.circle, styles.circle2]} />
           <View style={[styles.circle, styles.circle3]} />
@@ -142,18 +131,29 @@ export default function HomeScreen() {
             Deteksi dini penyakit daun anggur melalui analisis gambar untuk
             mendukung kesehatan tanaman Anda.
           </Text>
+
+          {/* Tombol Mulai Analisis */}
+          <View style={styles.inlineCTAWrapper}>
+            <TouchableOpacity
+              style={styles.ctaButtonShadow}
+              onPress={() => router.push("/(tabs)/check")}
+              activeOpacity={0.85}
+            >
+              <LinearGradient
+                colors={buttonGradient}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.inlineCTAButton}
+              >
+                <Feather name="camera" size={22} color="#FFFFFF" />
+                <Text style={styles.inlineCTAButtonText}>Mulai Analisis</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+          </View>
         </LinearGradient>
 
-        {/* --- BARU: Konten utama dengan latar belakang yang pas dengan header --- */}
-        <View
-          style={[
-            styles.featuresSection,
-            { backgroundColor: colors.background },
-          ]}
-        >
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>
-            Fitur Unggulan
-          </Text>
+        <View style={[styles.featuresSection, { backgroundColor: colors.background }]}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Fitur Unggulan</Text>
           {features.map((feature, index) => (
             <FeatureCard
               key={index}
@@ -166,39 +166,19 @@ export default function HomeScreen() {
           ))}
         </View>
       </ScrollView>
-
-      {/* --- BARU: Posisi tombol CTA disesuaikan agar lebih baik --- */}
-      <View style={[styles.ctaButtonContainer, { bottom: insets.bottom + 5 }]}>
-        <TouchableOpacity
-          style={styles.ctaButtonShadow}
-          onPress={() => router.push("/(tabs)/check")}
-          activeOpacity={0.8}
-        >
-          <LinearGradient
-            colors={buttonGradient}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.ctaButton}
-          >
-            <Feather name="camera" size={24} color="#FFFFFF" />
-            <Text style={styles.ctaText}>Mulai Analisis</Text>
-          </LinearGradient>
-        </TouchableOpacity>
-      </View>
     </View>
   );
 }
 
-// --- BARU: Stylesheet yang telah diperbarui secara signifikan ---
 const styles = StyleSheet.create({
   header: {
     paddingHorizontal: 25,
-    paddingBottom: 90, // Memberi ruang untuk lengkungan dan tombol
+    paddingBottom: 90,
     borderTopLeftRadius: 0,
     borderTopRightRadius: 0,
-    borderBottomLeftRadius: 50, // Membuat lengkungan di bawah
+    borderBottomLeftRadius: 50,
     borderBottomRightRadius: 50,
-    overflow: "hidden", // Penting untuk efek lingkaran
+    overflow: "visible",
   },
   circle: {
     position: "absolute",
@@ -209,7 +189,7 @@ const styles = StyleSheet.create({
   circle1: { width: 200, right: -50, top: -30 },
   circle2: { width: 150, left: -40, bottom: -60 },
   circle3: { width: 80, right: 80, bottom: -20 },
- 
+
   title: {
     fontSize: 32,
     fontWeight: "800",
@@ -223,37 +203,42 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
 
-  ctaButtonContainer: {
-    position: "absolute",
-    left: 20,
-    right: 20,
+  inlineCTAWrapper: {
+    marginTop: 24,
+    alignSelf: "center",
+    zIndex: 99,
+    elevation: 99,
+    backgroundColor: "transparent",
   },
-  ctaButtonShadow: {
-    borderRadius: 20,
-    shadowColor: "#005508",
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.25,
-    shadowRadius: 20,
-    elevation: 12,
-  },
-  ctaButton: {
+  inlineCTAButton: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 18,
-    paddingHorizontal: 20,
-    borderRadius: 20,
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    borderRadius: 30,
+    minWidth: 220,
   },
-  ctaText: {
-    fontSize: 18,
+  inlineCTAButtonText: {
+    fontSize: 16,
     fontWeight: "600",
-    marginLeft: 12,
-    color: "#FFFFFF",
+    marginLeft: 10,
+    color: "#fff",
   },
+  ctaButtonShadow: {
+    borderRadius: 30,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
+    elevation: 8,
+    backgroundColor: "transparent",
+  },
+
   featuresSection: {
     paddingTop: 40,
     paddingHorizontal: 20,
-    marginTop: -40, // Konten naik ke atas menutupi bagian bawah header
+    marginTop: -40,
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
   },
