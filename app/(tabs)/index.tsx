@@ -45,6 +45,10 @@ export default function HomeScreen() {
     ? ['#00880C', '#1A4D2E'] 
     : ['#00880C', '#22C55E'];
 
+  const buttonGradient = theme === 'dark' 
+    ? ['#00880C', '#22C55E'] 
+    : ['#00880C', '#1A4D2E'];
+
   const features = [
     { icon: "cpu", title: "Akurasi Tinggi", description: "Didukung model AI canggih untuk hasil presisi." },
     { icon: "zap", title: "Deteksi Cepat", description: "Dapatkan hasil klasifikasi dalam hitungan detik." },
@@ -53,14 +57,13 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-      <ScrollView contentContainerStyle={styles.container}>
+      <ScrollView contentContainerStyle={[styles.container, { paddingBottom: 100 }]}>
 
         {/* Header Ilustratif */}
         <LinearGradient
           colors={gradientColors}
           style={styles.header}
         >
-          {/* Pola Latar Belakang Halus */}
           <View style={styles.headerPattern} />
           <Feather name="bar-chart-2" size={60} color="rgba(255, 255, 255, 0.3)" style={styles.headerIcon} />
           <Text style={styles.title}>GrapeCheck</Text>
@@ -71,11 +74,16 @@ export default function HomeScreen() {
 
         {/* Tombol Aksi Utama */}
         <TouchableOpacity 
-          style={[styles.ctaButton, { backgroundColor: colors.surface }]} 
+          style={styles.ctaButtonShadow}
           onPress={() => router.push('/(tabs)/check')}
         >
-          <Feather name="camera" size={24} color={colors.tint} />
-          <Text style={[styles.ctaText, { color: colors.tint }]}>Mulai Pengecekan Baru</Text>
+          <LinearGradient
+            colors={buttonGradient}
+            style={styles.ctaButton}
+          >
+            <Feather name="camera" size={24} color="#FFFFFF" />
+            <Text style={styles.ctaText}>Mulai Pengecekan Baru</Text>
+          </LinearGradient>
         </TouchableOpacity>
 
         {/* Bagian Fitur Unggulan */}
@@ -103,7 +111,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   container: {
-    paddingBottom: 40,
+    // paddingBottom sudah ditambahkan secara inline di ScrollView
   },
   header: {
     paddingHorizontal: 25,
@@ -118,7 +126,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 0, left: 0, right: 0, bottom: 0,
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    // Pola dot bisa ditambahkan di sini jika diperlukan
   },
   headerIcon: {
     position: 'absolute',
@@ -128,7 +135,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 32,
-    fontWeight: '800', // Dibuat lebih tebal
+    fontWeight: '800',
     color: '#FFFFFF',
   },
   subtitle: {
@@ -138,26 +145,28 @@ const styles = StyleSheet.create({
     maxWidth: '85%',
     fontWeight: '400',
   },
+  ctaButtonShadow: {
+    marginHorizontal: 20,
+    marginTop: -40,
+    borderRadius: 18,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 15,
+    elevation: 10,
+  },
   ctaButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     padding: 20,
     borderRadius: 18,
-    marginHorizontal: 20,
-    marginTop: -40,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.1,
-    shadowRadius: 15,
-    elevation: 10,
-    borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.05)'
   },
   ctaText: {
     fontSize: 18,
-    fontWeight: '600', // Sedikit lebih tipis dari bold
+    fontWeight: '600',
     marginLeft: 12,
+    color: '#FFFFFF',
   },
   featuresSection: {
     marginTop: 35,
