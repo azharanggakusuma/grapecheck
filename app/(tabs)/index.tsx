@@ -2,6 +2,7 @@ import { StyleSheet, Text, View, SafeAreaView, TouchableOpacity, StatusBar } fro
 import { Feather } from '@expo/vector-icons';
 import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/useColorScheme';
+import { Link } from 'expo-router';
 
 export default function HomeScreen() {
   const colorScheme = useColorScheme();
@@ -12,7 +13,9 @@ export default function HomeScreen() {
       <View style={styles.container}>
         <View style={styles.header}>
           <Text style={[styles.title, { color: colors.text }]}>GrapeCheck</Text>
-          <Feather name="settings" size={24} color={colors.text} />
+          <Link href="/settings">
+            <Feather name="settings" size={24} color={colors.text} />
+          </Link>
         </View>
 
         <View style={styles.content}>

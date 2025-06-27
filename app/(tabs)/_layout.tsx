@@ -59,7 +59,6 @@ export default function TabLayout() {
       screenOptions={({ route }) => ({
         tabBarActiveTintColor: colors.tabIconSelected,
         tabBarInactiveTintColor: colors.tabIconDefault,
-        headerShown: false,
         tabBarStyle: {
           backgroundColor: colors.background,
           borderTopWidth: 0,
@@ -72,11 +71,11 @@ export default function TabLayout() {
         ),
       })}
     >
-      <Tabs.Screen name="index" />
-      <Tabs.Screen name="check" />
-      <Tabs.Screen name="history" />
-      <Tabs.Screen name="notifications" />
-      <Tabs.Screen name="profile" />
+      <Tabs.Screen name="index" options={{ title: 'GrapeCheck' }} />
+      <Tabs.Screen name="check" options={{ title: 'Cek Kualitas' }} />
+      <Tabs.Screen name="history" options={{ title: 'Riwayat' }} />
+      <Tabs.Screen name="notifications" options={{ title: 'Notifikasi' }} />
+      <Tabs.Screen name="profile" options={{ title: 'Profil' }} />
     </Tabs>
   );
 }
