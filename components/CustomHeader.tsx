@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native'; // 1. Tambahkan import Image
+import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { Feather } from '@expo/vector-icons';
 import { useTheme } from './ThemeContext';
@@ -24,12 +24,20 @@ export function CustomHeader(props: any) {
           paddingTop: top,
           height: 60 + top,
           backgroundColor: colors.background,
-          borderBottomColor: theme === 'dark' ? '#2A2A2A' : '#EFEFEF',
-          borderBottomWidth: StyleSheet.hairlineWidth,
+          borderBottomWidth: 0,
+          // --- AWAL PERUBAHAN ---
+          shadowColor: "#000",
+          shadowOffset: {
+            width: 0,
+            height: 4, // Bayangan digeser 4px ke bawah (sebelumnya 2)
+          },
+          shadowOpacity: theme === 'dark' ? 0.25 : 0.05,
+          shadowRadius: 5,  // Bayangan sedikit lebih menyebar
+          elevation: 7,     // Elevasi untuk Android disesuaikan
+          // --- AKHIR PERUBAHAN ---
         }
       ]}>
         <View style={styles.leftContainer}>
-          {/* 2. Tambahkan logika untuk menampilkan ikon jika tidak bisa kembali */}
           {navigation.canGoBack() ? (
             <TouchableOpacity onPress={() => navigation.goBack()} style={styles.button}>
               <Feather name="arrow-left" size={24} color={colors.text} />
@@ -76,7 +84,6 @@ const styles = StyleSheet.create({
   button: {
     padding: 5,
   },
-  // 3. Tambahkan style untuk logo
   logo: {
     width: 36,
     height: 36,
