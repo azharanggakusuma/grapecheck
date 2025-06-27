@@ -1,20 +1,18 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Tabs } from 'expo-router';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
 import { Feather } from '@expo/vector-icons';
-import { View, StyleSheet, Animated } from 'react-native';
+import { View, StyleSheet, Animated, TouchableOpacity } from 'react-native';
 import { CustomHeader } from '@/components/CustomHeader';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+// Komponen TabBarIcon tetap sama
 function TabBarIcon({ name, color, focused }: {
   name: React.ComponentProps<typeof Feather>['name'];
   color: string;
   focused: boolean;
 }) {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
-  
   const animValue = useRef(new Animated.Value(focused ? 1 : 0)).current;
 
   useEffect(() => {
@@ -26,41 +24,62 @@ function TabBarIcon({ name, color, focused }: {
     }).start();
   }, [focused]);
 
-  const pillStyle = {
-    opacity: animValue,
-    transform: [{ scale: animValue }],
-  };
-
   const iconStyle = {
     transform: [
       {
         scale: animValue.interpolate({
           inputRange: [0, 1],
-          outputRange: [1, 1.15],
+          outputRange: [1, 1.2],
         }),
       },
     ],
   };
 
   return (
-    <View style={styles.iconWrapper}>
-      <Animated.View style={[
-        styles.pillBackground, 
-        { backgroundColor: colors.primaryLight + '33' },
-        pillStyle
-      ]}/>
-      <Animated.View style={iconStyle}>
-        <Feather size={24} name={name} color={color} />
-      </Animated.View>
-    </View>
+    <Animated.View style={iconStyle}>
+      <Feather size={24} name={name} color={color} />
+    </Animated.View>
   );
 }
 
-
-export default function TabLayout() {
+// Komponen TabBar Kustom dengan penyesuaian ukuran pill
+function CustomTabBar({ state, descriptors, navigation, insets }: any) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
-  const insets = useSafeAreaInsets();
+  
+  const [tabLayouts, setTabLayouts] = useState<any[]>([]);
+  
+  const translateX = useRef(new Animated.Value(0)).current;
+  
+  // --- AWAL PERUBAHAN: Menentukan ukuran pill ---
+  const PILL_WIDTH = 60; // Lebar pill yang lebih kecil
+  const PILL_HEIGHT = 38; // Tinggi pill yang lebih kecil
+  // --- AKHIR PERUBAHAN ---
+
+  useEffect(() => {
+    if (tabLayouts.length === state.routes.length) {
+      const currentTabLayout = tabLayouts[state.index];
+      if (currentTabLayout) {
+        // --- PERUBAHAN: Kalkulasi untuk memusatkan pill ---
+        const targetX = currentTabLayout.x + (currentTabLayout.width - PILL_WIDTH) / 2;
+        Animated.spring(translateX, {
+          toValue: targetX,
+          useNativeDriver: true,
+          bounciness: 8,
+          speed: 14,
+        }).start();
+      }
+    }
+  }, [state.index, tabLayouts]);
+
+  const handleLayout = (event: any, index: number) => {
+    const { x, width, height } = event.nativeEvent.layout;
+    setTabLayouts(prev => {
+      const newLayouts = [...prev];
+      newLayouts[index] = { x, width, height };
+      return newLayouts;
+    });
+  };
 
   const getIconName = (routeName: string): React.ComponentProps<typeof Feather>['name'] => {
     switch (routeName) {
@@ -74,33 +93,99 @@ export default function TabLayout() {
   };
 
   return (
-    <Tabs
-      screenOptions={({ route }) => ({
-        header: (props) => <CustomHeader {...props} />, 
-        tabBarActiveTintColor: colors.tint,
-        tabBarInactiveTintColor: colors.tabIconDefault,
-        tabBarShowLabel: false,
-        tabBarStyle: {
-          backgroundColor: colors.surface,
-          borderTopWidth: StyleSheet.hairlineWidth,
-          borderTopColor: colorScheme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
-          height: 65 + insets.bottom,
+    <View 
+      style={[
+        styles.tabBarContainer,
+        { 
+          height: 65 + insets.bottom, 
           paddingBottom: insets.bottom,
-          paddingTop: 10,
-        },
-        tabBarIcon: ({ color, focused }) => (
-          <TabBarIcon name={getIconName(route.name)} color={color} focused={focused} />
-        ),
+          backgroundColor: colors.surface,
+          borderTopColor: colorScheme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+        }
+      ]}
+    >
+      {tabLayouts.length > 0 && (
+         <Animated.View 
+           style={[
+             styles.slidingPill,
+             { 
+               // --- PERUBAHAN: Gunakan konstanta untuk ukuran ---
+               width: PILL_WIDTH,
+               height: PILL_HEIGHT,
+               backgroundColor: colors.primaryLight + '33',
+               transform: [{ translateX }]
+             }
+           ]}
+         />
+      )}
+
+      {state.routes.map((route: any, index: number) => {
+        const { options } = descriptors[route.key];
+        const isFocused = state.index === index;
+
+        const onPress = () => {
+          const event = navigation.emit({
+            type: 'tabPress',
+            target: route.key,
+            canPreventDefault: true,
+          });
+
+          if (!isFocused && !event.defaultPrevented) {
+            navigation.navigate(route.name, route.params);
+          }
+        };
+
+        const onLongPress = () => {
+          navigation.emit({
+            type: 'tabLongPress',
+            target: route.key,
+          });
+        };
+
+        return (
+          <TouchableOpacity
+            key={route.key}
+            accessibilityRole="button"
+            accessibilityState={isFocused ? { selected: true } : {}}
+            accessibilityLabel={options.tabBarAccessibilityLabel}
+            testID={options.tabBarTestID}
+            onPress={onPress}
+            onLongPress={onLongPress}
+            style={styles.tabItem}
+            onLayout={(event) => handleLayout(event, index)}
+          >
+            <TabBarIcon
+              name={getIconName(route.name)}
+              color={isFocused ? colors.tint : colors.tabIconDefault}
+              focused={isFocused}
+            />
+          </TouchableOpacity>
+        );
       })}
+    </View>
+  );
+}
+
+
+export default function TabLayout() {
+  const colorScheme = useColorScheme();
+  const colors = Colors[colorScheme ?? 'light'];
+  const insets = useSafeAreaInsets();
+
+  return (
+    <Tabs
+      tabBar={(props) => <CustomTabBar {...props} insets={insets} />}
+      screenOptions={{
+        header: (props) => <CustomHeader {...props} />, 
+        tabBarShowLabel: false,
+      }}
     >
       <Tabs.Screen 
         name="index" 
         options={{ 
-          // --- AWAL PERUBAHAN ---
-          title: 'Beranda', // Tetap berikan title untuk fallback
+          title: 'Beranda',
           headerTransparent: true, 
-          headerTitle: '', // Sembunyikan teks judul secara eksplisit
-          // --- AKHIR PERUBAHAN ---
+          headerTitle: '',
         }} 
       /> 
       <Tabs.Screen name="check" options={{ title: 'Klasifikasi' }} />
@@ -112,18 +197,28 @@ export default function TabLayout() {
 }
 
 const styles = StyleSheet.create({
-  iconWrapper: {
+  tabBarContainer: {
+    flexDirection: 'row',
+    borderTopWidth: StyleSheet.hairlineWidth,
+    paddingTop: 10,
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: -5 },
+  },
+  tabItem: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    width: 50,
-    height: 38,
   },
-  pillBackground: {
+  // --- AWAL PERUBAHAN: Penyesuaian gaya pill ---
+  slidingPill: {
     position: 'absolute',
-    top: 0,
-    bottom: 0,
-    left: 0,
-    right: 0,
-    borderRadius: 30,
-  }
+    // (Tinggi total content area (55) - tinggi pill (38)) / 2 + paddingTop (10)
+    top: (55 - 38) / 2 + 10, 
+    // border-radius setengah dari tinggi agar bentuknya sempurna
+    borderRadius: 19,
+  },
+  // --- AKHIR PERUBAHAN ---
 });
