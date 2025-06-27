@@ -7,7 +7,6 @@ import { View, StyleSheet, Animated } from 'react-native';
 import { CustomHeader } from '@/components/CustomHeader';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-// Komponen TabBarIcon tidak berubah
 function TabBarIcon({ name, color, focused }: {
   name: React.ComponentProps<typeof Feather>['name'];
   color: string;
@@ -77,7 +76,7 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={({ route }) => ({
-        header: (props) => <CustomHeader {...props} />, // CustomHeader tetap digunakan
+        header: (props) => <CustomHeader {...props} />, 
         tabBarActiveTintColor: colors.tint,
         tabBarInactiveTintColor: colors.tabIconDefault,
         tabBarShowLabel: false,
@@ -97,9 +96,10 @@ export default function TabLayout() {
       <Tabs.Screen 
         name="index" 
         options={{ 
-          title: 'Beranda',
           // --- AWAL PERUBAHAN ---
-          headerTransparent: true, // Membuat latar belakang header menjadi transparan
+          title: 'Beranda', // Tetap berikan title untuk fallback
+          headerTransparent: true, 
+          headerTitle: '', // Sembunyikan teks judul secara eksplisit
           // --- AKHIR PERUBAHAN ---
         }} 
       /> 
