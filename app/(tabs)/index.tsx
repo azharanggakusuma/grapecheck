@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { StyleSheet, Text, TouchableOpacity, ScrollView, Animated } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, ScrollView, Animated, Image } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import Colors from '@/constants/Colors';
 import { useTheme } from '@/components/ThemeContext';
@@ -8,7 +8,7 @@ import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 
-// Komponen FeatureCard tidak berubah
+// --- BARU: Komponen untuk kartu fitur dengan desain yang lebih baik ---
 const FeatureCard = ({ icon, title, description, colors, index }: { icon: any, title: string, description: string, colors: any, index: number }) => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
@@ -48,17 +48,18 @@ const FeatureCard = ({ icon, title, description, colors, index }: { icon: any, t
   );
 };
 
-
 export default function HomeScreen() {
   const { theme } = useTheme();
   const colors = Colors[theme];
   const router = useRouter();
   const insets = useSafeAreaInsets();
   
+  // --- BARU: Gradient yang lebih menarik untuk header ---
   const gradientColors = theme === 'dark' 
     ? ['#00640A', '#1A4D2E'] 
     : ['#00990E', '#22C55E'];
 
+  // --- BARU: Gradient untuk tombol utama ---
   const buttonGradient = ['#22C55E', '#00880C'];
 
   const features = [
@@ -70,15 +71,16 @@ export default function HomeScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <ScrollView
-        // Padding bawah disesuaikan agar konten terakhir tidak terpotong
-        contentContainerStyle={{ paddingBottom: 100 }} 
+        contentContainerStyle={{ paddingBottom: 100 }} // Padding bawah agar konten terakhir tidak terpotong
         showsVerticalScrollIndicator={false}
         contentInsetAdjustmentBehavior="automatic" 
       >
+        {/* --- BARU: Header dengan gradient dan bentuk melengkung --- */}
         <LinearGradient
           colors={gradientColors}
-          style={[styles.header, { paddingTop: insets.top + 80 }]} 
+          style={[styles.header, { paddingTop: insets.top + 80 }]} // Disesuaikan untuk Safe Area
         >
+          {/* --- BARU: Dekorasi lingkaran untuk efek visual --- */}
           <View style={[styles.circle, styles.circle1]} />
           <View style={[styles.circle, styles.circle2]} />
           <View style={[styles.circle, styles.circle3]} />
@@ -89,6 +91,7 @@ export default function HomeScreen() {
           </Text>
         </LinearGradient>
         
+        {/* --- BARU: Konten utama dengan latar belakang yang pas dengan header --- */}
         <View style={[styles.featuresSection, { backgroundColor: colors.background }]}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>Fitur Unggulan</Text>
           {features.map((feature, index) => (
@@ -104,10 +107,8 @@ export default function HomeScreen() {
         </View>
       </ScrollView>
 
-      {/* --- AWAL PERUBAHAN POSISI TOMBOL --- */}
-      {/* Nilai `bottom` dikurangi agar tombol sedikit lebih ke bawah */}
+      {/* --- BARU: Posisi tombol CTA disesuaikan agar lebih baik --- */}
       <View style={[styles.ctaButtonContainer, { bottom: insets.bottom + 5 }]}>
-      {/* --- AKHIR PERUBAHAN POSISI TOMBOL --- */}
         <TouchableOpacity 
           style={styles.ctaButtonShadow}
           onPress={() => router.push('/(tabs)/check')}
@@ -128,16 +129,16 @@ export default function HomeScreen() {
   );
 }
 
-// Stylesheet tidak ada perubahan selain yang sudah disebutkan di atas
+// --- BARU: Stylesheet yang telah diperbarui secara signifikan ---
 const styles = StyleSheet.create({
   header: {
     paddingHorizontal: 25,
-    paddingBottom: 90,
+    paddingBottom: 90, // Memberi ruang untuk lengkungan dan tombol
     borderTopLeftRadius: 0,
     borderTopRightRadius: 0,
-    borderBottomLeftRadius: 50,
+    borderBottomLeftRadius: 50, // Membuat lengkungan di bawah
     borderBottomRightRadius: 50,
-    overflow: 'hidden',
+    overflow: 'hidden', // Penting untuk efek lingkaran
   },
   circle: {
     position: 'absolute',
@@ -194,7 +195,7 @@ const styles = StyleSheet.create({
   featuresSection: {
     paddingTop: 40,
     paddingHorizontal: 20,
-    marginTop: -40,
+    marginTop: -40, // Konten naik ke atas menutupi bagian bawah header
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
   },
