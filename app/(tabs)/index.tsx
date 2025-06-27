@@ -1,14 +1,14 @@
 import React, { useEffect, useRef } from 'react';
-import { StyleSheet, Text, TouchableOpacity, ScrollView, Platform, Animated } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, ScrollView, Image, Animated } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import Colors from '@/constants/Colors';
 import { useTheme } from '@/components/ThemeContext';
 import { View } from '@/components/Themed';
 import { useRouter } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 
-// Komponen Kartu Fitur dengan Animasi
+// Komponen FeatureCard tidak berubah...
 const FeatureCard = ({ icon, title, description, colors, index }: { icon: any, title: string, description: string, colors: any, index: number }) => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
@@ -16,7 +16,7 @@ const FeatureCard = ({ icon, title, description, colors, index }: { icon: any, t
     Animated.timing(fadeAnim, {
       toValue: 1,
       duration: 500,
-      delay: index * 150, // Animasi muncul satu per satu
+      delay: index * 150,
       useNativeDriver: true,
     }).start();
   }, [fadeAnim, index]);
@@ -36,10 +36,12 @@ const FeatureCard = ({ icon, title, description, colors, index }: { icon: any, t
   );
 };
 
+
 export default function HomeScreen() {
   const { theme } = useTheme();
   const colors = Colors[theme];
   const router = useRouter();
+  const insets = useSafeAreaInsets(); // Untuk padding dari status bar
   
   const gradientColors = theme === 'dark' 
     ? ['#00880C', '#1A4D2E'] 
@@ -56,14 +58,19 @@ export default function HomeScreen() {
   ];
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-      <ScrollView contentContainerStyle={styles.container}>
-
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
+      <ScrollView
+        contentContainerStyle={{ paddingBottom: 40 }}
+        showsVerticalScrollIndicator={false}
+        // Pastikan konten bisa scroll di bawah status bar
+        contentInsetAdjustmentBehavior="automatic" 
+      >
         {/* Header Ilustratif */}
         <LinearGradient
           colors={gradientColors}
-          style={styles.header}
+          style={[styles.header, { paddingTop: insets.top + 70 }]} // Beri ruang untuk header transparan
         >
+          {/* Pola Latar Belakang Halus */}
           <View style={styles.headerPattern} />
           <Feather name="bar-chart-2" size={60} color="rgba(255, 255, 255, 0.3)" style={styles.headerIcon} />
           <Text style={styles.title}>GrapeCheck</Text>
@@ -71,56 +78,50 @@ export default function HomeScreen() {
             Solusi cerdas untuk kesehatan kebun anggur Anda.
           </Text>
         </LinearGradient>
+        
+        {/* Konten lainnya dibungkus agar bisa diberi margin negatif */}
+        <View style={{ backgroundColor: 'transparent', marginTop: -40 }}>
+            {/* Tombol Aksi Utama */}
+            <TouchableOpacity 
+              style={styles.ctaButtonShadow}
+              onPress={() => router.push('/(tabs)/check')}
+            >
+              <LinearGradient
+                colors={buttonGradient}
+                style={styles.ctaButton}
+              >
+                <Feather name="camera" size={24} color="#FFFFFF" />
+                <Text style={styles.ctaText}>Mulai Pengecekan Baru</Text>
+              </LinearGradient>
+            </TouchableOpacity>
 
-        {/* Tombol Aksi Utama */}
-        <TouchableOpacity 
-          style={styles.ctaButtonShadow}
-          onPress={() => router.push('/(tabs)/check')}
-        >
-          <LinearGradient
-            colors={buttonGradient}
-            style={styles.ctaButton}
-          >
-            <Feather name="camera" size={24} color="#FFFFFF" />
-            <Text style={styles.ctaText}>Mulai Pengecekan Baru</Text>
-          </LinearGradient>
-        </TouchableOpacity>
-
-        {/* Bagian Fitur Unggulan */}
-        <View style={styles.featuresSection}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>Fitur Unggulan</Text>
-          {features.map((feature, index) => (
-            <FeatureCard 
-              key={index}
-              index={index}
-              icon={feature.icon}
-              title={feature.title}
-              description={feature.description}
-              colors={colors}
-            />
-          ))}
+            {/* Bagian Fitur Unggulan */}
+            <View style={[styles.featuresSection, { backgroundColor: colors.background }]}>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>Fitur Unggulan</Text>
+              {features.map((feature, index) => (
+                <FeatureCard 
+                  key={index}
+                  index={index}
+                  icon={feature.icon}
+                  title={feature.title}
+                  description={feature.description}
+                  colors={colors}
+                />
+              ))}
+            </View>
         </View>
 
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-  },
-  container: {
-    paddingBottom: 40, // <-- KEMBALIKAN KE NILAI SEMULA
-  },
   header: {
     paddingHorizontal: 25,
-    paddingTop: 40,
-    paddingBottom: 70,
+    paddingBottom: 70, // Untuk efek lengkungan
     borderBottomLeftRadius: 40,
     borderBottomRightRadius: 40,
-    overflow: 'hidden',
-    position: 'relative',
   },
   headerPattern: {
     position: 'absolute',
@@ -147,7 +148,6 @@ const styles = StyleSheet.create({
   },
   ctaButtonShadow: {
     marginHorizontal: 20,
-    marginTop: -40,
     borderRadius: 18,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 8 },
@@ -169,8 +169,12 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   featuresSection: {
-    marginTop: 35,
+    paddingTop: 35,
     paddingHorizontal: 20,
+    borderTopLeftRadius: 40,
+    borderTopRightRadius: 40,
+    paddingTop: 35,
+    paddingBottom: 20, // Tambah padding bawah
   },
   sectionTitle: {
     fontSize: 22,

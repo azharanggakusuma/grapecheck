@@ -7,6 +7,7 @@ import { View, StyleSheet, Animated } from 'react-native';
 import { CustomHeader } from '@/components/CustomHeader';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+// Komponen TabBarIcon tidak berubah
 function TabBarIcon({ name, color, focused }: {
   name: React.ComponentProps<typeof Feather>['name'];
   color: string;
@@ -56,6 +57,7 @@ function TabBarIcon({ name, color, focused }: {
   );
 }
 
+
 export default function TabLayout() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
@@ -75,26 +77,32 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={({ route }) => ({
-        header: (props) => <CustomHeader {...props} />,
+        header: (props) => <CustomHeader {...props} />, // CustomHeader tetap digunakan
         tabBarActiveTintColor: colors.tint,
         tabBarInactiveTintColor: colors.tabIconDefault,
         tabBarShowLabel: false,
-        // --- AWAL PERUBAHAN ---
         tabBarStyle: {
           backgroundColor: colors.surface,
           borderTopWidth: StyleSheet.hairlineWidth,
           borderTopColor: colorScheme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
-          height: 65 + insets.bottom, // Tinggi ditambah untuk mengakomodasi padding
+          height: 65 + insets.bottom,
           paddingBottom: insets.bottom,
-          paddingTop: 15,
+          paddingTop: 10,
         },
-        // --- AKHIR PERUBAHAN ---
         tabBarIcon: ({ color, focused }) => (
           <TabBarIcon name={getIconName(route.name)} color={color} focused={focused} />
         ),
       })}
     >
-      <Tabs.Screen name="index" options={{ title: 'Beranda' }} /> 
+      <Tabs.Screen 
+        name="index" 
+        options={{ 
+          title: 'Beranda',
+          // --- AWAL PERUBAHAN ---
+          headerTransparent: true, // Membuat latar belakang header menjadi transparan
+          // --- AKHIR PERUBAHAN ---
+        }} 
+      /> 
       <Tabs.Screen name="check" options={{ title: 'Klasifikasi' }} />
       <Tabs.Screen name="history" options={{ title: 'Riwayat' }} />
       <Tabs.Screen name="notifications" options={{ title: 'Notifikasi' }} />
