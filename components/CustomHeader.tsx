@@ -16,7 +16,15 @@ export function CustomHeader(props: any) {
 
   return (
     <SafeAreaView style={{ backgroundColor: colors.background }}>
-      <View style={[styles.headerContainer, { paddingTop: StatusBar.currentHeight }]}>
+      <View style={[
+        styles.headerContainer, 
+        { 
+          paddingTop: StatusBar.currentHeight, 
+          backgroundColor: colors.background, // Pastikan background sesuai tema
+          borderBottomColor: theme === 'dark' ? '#2A2A2A' : '#EFEFEF', // Garis bawah tipis
+          borderBottomWidth: StyleSheet.hairlineWidth,
+        }
+      ]}>
         <View style={styles.leftContainer}>
           {navigation.canGoBack() && (
             <TouchableOpacity onPress={() => navigation.goBack()} style={styles.button}>
@@ -42,7 +50,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 15,
     height: 60 + (StatusBar.currentHeight || 0),
-    backgroundColor: 'transparent',
   },
   leftContainer: {
     flex: 1,
