@@ -1,13 +1,12 @@
-// app/(tabs)/check.tsx
-
-import React, { useState } from 'react';
-import { StyleSheet, TouchableOpacity, Image, ScrollView, ActivityIndicator, Dimensions } from 'react-native';
+import React, { useState, useCallback } from 'react'; // Import useCallback
+import { StyleSheet, TouchableOpacity, Image, ScrollView, ActivityIndicator, Dimensions, RefreshControl } from 'react-native'; // Import RefreshControl
 import { Text, View } from '@/components/Themed';
 import * as ImagePicker from 'expo-image-picker';
 import { Feather } from '@expo/vector-icons';
 import Colors from '@/constants/Colors';
 import { useTheme } from '@/components/ThemeContext';
-import { SafeAreaView } from 'react-native-safe-area-context'; // 1. Import SafeAreaView
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useGlobalRefresh } from '@/components/GlobalRefreshContext'; // Impor hook
 
 const { width } = Dimensions.get('window');
 const IMAGE_CONTAINER_SIZE = width * 0.8;
@@ -20,9 +19,21 @@ export default function CheckScreen() {
   const [prediction, setPrediction] = useState<{label: string; confidence: number} | null>(null);
   const { theme } = useTheme();
   const colors = Colors[theme];
+  const { refreshApp } = useGlobalRefresh(); // Dapatkan fungsi refresh
+  const [isRefreshing, setIsRefreshing] = useState(false); // State untuk refresh control
 
+  // Fungsi untuk handle pull-to-refresh
+  const handleRefresh = useCallback(() => {
+    setIsRefreshing(true);
+    refreshApp();
+    setTimeout(() => {
+      setIsRefreshing(false);
+      setImage(null);
+      setPrediction(null);
+    }, 1000);
+  }, [refreshApp]);
+  
   const pickImage = async (useCamera: boolean) => {
-    // ... (fungsi pickImage tetap sama)
     let result;
     const options: ImagePicker.ImagePickerOptions = {
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -47,7 +58,6 @@ export default function CheckScreen() {
   };
   
   const classifyImage = async (uri: string) => {
-    // ... (fungsi classifyImage tetap sama)
     setLoading(true);
     setTimeout(() => {
       const randomLabel = diseaseClasses[Math.floor(Math.random() * diseaseClasses.length)];
@@ -62,7 +72,6 @@ export default function CheckScreen() {
   };
 
   const renderResult = () => {
-    // ... (fungsi renderResult tetap sama)
     if (loading) {
       return <ActivityIndicator size="large" color={colors.tint} style={{ marginTop: 40 }} />;
     }
@@ -91,12 +100,19 @@ export default function CheckScreen() {
   };
 
   return (
-    // 2. Bungkus semua konten dengan SafeAreaView
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        {/* 3. Hapus backgroundColor dari View ini */}
+      <ScrollView 
+        contentContainerStyle={styles.scrollContainer}
+        refreshControl={ // Tambahkan prop ini
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={handleRefresh}
+            tintColor={colors.tint}
+            colors={[colors.tint]}
+          />
+        }
+      >
         <View style={styles.container}>
-
           <TouchableOpacity onPress={() => pickImage(false)} style={[styles.imageContainer, { borderColor: colors.primaryLight, backgroundColor: colors.surface }]}>
             {image ? (
               <Image source={{ uri: image }} style={styles.image} />
@@ -127,7 +143,6 @@ export default function CheckScreen() {
 }
 
 const styles = StyleSheet.create({
-  // 4. Tambahkan style untuk SafeAreaView
   safeArea: {
     flex: 1,
   },
@@ -135,7 +150,6 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   container: {
-    // Hapus flex: 1 dari sini agar tidak konflik
     alignItems: 'center',
     padding: 20,
   },
