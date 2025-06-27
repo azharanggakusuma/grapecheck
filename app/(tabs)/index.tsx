@@ -1,17 +1,15 @@
-import { StyleSheet, Text, View, SafeAreaView, TouchableOpacity, StatusBar } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import Colors from '@/constants/Colors';
-import { useColorScheme } from '@/components/useColorScheme';
+import { useTheme } from '@/components/ThemeContext';
+import { View } from '@/components/Themed';
 
 export default function HomeScreen() {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
+  const { theme } = useTheme();
+  const colors = Colors[theme];
 
   return (
-    // SafeAreaView tidak lagi dibutuhkan di sini karena sudah ditangani oleh CustomHeader
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* Hapus View header manual dari sini */}
-      
       <View style={styles.content}>
         <Text style={[styles.subtitle, { color: colors.text }]}>Analisis Kualitas Anggur dengan Mudah</Text>
         <Text style={[styles.description, { color: Colors.light.tabIconDefault }]}>
@@ -28,17 +26,11 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  // Hapus style safeArea
   container: {
     flex: 1,
     paddingHorizontal: 25,
     paddingVertical: 20,
-    justifyContent: 'space-between', // Untuk mengatur posisi tombol
-  },
-  // Hapus style header
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
+    justifyContent: 'space-between',
   },
   content: {
     flex: 1,
@@ -60,7 +52,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 20,
     borderRadius: 15,
-    marginBottom: 20, // Tambah margin bawah
+    marginBottom: 20,
   },
   ctaText: {
     color: '#fff',

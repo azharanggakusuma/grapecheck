@@ -55,6 +55,8 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: 'bold',
+    textAlign: 'center',
+    flex: 2,
   },
   button: {
     padding: 5,
