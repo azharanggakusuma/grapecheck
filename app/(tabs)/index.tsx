@@ -85,9 +85,9 @@ export default function HomeScreen() {
           <View style={[styles.circle, styles.circle2]} />
           <View style={[styles.circle, styles.circle3]} />
 
-          <Text style={styles.title}>GrapeCheck</Text>
+          <Text style={styles.title}>Klasifikasi Daun Anggur</Text>
           <Text style={styles.subtitle}>
-            Solusi cerdas untuk kesehatan kebun anggur Anda.
+            Deteksi dini penyakit daun anggur melalui analisis gambar untuk mendukung kesehatan tanaman Anda.
           </Text>
         </LinearGradient>
         
