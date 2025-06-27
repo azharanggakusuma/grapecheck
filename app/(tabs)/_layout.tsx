@@ -76,8 +76,8 @@ export default function TabLayout() {
         ),
       })}
     >
-      <Tabs.Screen name="index" options={{ title: 'GrapeCheck' }} />
-      <Tabs.Screen name="check" options={{ title: 'Cek Kualitas' }} />
+      <Tabs.Screen name="index" options={{ title: 'Beranda' }} />
+      <Tabs.Screen name="check" options={{ title: 'Klasifikasi' }} />
       <Tabs.Screen name="history" options={{ title: 'Riwayat' }} />
       <Tabs.Screen name="notifications" options={{ title: 'Notifikasi' }} />
       <Tabs.Screen name="profile" options={{ title: 'Profil' }} />

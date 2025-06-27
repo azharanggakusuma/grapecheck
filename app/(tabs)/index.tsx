@@ -3,23 +3,25 @@ import { Feather } from '@expo/vector-icons';
 import Colors from '@/constants/Colors';
 import { useTheme } from '@/components/ThemeContext';
 import { View } from '@/components/Themed';
+import { useRouter } from 'expo-router';
 
 export default function HomeScreen() {
   const { theme } = useTheme();
   const colors = Colors[theme];
+  const router = useRouter();
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.content}>
-        <Text style={[styles.subtitle, { color: colors.text }]}>Analisis Kualitas Anggur dengan Mudah</Text>
+        <Text style={[styles.subtitle, { color: colors.text }]}>Klasifikasi Penyakit Daun Anggur</Text>
         <Text style={[styles.description, { color: Colors.light.tabIconDefault }]}>
-          Dapatkan hasil instan tentang kematangan dan kualitas anggur langsung dari kamera Anda.
+          Deteksi penyakit pada daun anggur menggunakan model CNN MobileNetV2 untuk hasil yang cepat dan akurat.
         </Text>
       </View>
 
-      <TouchableOpacity style={[styles.ctaButton, { backgroundColor: colors.tint }]}>
+      <TouchableOpacity style={[styles.ctaButton, { backgroundColor: colors.tint }]} onPress={() => router.push('/(tabs)/check')}>
         <Feather name="camera" size={20} color="#fff" />
-        <Text style={styles.ctaText}>Mulai Pengecekan</Text>
+        <Text style={styles.ctaText}>Mulai Klasifikasi</Text>
       </TouchableOpacity>
     </View>
   );
