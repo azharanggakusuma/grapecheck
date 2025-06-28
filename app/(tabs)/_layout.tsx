@@ -199,7 +199,6 @@ function CustomTabBar({ state, descriptors, navigation, insets }: any) {
   );
 }
 
-
 export default function TabLayout() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
