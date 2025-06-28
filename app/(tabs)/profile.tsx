@@ -39,16 +39,10 @@ export default function ProfileScreen() {
           />
         }
       >
-        <View
-          style={[
-            styles.avatarContainer,
-            {
-              backgroundColor: colors.tint + '22',
-              shadowColor: colors.tint + '40',
-              borderColor: colors.tint,
-            },
-          ]}
-        >
+        <View style={[styles.avatarContainer, {
+          borderColor: colors.tint,
+          shadowColor: colors.tint + '40',
+        }]}>
           <Text style={[styles.avatarText, { color: colors.tint }]}>A</Text>
         </View>
 
@@ -72,7 +66,7 @@ export default function ProfileScreen() {
         <View style={[styles.divider, { backgroundColor: colors.border + '40' }]} />
 
         <TouchableOpacity
-          style={[styles.logoutButton, { borderColor: colors.error + 'AA' }]}
+          style={[styles.logoutButton, { borderColor: colors.error + 'AA', backgroundColor: colors.error + '10' }]}
           onPress={() => console.log('Logout')}
         >
           <Feather name="log-out" size={18} color={colors.error} />
@@ -92,7 +86,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 24,
     paddingTop: 48,
-    paddingBottom: 60,
+    paddingBottom: 80,
   },
   avatarContainer: {
     width: 110,
@@ -100,11 +94,12 @@ const styles = StyleSheet.create({
     borderRadius: 55,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 18,
+    marginBottom: 20,
     borderWidth: 2,
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
+    backgroundColor: '#ffffff10',
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 5 },
     elevation: 6,
   },
   avatarText: {
@@ -114,28 +109,28 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 22,
     fontWeight: '700',
-    marginBottom: 4,
+    marginBottom: 6,
   },
   email: {
     fontSize: 14,
-    opacity: 0.75,
+    opacity: 0.7,
     marginBottom: 28,
   },
   divider: {
     width: '100%',
     height: 1,
-    marginVertical: 20,
+    marginVertical: 24,
   },
   buttonGroup: {
     width: '100%',
-    gap: 14,
+    gap: 16,
   },
   actionButton: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 14,
     paddingHorizontal: 18,
-    borderRadius: 12,
+    borderRadius: 14,
     elevation: 1,
     gap: 12,
     shadowColor: '#00000005',
@@ -151,16 +146,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 14,
-    paddingHorizontal: 18,
-    borderRadius: 14,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    borderRadius: 16,
     borderWidth: 1.5,
-    marginTop: 12,
-    gap: 10,
+    marginTop: 20,
+    gap: 12,
     width: '100%',
   },
   logoutText: {
-    fontSize: 15,
-    fontWeight: '600',
+    fontSize: 16,
+    fontWeight: '700',
   },
 });
