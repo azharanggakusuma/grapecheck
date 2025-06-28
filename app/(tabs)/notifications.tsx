@@ -1,10 +1,15 @@
 import React, { useState, useCallback } from 'react';
-import { StyleSheet, ScrollView, RefreshControl } from 'react-native';
+import {
+  StyleSheet,
+  ScrollView,
+  RefreshControl,
+} from 'react-native';
 import { Text, View } from '@/components/Themed';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '@/components/ThemeContext';
 import Colors from '@/constants/Colors';
 import { useGlobalRefresh } from '@/components/GlobalRefreshContext';
+import { Feather } from '@expo/vector-icons';
 
 export default function NotificationsScreen() {
   const { theme } = useTheme();
@@ -33,8 +38,15 @@ export default function NotificationsScreen() {
           />
         }
       >
-        <Text style={styles.title}>Notifikasi</Text>
-        <Text style={{ marginTop: 8, color: colors.tabIconDefault }}>Tarik ke bawah untuk refresh</Text>
+        <View style={styles.emptyWrapper}>
+          <View style={[styles.iconWrapper, { backgroundColor: colors.surface + '80' }]}>
+            <Feather name="bell-off" size={40} color={colors.tabIconDefault} />
+          </View>
+          <Text style={[styles.title, { color: colors.text }]}>Tidak Ada Notifikasi</Text>
+          <Text style={[styles.subtitle, { color: colors.tabIconDefault }]}>
+            Anda akan melihat pembaruan terbaru di sini.
+          </Text>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -45,12 +57,33 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   container: {
-    flex: 1,
+    flexGrow: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 40,
+  },
+  emptyWrapper: {
+    alignItems: 'center',
+    marginTop: -60,
+  },
+  iconWrapper: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
   },
   title: {
-    fontSize: 20,
-    fontWeight: 'bold',
+    fontSize: 18,
+    fontWeight: '700',
+    marginBottom: 6,
+  },
+  subtitle: {
+    fontSize: 14,
+    textAlign: 'center',
+    opacity: 0.7,
+    maxWidth: 260,
   },
 });
