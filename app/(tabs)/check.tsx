@@ -1,28 +1,40 @@
-import React, { useState, useCallback } from 'react'; // Import useCallback
-import { StyleSheet, TouchableOpacity, Image, ScrollView, ActivityIndicator, Dimensions, RefreshControl } from 'react-native'; // Import RefreshControl
+import React, { useState, useCallback } from 'react';
+import {
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+  ScrollView,
+  ActivityIndicator,
+  Dimensions,
+  RefreshControl,
+} from 'react-native';
 import { Text, View } from '@/components/Themed';
 import * as ImagePicker from 'expo-image-picker';
 import { Feather } from '@expo/vector-icons';
 import Colors from '@/constants/Colors';
 import { useTheme } from '@/components/ThemeContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useGlobalRefresh } from '@/components/GlobalRefreshContext'; // Impor hook
+import { useGlobalRefresh } from '@/components/GlobalRefreshContext';
 
 const { width } = Dimensions.get('window');
-const IMAGE_CONTAINER_SIZE = width * 0.8;
+const IMAGE_CONTAINER_SIZE = width * 0.82;
 
-const diseaseClasses = ['Grape___Black_rot', 'Grape___Esca_(Black_Measles)', 'Grape___healthy', 'Grape___Leaf_blight_(Isariopsis_Leaf_Spot)'];
+const diseaseClasses = [
+  'Grape___Black_rot',
+  'Grape___Esca_(Black_Measles)',
+  'Grape___healthy',
+  'Grape___Leaf_blight_(Isariopsis_Leaf_Spot)',
+];
 
 export default function CheckScreen() {
   const [image, setImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [prediction, setPrediction] = useState<{label: string; confidence: number} | null>(null);
+  const [prediction, setPrediction] = useState<{ label: string; confidence: number } | null>(null);
   const { theme } = useTheme();
   const colors = Colors[theme];
-  const { refreshApp } = useGlobalRefresh(); // Dapatkan fungsi refresh
-  const [isRefreshing, setIsRefreshing] = useState(false); // State untuk refresh control
+  const { refreshApp } = useGlobalRefresh();
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Fungsi untuk handle pull-to-refresh
   const handleRefresh = useCallback(() => {
     setIsRefreshing(true);
     refreshApp();
@@ -32,7 +44,7 @@ export default function CheckScreen() {
       setPrediction(null);
     }, 1000);
   }, [refreshApp]);
-  
+
   const pickImage = async (useCamera: boolean) => {
     let result;
     const options: ImagePicker.ImagePickerOptions = {
@@ -56,13 +68,13 @@ export default function CheckScreen() {
       classifyImage(result.assets[0].uri);
     }
   };
-  
+
   const classifyImage = async (uri: string) => {
     setLoading(true);
     setTimeout(() => {
       const randomLabel = diseaseClasses[Math.floor(Math.random() * diseaseClasses.length)];
       const randomConfidence = Math.random() * (0.99 - 0.85) + 0.85;
-      
+
       setPrediction({
         label: randomLabel.replace(/___/g, ' - ').replace(/_/g, ' '),
         confidence: randomConfidence,
@@ -76,34 +88,35 @@ export default function CheckScreen() {
       return <ActivityIndicator size="large" color={colors.tint} style={{ marginTop: 40 }} />;
     }
     if (!prediction) return null;
+
     const isHealthy = prediction.label.toLowerCase().includes('healthy');
-    const resultColor = isHealthy ? colors.success : '#E74C3C';
+    const resultColor = isHealthy ? colors.success : '#ff5c5c';
+
     return (
       <View style={[styles.resultCard, { backgroundColor: colors.surface }]}>
-        <Text style={[styles.resultTitle, { color: colors.text }]}>Hasil Klasifikasi</Text>
+        <Text style={[styles.resultTitle, { color: colors.text }]}>Hasil Diagnosa</Text>
         <View style={[styles.predictionBox, { borderColor: resultColor }]}>
-            <Text style={[styles.predictionLabel, { color: resultColor }]}>{prediction.label}</Text>
+          <Text style={[styles.predictionLabel, { color: resultColor }]}>{prediction.label}</Text>
         </View>
         <Text style={[styles.confidenceText, { color: colors.tabIconDefault }]}>
-            Tingkat Kepercayaan: 
-            <Text style={{ fontWeight: 'bold', color: colors.text }}>
-                {` ${(prediction.confidence * 100).toFixed(2)}%`}
-            </Text>
+          Akurasi: <Text style={{ fontWeight: '600', color: colors.text }}>
+            {` ${(prediction.confidence * 100).toFixed(2)}%`}
+          </Text>
         </Text>
-        {isHealthy ? (
-            <Text style={styles.resultInfo}>Daun anggur Anda dalam kondisi baik.</Text>
-        ) : (
-            <Text style={styles.resultInfo}>Terdeteksi potensi penyakit. Segera lakukan penanganan lebih lanjut.</Text>
-        )}
+        <Text style={styles.resultInfo}>
+          {isHealthy
+            ? 'Tanaman tampak sehat.'
+            : 'Kemungkinan terdapat penyakit, segera lakukan tindakan pencegahan.'}
+        </Text>
       </View>
     );
   };
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-      <ScrollView 
+      <ScrollView
         contentContainerStyle={styles.scrollContainer}
-        refreshControl={ // Tambahkan prop ini
+        refreshControl={
           <RefreshControl
             refreshing={isRefreshing}
             onRefresh={handleRefresh}
@@ -113,26 +126,34 @@ export default function CheckScreen() {
         }
       >
         <View style={styles.container}>
-          <TouchableOpacity onPress={() => pickImage(false)} style={[styles.imageContainer, { borderColor: colors.primaryLight, backgroundColor: colors.surface }]}>
+          <TouchableOpacity
+            onPress={() => pickImage(false)}
+            style={[
+              styles.imageContainer,
+              { borderColor: colors.border, backgroundColor: colors.surface },
+            ]}
+          >
             {image ? (
               <Image source={{ uri: image }} style={styles.image} />
             ) : (
               <View style={{ alignItems: 'center' }}>
-                <Feather name="upload-cloud" size={40} color={colors.tabIconDefault} />
-                <Text style={[styles.placeholderText, { color: colors.tabIconDefault }]}>Ketuk untuk mengunggah gambar</Text>
+                <Feather name="upload-cloud" size={36} color={colors.tabIconDefault} />
+                <Text style={[styles.placeholderText, { color: colors.tabIconDefault }]}>
+                  Ketuk untuk unggah gambar
+                </Text>
               </View>
             )}
           </TouchableOpacity>
 
           <View style={styles.buttonRow}>
-              <TouchableOpacity style={styles.actionButton} onPress={() => pickImage(false)}>
-                  <Feather name="folder-plus" size={24} color={colors.tint} />
-                  <Text style={[styles.actionButtonText, {color: colors.tint}]}>Galeri</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.actionButton} onPress={() => pickImage(true)}>
-                  <Feather name="camera" size={24} color={colors.tint} />
-                  <Text style={[styles.actionButtonText, {color: colors.tint}]}>Kamera</Text>
-              </TouchableOpacity>
+            <TouchableOpacity style={styles.actionButton} onPress={() => pickImage(false)}>
+              <Feather name="image" size={20} color={colors.tint} />
+              <Text style={[styles.actionButtonText, { color: colors.tint }]}>Galeri</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.actionButton} onPress={() => pickImage(true)}>
+              <Feather name="camera" size={20} color={colors.tint} />
+              <Text style={[styles.actionButtonText, { color: colors.tint }]}>Kamera</Text>
+            </TouchableOpacity>
           </View>
 
           {renderResult()}
@@ -148,86 +169,97 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     flexGrow: 1,
+    paddingBottom: 40,
   },
   container: {
     alignItems: 'center',
-    padding: 20,
+    paddingHorizontal: 20,
+    paddingTop: 24,
   },
   imageContainer: {
     width: IMAGE_CONTAINER_SIZE,
     height: IMAGE_CONTAINER_SIZE,
-    borderRadius: 20,
-    borderWidth: 2,
+    borderRadius: 18,
+    borderWidth: 1.5,
     borderStyle: 'dashed',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 24,
+    marginTop: 10,
     overflow: 'hidden',
-    marginTop: 20,
   },
   image: {
     width: '100%',
     height: '100%',
+    resizeMode: 'cover',
   },
   placeholderText: {
     marginTop: 10,
-    fontSize: 16,
+    fontSize: 15,
+    fontWeight: '400',
+    opacity: 0.6,
   },
   buttonRow: {
     flexDirection: 'row',
-    justifyContent: 'space-evenly',
+    justifyContent: 'space-between',
     width: '100%',
-    marginBottom: 20,
+    marginBottom: 24,
   },
   actionButton: {
-      alignItems: 'center',
-      padding: 10,
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 12,
+    marginHorizontal: 6,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 5,
   },
   actionButtonText: {
-      marginTop: 5,
-      fontWeight: '600',
+    fontSize: 14,
+    fontWeight: '600',
+    marginTop: 6,
   },
   resultCard: {
-    marginTop: 20,
     padding: 20,
-    borderRadius: 15,
+    borderRadius: 16,
     width: '100%',
     alignItems: 'center',
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.05,
-    shadowRadius: 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
     elevation: 3,
   },
   resultTitle: {
     fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 15,
+    fontWeight: '700',
+    marginBottom: 16,
   },
   predictionBox: {
-    borderWidth: 1,
+    borderWidth: 1.4,
     borderRadius: 10,
     paddingVertical: 10,
-    paddingHorizontal: 15,
-    marginBottom: 15,
+    paddingHorizontal: 14,
+    marginBottom: 14,
     width: '100%',
   },
   predictionLabel: {
-    fontSize: 20,
-    fontWeight: 'bold',
+    fontSize: 18,
+    fontWeight: '700',
     textAlign: 'center',
   },
   confidenceText: {
-      fontSize: 16,
-      marginBottom: 15,
+    fontSize: 15,
+    marginBottom: 10,
   },
   resultInfo: {
-      fontSize: 14,
-      textAlign: 'center',
-      lineHeight: 20,
-      opacity: 0.7,
-  }
+    fontSize: 14,
+    textAlign: 'center',
+    lineHeight: 20,
+    opacity: 0.75,
+  },
 });
