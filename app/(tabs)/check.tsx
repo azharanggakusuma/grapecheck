@@ -126,8 +126,11 @@ const ResultCard = ({ prediction, onReset, colors, theme }: any) => {
     ? "healthy"
     : "disease";
   const { title, desc, icon, color } = statusConfig[currentStatus];
-  
-  const buttonGradient = theme === "dark" ? ["#00B86B", "#007A47"] : ["#4ADE80", "#16A34A"];
+
+  const buttonGradient =
+    theme === "dark"
+      ? [colors.primaryLight, colors.tint]
+      : [colors.primaryLight, colors.tint];
 
   return (
     <Animated.View
@@ -167,13 +170,17 @@ const ResultCard = ({ prediction, onReset, colors, theme }: any) => {
         height={8}
         style={styles.progressBar}
       />
-      <Text style={[styles.resultInfo, { color: colors.tabIconDefault, textAlign: 'left' }]}>
+      <Text
+        style={[
+          styles.resultInfo,
+          { color: colors.tabIconDefault, textAlign: "left" },
+        ]}
+      >
         {desc}
       </Text>
 
       <View style={[styles.resultActions, { backgroundColor: "transparent" }]}>
         {!isNegative && (
-          // --- AWAL PERUBAHAN ---
           <TouchableOpacity
             style={styles.detailsButton}
             onPress={() =>
@@ -192,7 +199,6 @@ const ResultCard = ({ prediction, onReset, colors, theme }: any) => {
               <Text style={styles.detailsButtonText}>Lihat Detail</Text>
             </LinearGradient>
           </TouchableOpacity>
-          // --- AKHIR PERUBAHAN ---
         )}
         <TouchableOpacity
           style={[styles.resetButton, { backgroundColor: colors.border }]}
@@ -243,8 +249,11 @@ export default function CheckScreen() {
   const colors = Colors[theme];
   const { refreshApp } = useGlobalRefresh();
   const [isRefreshing, setIsRefreshing] = useState(false);
-  
-  const buttonGradient = theme === 'dark' ? [colors.primaryLight, colors.tint] : [colors.primaryLight, colors.tint];
+
+  const buttonGradient =
+    theme === "dark"
+      ? [colors.primaryLight, colors.tint]
+      : [colors.primaryLight, colors.tint];
 
   const handleRefresh = useCallback(() => {
     setIsRefreshing(true);
@@ -407,23 +416,21 @@ export default function CheckScreen() {
                 <LoadingOverlay visible={loading} colors={colors} />
               </TouchableOpacity>
 
-              {/* --- AWAL PERUBAHAN --- */}
               <TouchableOpacity
                 style={styles.cameraButton}
                 onPress={() => pickImage(true)}
                 disabled={loading}
               >
                 <LinearGradient
-                    colors={buttonGradient}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                    style={styles.gradientButton}
+                  colors={buttonGradient}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.gradientButton}
                 >
-                    <Feather name="camera" size={20} color="#FFFFFF" />
-                    <Text style={styles.cameraButtonText}>Ambil Gambar</Text>
+                  <Feather name="camera" size={20} color="#FFFFFF" />
+                  <Text style={styles.cameraButtonText}>Ambil Gambar</Text>
                 </LinearGradient>
               </TouchableOpacity>
-              {/* --- AKHIR PERUBAHAN --- */}
 
               {error && (
                 <ErrorCard
@@ -480,7 +487,6 @@ const styles = StyleSheet.create({
   },
   placeholderText: { fontSize: 16, fontWeight: "600" },
   placeholderSubtext: { fontSize: 14, opacity: 0.7 },
-  // --- AWAL PERUBAHAN ---
   cameraButton: {
     width: "100%",
     borderRadius: 16,
@@ -499,11 +505,10 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     gap: 10,
   },
-  // --- AKHIR PERUBAHAN ---
   cameraButtonText: { color: "#FFFFFF", fontSize: 16, fontWeight: "bold" },
   overlayContainer: { justifyContent: "center", alignItems: "center" },
   loadingText: { marginTop: 16, fontSize: 16, fontWeight: "600" },
-  
+
   // --- Tampilan Hasil ---
   resultCard: {
     padding: 20,
@@ -513,7 +518,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 10,
     elevation: 5,
-    alignItems: 'stretch',
+    alignItems: "stretch",
   },
   resultHeader: {
     flexDirection: "row",
@@ -538,15 +543,13 @@ const styles = StyleSheet.create({
     fontSize: 15,
     lineHeight: 22,
     marginBottom: 24,
-    textAlign: 'left',
+    textAlign: "left",
   },
   resultActions: { gap: 12, width: "100%", backgroundColor: "transparent" },
-  // --- AWAL PERUBAHAN ---
   detailsButton: {
     borderRadius: 16,
-    overflow: 'hidden', // Untuk memastikan gradasi tidak keluar dari border radius
+    overflow: "hidden",
   },
-  // --- AKHIR PERUBAHAN ---
   detailsButtonText: { fontSize: 16, fontWeight: "bold", color: "#FFFFFF" },
   resetButton: {
     alignItems: "center",
