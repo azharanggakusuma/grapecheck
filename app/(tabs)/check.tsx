@@ -11,7 +11,6 @@ import {
   Animated,
   Platform,
   RefreshControl,
-  ActivityIndicator,
 } from "react-native";
 import { Text, View } from "@/components/Themed";
 import * as ImagePicker from "expo-image-picker";
@@ -30,9 +29,7 @@ const BACKEND_URL = "http://192.168.123.61:5000/classify";
 const { width } = Dimensions.get("window");
 const IMAGE_SIZE = width * 0.85;
 
-/**
- * Komponen untuk menampilkan overlay loading saat gambar sedang dianalisis.
- */
+// Komponen Overlay Loading
 const LoadingOverlay = ({
   visible,
   colors,
@@ -73,9 +70,7 @@ const LoadingOverlay = ({
   );
 };
 
-/**
- * Komponen untuk menampilkan kartu hasil klasifikasi.
- */
+// Kartu Hasil Klasifikasi
 const ResultCard = ({ prediction, onReset, colors }: any) => {
   const slideAnim = useRef(new Animated.Value(50)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
@@ -169,14 +164,10 @@ const ResultCard = ({ prediction, onReset, colors }: any) => {
         height={8}
         style={styles.progressBar}
       />
-      <Text
-        style={[
-          styles.resultInfo,
-          { color: colors.tabIconDefault, textAlign: "left" },
-        ]}
-      >
+      <Text style={[styles.resultInfo, { color: colors.tabIconDefault, textAlign: 'left' }]}>
         {desc}
       </Text>
+
       <View style={[styles.resultActions, { backgroundColor: "transparent" }]}>
         {!isNegative && (
           <TouchableOpacity
@@ -204,9 +195,7 @@ const ResultCard = ({ prediction, onReset, colors }: any) => {
   );
 };
 
-/**
- * Komponen untuk menampilkan kartu error.
- */
+// Kartu Error
 const ErrorCard = ({
   message,
   onRetry,
@@ -215,15 +204,19 @@ const ErrorCard = ({
   message: string;
   onRetry: () => void;
   colors: any;
-}) => (
-  <View style={[styles.errorCard, { backgroundColor: colors.error + "20" }]}>
-    <Feather name="alert-triangle" size={20} color={colors.error} />
-    <Text style={[styles.errorText, { color: colors.error }]}>{message}</Text>
-    <TouchableOpacity onPress={onRetry}>
-      <Text style={[styles.retryText, { color: colors.tint }]}>Coba Lagi</Text>
-    </TouchableOpacity>
-  </View>
-);
+}) => {
+  return (
+    <View style={[styles.errorCard, { backgroundColor: colors.error + "20" }]}>
+      <Feather name="alert-triangle" size={20} color={colors.error} />
+      <Text style={[styles.errorText, { color: colors.error }]}>{message}</Text>
+      <TouchableOpacity onPress={onRetry}>
+        <Text style={[styles.retryText, { color: colors.tint }]}>
+          Coba Lagi
+        </Text>
+      </TouchableOpacity>
+    </View>
+  );
+};
 
 export default function CheckScreen() {
   const [image, setImage] = useState<string | null>(null);
@@ -276,9 +269,21 @@ export default function CheckScreen() {
         : await ImagePicker.launchImageLibraryAsync(options);
 
       if (!result.canceled) {
+        // --- AWAL PERUBAHAN ---
+        // Memeriksa tipe file yang dipilih
+        const asset = result.assets[0];
+        if (asset.mimeType && !asset.mimeType.startsWith("image/")) {
+          Alert.alert(
+            "File Tidak Sesuai",
+            "Harap pilih file gambar (contoh: JPG, PNG)."
+          );
+          return;
+        }
+        // --- AKHIR PERUBAHAN ---
+
         handleReset();
-        setImage(result.assets[0].uri);
-        classifyImage(result.assets[0].uri);
+        setImage(asset.uri);
+        classifyImage(asset.uri);
       }
     } catch (e) {
       Alert.alert("Error", "Gagal membuka gambar.");
@@ -472,7 +477,7 @@ const styles = StyleSheet.create({
   cameraButtonText: { color: "#FFFFFF", fontSize: 16, fontWeight: "bold" },
   overlayContainer: { justifyContent: "center", alignItems: "center" },
   loadingText: { marginTop: 16, fontSize: 16, fontWeight: "600" },
-
+  
   // --- Tampilan Hasil ---
   resultCard: {
     padding: 20,
@@ -482,7 +487,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 10,
     elevation: 5,
-    alignItems: "stretch",
+    alignItems: 'stretch', 
   },
   resultHeader: {
     flexDirection: "row",
@@ -507,7 +512,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     lineHeight: 22,
     marginBottom: 24,
-    textAlign: "left",
+    textAlign: 'left',
   },
   resultActions: { gap: 12, width: "100%", backgroundColor: "transparent" },
   detailsButton: {
