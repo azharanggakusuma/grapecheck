@@ -37,7 +37,7 @@ export default function HistoryScreen() {
       </RNView>
       <Text style={[styles.emptyText, { color: colors.text }]}>Belum Ada Riwayat</Text>
       <Text style={[styles.subText, { color: colors.tabIconDefault }]}>
-        Hasil pengecekan akan muncul di sini setelah Anda mengunggah gambar.
+        Hasil analisis akan muncul di sini setelah Anda mengunggah gambar.
       </Text>
     </View>
   );
@@ -65,9 +65,9 @@ export default function HistoryScreen() {
           />
         }
       >
-        <Text style={[styles.title, { color: colors.text }]}>Riwayat Pengecekan</Text>
+        <Text style={[styles.title, { color: colors.text }]}>Riwayat Analisis</Text>
         <Text style={[styles.subtitle, { color: colors.tabIconDefault }]}>
-          Tarik ke bawah untuk menyegarkan halaman.
+          Lihat hasil analisis sebelumnya di sini.
         </Text>
 
         {historyData.length === 0 ? (
