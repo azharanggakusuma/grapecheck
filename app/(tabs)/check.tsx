@@ -7,11 +7,11 @@ import {
   Image,
   ScrollView,
   Dimensions,
-  RefreshControl,
   Alert,
   Animated,
   Easing,
   Platform,
+  RefreshControl,
 } from 'react-native';
 import { Text, View } from '@/components/Themed';
 import * as ImagePicker from 'expo-image-picker';
@@ -19,23 +19,23 @@ import { Feather } from '@expo/vector-icons';
 import Colors from '@/constants/Colors';
 import { useTheme } from '@/components/ThemeContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useGlobalRefresh } from '@/components/GlobalRefreshContext';
 import { BlurView } from 'expo-blur';
 import * as Progress from 'react-native-progress';
+import { useGlobalRefresh } from '@/components/GlobalRefreshContext';
 
 // --- PENTING: GANTI DENGAN ALAMAT IP KOMPUTER ANDA ---
 const BACKEND_URL = 'http://192.168.123.61:5000/classify';
 // ----------------------------------------------------
 
 const { width } = Dimensions.get('window');
-const IMAGE_SIZE = width * 0.8;
+const IMAGE_SIZE = width * 0.85;
 
-// Komponen Overlay Loading
+// Komponen Overlay Loading (Dari Desain "Sempurna")
 const LoadingOverlay = ({ visible, colors }: { visible: boolean; colors: any }) => {
-  const opacityAnim = useRef(new Animated.Value(0)).current;
+  const anim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    Animated.timing(opacityAnim, {
+    Animated.timing(anim, {
       toValue: visible ? 1 : 0,
       duration: 300,
       useNativeDriver: true,
@@ -45,15 +45,15 @@ const LoadingOverlay = ({ visible, colors }: { visible: boolean; colors: any }) 
   if (!visible) return null;
 
   return (
-    <Animated.View style={[StyleSheet.absoluteFill, styles.overlayContainer, { opacity: opacityAnim }]}>
-      <BlurView intensity={Platform.OS === 'ios' ? 20 : 80} tint={colors.blurTint} style={StyleSheet.absoluteFill} />
+    <Animated.View style={[StyleSheet.absoluteFill, styles.overlayContainer, { opacity: anim }]}>
+      <BlurView intensity={Platform.OS === 'ios' ? 25 : 80} tint={colors.blurTint} style={StyleSheet.absoluteFill} />
       <Progress.CircleSnail color={colors.tint} size={60} thickness={4} />
       <Text style={[styles.loadingText, { color: colors.text }]}>Menganalisis...</Text>
     </Animated.View>
   );
 };
 
-// Kartu Hasil Klasifikasi
+// Kartu Hasil Klasifikasi (Sesuai yang Anda Inginkan)
 const ResultCard = ({ prediction, onReset, colors }: any) => {
   const slideAnim = useRef(new Animated.Value(50)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
@@ -215,41 +215,37 @@ export default function CheckScreen() {
         refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} tintColor={colors.tint} />}
       >
         <View style={styles.container}>
-          <Text style={[styles.heading, { color: colors.text }]}>Klasifikasi Daun</Text>
-          <Text style={[styles.subtext, { color: colors.tabIconDefault }]}>
-            Unggah gambar daun anggur untuk mendeteksi kesehatannya.
-          </Text>
-
           {prediction ? (
             <ResultCard prediction={prediction} onReset={handleReset} colors={colors} />
           ) : (
             <View style={{ width: '100%', alignItems: 'center' }}>
-              <TouchableOpacity
-                disabled={loading}
-                onPress={() => pickImage(false)}
-                style={[styles.imageContainer, { borderColor: colors.border, backgroundColor: colors.surface }]}
-              >
-                {image ? (
-                  <Image source={{ uri: image }} style={styles.image} />
-                ) : (
-                  <View style={[styles.placeholderContainer, { backgroundColor: 'transparent' }]}>
-                    <Feather name="image" size={40} color={colors.tabIconDefault} />
-                    <Text style={[styles.placeholderText, { color: colors.tabIconDefault }]}>Pilih Gambar dari Galeri</Text>
-                  </View>
-                )}
-                <LoadingOverlay visible={loading} colors={colors} />
-              </TouchableOpacity>
-              
-              <TouchableOpacity
-                style={[styles.cameraButton, { backgroundColor: colors.tint }]}
-                onPress={() => pickImage(true)}
-                disabled={loading}
-              >
-                <Feather name="camera" size={20} color="#FFFFFF" />
-                <Text style={styles.cameraButtonText}>Gunakan Kamera</Text>
-              </TouchableOpacity>
+                <Text style={[styles.heading, { color: colors.text }]}>Analisis Daun Anggur</Text>
+                <Text style={[styles.subtext, { color: colors.tabIconDefault }]}>
+                    Unggah atau ambil gambar daun anggur untuk dideteksi oleh AI.
+                </Text>
+                <TouchableOpacity
+                    disabled={loading}
+                    onPress={() => pickImage(false)}
+                    style={[styles.imageContainer, { borderColor: colors.border, backgroundColor: colors.surface }]}
+                >
+                    {image ? (
+                    <Image source={{ uri: image }} style={styles.image} />
+                    ) : (
+                    <View style={styles.placeholderContainer}>
+                        <Feather name="upload-cloud" size={48} color={colors.tabIconDefault} />
+                        <Text style={[styles.placeholderText, { color: colors.tabIconDefault }]}>Ketuk untuk Memilih Gambar</Text>
+                        <Text style={[styles.placeholderSubtext, { color: colors.tabIconDefault }]}>atau gunakan kamera</Text>
+                    </View>
+                    )}
+                    <LoadingOverlay visible={loading} colors={colors} />
+                </TouchableOpacity>
+                
+                <TouchableOpacity style={[styles.cameraButton, { backgroundColor: colors.tint }]} onPress={() => pickImage(true)} disabled={loading}>
+                    <Feather name="camera" size={20} color="#FFFFFF" />
+                    <Text style={styles.cameraButtonText}>Ambil Gambar</Text>
+                </TouchableOpacity>
 
-              {error && <ErrorCard message={error} onRetry={() => image ? classifyImage(image) : handleReset()} colors={colors} />}
+                {error && <ErrorCard message={error} onRetry={() => image ? classifyImage(image) : handleReset()} colors={colors} />}
             </View>
           )}
         </View>
@@ -258,33 +254,40 @@ export default function CheckScreen() {
   );
 }
 
+// StyleSheet Gabungan
 const styles = StyleSheet.create({
+  // --- Tampilan Upload (Desain "Sempurna" yang Anda sukai) ---
   safeArea: { flex: 1 },
   scrollContainer: { flexGrow: 1, justifyContent: 'center' },
   container: { alignItems: 'center', padding: 20 },
-  heading: { fontSize: 32, fontWeight: 'bold', marginBottom: 8 },
-  subtext: { fontSize: 16, textAlign: 'center', marginBottom: 30, lineHeight: 24, maxWidth: '90%' },
-  imageContainer: { width: IMAGE_SIZE, height: IMAGE_SIZE, borderRadius: 24, borderWidth: 2, borderStyle: 'dashed', justifyContent: 'center', alignItems: 'center', overflow: 'hidden', marginBottom: 20 },
+  heading: { fontSize: 26, fontWeight: 'bold', marginBottom: 8, textAlign: 'center' },
+  subtext: { fontSize: 16, textAlign: 'center', marginBottom: 24, lineHeight: 24, maxWidth: '90%' },
+  imageContainer: { width: IMAGE_SIZE, height: IMAGE_SIZE, borderRadius: 24, borderWidth: 2, borderStyle: 'dashed', justifyContent: 'center', alignItems: 'center', overflow: 'hidden', marginBottom: 16, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 10 },
   image: { width: '100%', height: '100%', resizeMode: 'cover' },
-  placeholderContainer: { alignItems: 'center', gap: 12 },
-  placeholderText: { fontSize: 16, fontWeight: '500' },
-  cameraButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 18, paddingHorizontal: 24, borderRadius: 18, width: '100%', gap: 10 },
+  placeholderContainer: { alignItems: 'center', gap: 12, backgroundColor: 'transparent' },
+  placeholderText: { fontSize: 16, fontWeight: '600' },
+  placeholderSubtext: { fontSize: 14, opacity: 0.7 },
+  cameraButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 16, paddingHorizontal: 24, borderRadius: 16, width: '100%', gap: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 5, elevation: 5 },
   cameraButtonText: { color: '#FFFFFF', fontSize: 16, fontWeight: 'bold' },
   overlayContainer: { justifyContent: 'center', alignItems: 'center' },
   loadingText: { marginTop: 16, fontSize: 16, fontWeight: '600' },
-  resultCard: { padding: 20, borderRadius: 24, width: '100%', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 10, elevation: 5 },
-  resultHeader: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 16 },
+
+  // --- Tampilan Hasil (Sesuai kode yang Anda berikan) ---
+  resultCard: { padding: 20, borderRadius: 24, width: '100%', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 10, elevation: 5, alignItems: 'center' },
+  resultHeader: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 16, backgroundColor: 'transparent' },
   resultTitle: { fontSize: 22, fontWeight: 'bold' },
-  confidenceWrapper: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8, backgroundColor: 'transparent' },
+  confidenceWrapper: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8, backgroundColor: 'transparent', width: '100%' },
   confidenceLabel: { fontSize: 14, fontWeight: '500' },
   confidenceValue: { fontSize: 20, fontWeight: 'bold' },
-  progressBar: { borderRadius: 4, marginBottom: 16 },
-  resultInfo: { fontSize: 15, lineHeight: 22, marginBottom: 24 },
-  resultActions: { gap: 12 },
+  progressBar: { borderRadius: 4, marginBottom: 16, width: '100%' },
+  resultInfo: { fontSize: 15, lineHeight: 22, marginBottom: 24, textAlign: 'center' },
+  resultActions: { gap: 12, width: '100%', backgroundColor: 'transparent' },
   detailsButton: { alignItems: 'center', justifyContent: 'center', paddingVertical: 16, borderRadius: 16 },
   detailsButtonText: { fontSize: 16, fontWeight: 'bold', color: '#FFFFFF' },
   resetButton: { alignItems: 'center', justifyContent: 'center', paddingVertical: 16, borderRadius: 16 },
   resetButtonText: { fontSize: 16, fontWeight: 'bold' },
+  
+  // --- Kartu Error ---
   errorCard: { flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 12, padding: 16, marginTop: 20, width: '100%' },
   errorText: { flex: 1, fontSize: 14, fontWeight: '600' },
   retryText: { fontSize: 14, fontWeight: 'bold' },
