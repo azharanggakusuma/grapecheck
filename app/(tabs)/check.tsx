@@ -98,9 +98,9 @@ export default function CheckScreen() {
     const resultColor = isHealthy ? colors.success : colors.error;
 
     return (
-      <View style={[styles.resultCard, { backgroundColor: colors.surface }]}>
+      <View style={[styles.resultCard, { backgroundColor: colors.surface, shadowColor: colors.text + '20' }]}>
         <Text style={[styles.resultTitle, { color: colors.text }]}>Hasil Diagnosa</Text>
-        <View style={[styles.predictionBox, { borderColor: resultColor }]}>
+        <View style={[styles.predictionBox, { borderColor: resultColor, backgroundColor: colors.background }]}>
           <Text style={[styles.predictionLabel, { color: resultColor }]}>{prediction.label}</Text>
         </View>
         <Text style={[styles.confidenceText, { color: colors.tabIconDefault }]}>
@@ -109,13 +109,16 @@ export default function CheckScreen() {
             {` ${(prediction.confidence * 100).toFixed(2)}%`}
           </Text>
         </Text>
-        <Text style={styles.resultInfo}>
+        <Text style={[styles.resultInfo, { color: colors.text }]}>
           {isHealthy
             ? '✅ Tanaman tampak sehat.'
             : '⚠️ Kemungkinan penyakit terdeteksi. Perlu tindakan lanjutan.'}
         </Text>
 
-        <TouchableOpacity style={[styles.resetButton, { backgroundColor: colors.background }]} onPress={handleReset}>
+        <TouchableOpacity
+          style={[styles.resetButton, { backgroundColor: colors.background, borderColor: colors.border }]}
+          onPress={handleReset}
+        >
           <Feather name="rotate-ccw" size={18} color={colors.tint} />
           <Text style={[styles.resetButtonText, { color: colors.tint }]}>Reset</Text>
         </TouchableOpacity>
@@ -146,7 +149,10 @@ export default function CheckScreen() {
             onPress={() => pickImage(false)}
             style={[
               styles.imageContainer,
-              { borderColor: colors.border, backgroundColor: colors.surface },
+              {
+                borderColor: colors.border,
+                backgroundColor: colors.surface,
+              },
             ]}
           >
             {image ? (
@@ -162,11 +168,11 @@ export default function CheckScreen() {
           </TouchableOpacity>
 
           <View style={styles.buttonRow}>
-            <TouchableOpacity style={styles.actionButton} onPress={() => pickImage(false)}>
+            <TouchableOpacity style={[styles.actionButton, { backgroundColor: colors.surface }]} onPress={() => pickImage(false)}>
               <Feather name="image" size={20} color={colors.tint} />
               <Text style={[styles.actionButtonText, { color: colors.tint }]}>Galeri</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.actionButton} onPress={() => pickImage(true)}>
+            <TouchableOpacity style={[styles.actionButton, { backgroundColor: colors.surface }]} onPress={() => pickImage(true)}>
               <Feather name="camera" size={20} color={colors.tint} />
               <Text style={[styles.actionButtonText, { color: colors.tint }]}>Kamera</Text>
             </TouchableOpacity>
@@ -202,7 +208,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     textAlign: 'center',
     marginBottom: 24,
-    color: '#999',
   },
   imageContainer: {
     width: IMAGE_CONTAINER_SIZE,
@@ -213,7 +218,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 24,
-    backgroundColor: '#fafafa',
     overflow: 'hidden',
   },
   image: {
@@ -238,12 +242,11 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     paddingVertical: 14,
-    backgroundColor: '#fff',
     borderRadius: 14,
     elevation: 3,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
+    shadowOpacity: 0.04,
     shadowRadius: 4,
   },
   actionButtonText: {
@@ -255,13 +258,11 @@ const styles = StyleSheet.create({
     padding: 22,
     borderRadius: 20,
     width: '100%',
-    backgroundColor: '#fff',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
     elevation: 4,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
   },
   resultTitle: {
     fontSize: 20,
@@ -275,7 +276,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     marginBottom: 14,
     width: '100%',
-    backgroundColor: '#f9f9f9',
   },
   predictionLabel: {
     fontSize: 18,
@@ -300,8 +300,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#ddd',
-    backgroundColor: '#f5f5f5',
     gap: 6,
   },
   resetButtonText: {
