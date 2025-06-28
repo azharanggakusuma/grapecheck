@@ -138,13 +138,14 @@ const styles = StyleSheet.create({
   logoutButton: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     paddingVertical: 14,
     paddingHorizontal: 16,
     borderRadius: 14,
     borderWidth: 1.3,
-    justifyContent: 'center',
     marginTop: 12,
     gap: 10,
+    width: '100%', // Tombol logout diperlebar
   },
   logoutText: {
     fontSize: 15,
