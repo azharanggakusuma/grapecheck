@@ -11,11 +11,11 @@ import {
 import { Feather } from "@expo/vector-icons";
 import Colors from "@/constants/Colors";
 import { useTheme } from "@/components/ThemeContext";
-import { View as DefaultView } from '@/components/Themed';
+import { View as DefaultView } from "@/components/Themed";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
-import * as Haptics from 'expo-haptics';
+import * as Haptics from "expo-haptics";
 import { useGlobalRefresh } from "@/components/GlobalRefreshContext"; // Impor hook global refresh
 
 // Komponen FeatureCard (tidak ada perubahan)
@@ -53,7 +53,9 @@ const FeatureCard = ({
   }, [fadeAnim, slideAnim, index]);
 
   return (
-    <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
+    <Animated.View
+      style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}
+    >
       <DefaultView
         style={[
           styles.featureCard,
@@ -70,9 +72,14 @@ const FeatureCard = ({
           <Feather name={icon} size={24} color={colors.tint} />
         </LinearGradient>
         <DefaultView style={styles.featureTextContainer}>
-          <Text style={[styles.featureTitle, { color: colors.text }]}>{title}</Text>
+          <Text style={[styles.featureTitle, { color: colors.text }]}>
+            {title}
+          </Text>
           <Text
-            style={[styles.featureDescription, { color: colors.tabIconDefault }]}
+            style={[
+              styles.featureDescription,
+              { color: colors.tabIconDefault },
+            ]}
           >
             {description}
           </Text>
@@ -83,10 +90,14 @@ const FeatureCard = ({
 };
 
 // Komponen AnimatedHeader (tidak ada perubahan)
-const AnimatedHeader = ({ scrollY, threshold, onThemeToggle }: {
-  scrollY: Animated.Value,
-  threshold: number,
-  onThemeToggle: () => void
+const AnimatedHeader = ({
+  scrollY,
+  threshold,
+  onThemeToggle,
+}: {
+  scrollY: Animated.Value;
+  threshold: number;
+  onThemeToggle: () => void;
 }) => {
   const { theme } = useTheme();
   const colors = Colors[theme];
@@ -96,56 +107,80 @@ const AnimatedHeader = ({ scrollY, threshold, onThemeToggle }: {
   const headerBackgroundOpacity = scrollY.interpolate({
     inputRange: [threshold, threshold + 30],
     outputRange: [0, 1],
-    extrapolate: 'clamp',
+    extrapolate: "clamp",
   });
 
   const solidContentOpacity = scrollY.interpolate({
     inputRange: [threshold + 10, threshold + 40],
     outputRange: [0, 1],
-    extrapolate: 'clamp',
+    extrapolate: "clamp",
   });
-  
+
   const transparentContentOpacity = scrollY.interpolate({
     inputRange: [threshold, threshold + 20],
     outputRange: [1, 0],
-    extrapolate: 'clamp',
+    extrapolate: "clamp",
   });
 
   const shadowOpacity = scrollY.interpolate({
     inputRange: [threshold, threshold + 50],
-    outputRange: [0, theme === 'dark' ? 0.2 : 0.05],
-    extrapolate: 'clamp',
+    outputRange: [0, theme === "dark" ? 0.2 : 0.05],
+    extrapolate: "clamp",
   });
 
   return (
-    <Animated.View style={[styles.headerContainer, { height: headerHeight, paddingTop: insets.top }]}>
-      <Animated.View style={[
-        StyleSheet.absoluteFillObject,
-        { backgroundColor: colors.background, opacity: headerBackgroundOpacity },
-        styles.headerShadow,
-        { shadowOpacity: shadowOpacity }
-      ]}/>
+    <Animated.View
+      style={[
+        styles.headerContainer,
+        { height: headerHeight, paddingTop: insets.top },
+      ]}
+    >
+      <Animated.View
+        style={[
+          StyleSheet.absoluteFillObject,
+          {
+            backgroundColor: colors.background,
+            opacity: headerBackgroundOpacity,
+          },
+          styles.headerShadow,
+          { shadowOpacity: shadowOpacity },
+        ]}
+      />
 
       <DefaultView style={styles.headerContent}>
-        <Animated.View style={[styles.headerIcons, { opacity: transparentContentOpacity }]}>
+        <Animated.View
+          style={[styles.headerIcons, { opacity: transparentContentOpacity }]}
+        >
           <Feather name="menu" size={24} color="#FFFFFF" />
           <Text style={styles.headerLogoText}>GrapeCheck</Text>
           <TouchableOpacity onPress={onThemeToggle}>
-            <Feather name={theme === 'light' ? 'moon' : 'sun'} size={24} color="#FFFFFF" />
+            <Feather
+              name={theme === "light" ? "moon" : "sun"}
+              size={24}
+              color="#FFFFFF"
+            />
           </TouchableOpacity>
         </Animated.View>
 
-        <Animated.View style={[styles.headerIcons, { opacity: solidContentOpacity }]}>
+        <Animated.View
+          style={[styles.headerIcons, { opacity: solidContentOpacity }]}
+        >
           <Feather name="menu" size={24} color={colors.text} />
-          <Text style={[styles.headerLogoText, { color: colors.text }]}>GrapeCheck</Text>
+          <Text style={[styles.headerLogoText, { color: colors.text }]}>
+            GrapeCheck
+          </Text>
           <TouchableOpacity onPress={onThemeToggle}>
-            <Feather name={theme === 'light' ? 'moon' : 'sun'} size={24} color={colors.text} />
+            <Feather
+              name={theme === "light" ? "moon" : "sun"}
+              size={24}
+              color={colors.text}
+            />
           </TouchableOpacity>
         </Animated.View>
       </DefaultView>
     </Animated.View>
-  )
-}
+  );
+};
 
 export default function HomeScreen() {
   const { theme, toggleTheme } = useTheme();
@@ -156,7 +191,7 @@ export default function HomeScreen() {
 
   const scrollY = useRef(new Animated.Value(0)).current;
   const [scrollThreshold, setScrollThreshold] = useState(300);
-  
+
   const ctaButtonScale = useRef(new Animated.Value(1)).current;
   const ctaIconScale = useRef(new Animated.Value(1)).current;
 
@@ -167,7 +202,7 @@ export default function HomeScreen() {
   const handleRefresh = useCallback(() => {
     setIsRefreshing(true); // Tampilkan indikator loading
     refreshApp(); // Panggil fungsi refresh global
-    
+
     // Sembunyikan indikator loading setelah beberapa saat
     // Ini memberikan waktu bagi aplikasi untuk me-mount ulang
     setTimeout(() => {
@@ -211,9 +246,9 @@ export default function HomeScreen() {
   const onTitleLayout = (event: LayoutChangeEvent) => {
     const { y } = event.nativeEvent.layout;
     const headerHeight = 60 + insets.top;
-    setScrollThreshold(y - headerHeight - 10); 
+    setScrollThreshold(y - headerHeight - 10);
   };
-  
+
   const handleScroll = Animated.event(
     [{ nativeEvent: { contentOffset: { y: scrollY } } }],
     { useNativeDriver: true }
@@ -228,17 +263,19 @@ export default function HomeScreen() {
     {
       icon: "cpu",
       title: "Akurasi Tinggi",
-      description: "Didukung model Deep Learning untuk hasil presisi.",
+      description:
+        "Didukung oleh model Deep Learning untuk hasil klasifikasi yang akurat.",
     },
     {
       icon: "zap",
-      title: "Deteksi Cepat",
-      description: "Dapatkan hasil klasifikasi dalam hitungan detik.",
+      title: "Proses Kilat",
+      description: "Hasil klasifikasi instan hanya dalam beberapa detik.",
     },
     {
       icon: "clock",
-      title: "Riwayat Lengkap",
-      description: "Simpan dan lihat kembali semua hasil Analisis.",
+      title: "Riwayat Analisis",
+      description:
+        "Akses semua hasil klasifikasi yang pernah Anda lakukan dengan mudah.",
     },
   ];
 
@@ -275,15 +312,18 @@ export default function HomeScreen() {
           <DefaultView style={[styles.circle, styles.circle2]} />
           <DefaultView style={[styles.circle, styles.circle3]} />
 
-          <Text style={styles.title} onLayout={onTitleLayout}>
-            Klasifikasi Daun Anggur
-          </Text>
+          <Text style={styles.title}>Deteksi Penyakit Daun Anggur</Text>
           <Text style={styles.subtitle}>
-            Deteksi dini penyakit daun anggur melalui analisis gambar untuk
-            mendukung kesehatan tanaman Anggur.
+            Identifikasi penyakit pada daun anggur secara dini melalui analisis
+            gambar berbasis kecerdasan buatan.
           </Text>
 
-          <Animated.View style={[ styles.inlineCTAWrapper, { transform: [{ scale: ctaButtonScale }] }]}>
+          <Animated.View
+            style={[
+              styles.inlineCTAWrapper,
+              { transform: [{ scale: ctaButtonScale }] },
+            ]}
+          >
             <TouchableOpacity
               style={styles.ctaButtonShadow}
               onPress={handleCtaPress}
@@ -300,16 +340,20 @@ export default function HomeScreen() {
                 <Animated.View style={{ transform: [{ scale: ctaIconScale }] }}>
                   <Feather name="camera" size={24} color="#FFFFFF" />
                 </Animated.View>
-                <Text style={styles.inlineCTAButtonText}>Mulai Analisis</Text>
+                <Text style={styles.inlineCTAButtonText}>Analisis Sekarang</Text>
               </LinearGradient>
             </TouchableOpacity>
           </Animated.View>
-
         </LinearGradient>
 
-        <DefaultView style={[styles.featuresSection, { backgroundColor: colors.background }]}>
+        <DefaultView
+          style={[
+            styles.featuresSection,
+            { backgroundColor: colors.background },
+          ]}
+        >
           <Text style={[styles.sectionTitle, { color: colors.text }]}>
-            Fitur Unggulan
+            Keunggulan Aplikasi
           </Text>
           {features.map((feature, index) => (
             <FeatureCard
@@ -324,7 +368,7 @@ export default function HomeScreen() {
         </DefaultView>
       </Animated.ScrollView>
 
-      <AnimatedHeader 
+      <AnimatedHeader
         scrollY={scrollY}
         threshold={scrollThreshold}
         onThemeToggle={toggleTheme}
@@ -335,7 +379,7 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   headerContainer: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     left: 0,
     right: 0,
@@ -350,14 +394,14 @@ const styles = StyleSheet.create({
   headerContent: {
     flex: 1,
     paddingHorizontal: 10,
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
   },
   headerIcons: {
     flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    position: 'absolute',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    position: "absolute",
     top: 0,
     left: 10,
     right: 10,
@@ -365,8 +409,8 @@ const styles = StyleSheet.create({
   },
   headerLogoText: {
     fontSize: 22,
-    fontWeight: '700',
-    color: '#FFFFFF'
+    fontWeight: "700",
+    color: "#FFFFFF",
   },
   header: {
     paddingHorizontal: 25,
@@ -410,7 +454,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 28,
     borderRadius: 30,
     borderWidth: 1.5,
-    borderColor: 'rgba(255, 255, 255, 0.25)',
+    borderColor: "rgba(255, 255, 255, 0.25)",
   },
   inlineCTAButtonText: {
     fontSize: 17,
