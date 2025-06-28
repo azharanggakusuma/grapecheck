@@ -63,7 +63,7 @@ const FeatureCard = ({
         ]}
       >
         <LinearGradient
-          colors={[colors.tint + "1A", colors.tint + "05"]}
+          colors={[`${colors.tint}1A`, `${colors.tint}05`] as [string, string]}
           style={styles.featureIconContainer}
         >
           <Feather name={icon} size={24} color={colors.tint} />
@@ -254,7 +254,7 @@ export default function HomeScreen() {
         }
       >
         <LinearGradient
-          colors={gradientColors}
+          colors={gradientColors as [string, string]}
           style={[styles.header, { paddingTop: insets.top + 100, paddingBottom: insets.bottom + 60 }]}
         >
           <Animated.View style={[styles.blob, styles.blob1]} />
@@ -277,7 +277,12 @@ export default function HomeScreen() {
               onPressOut={handlePressOut}
               activeOpacity={1}
             >
-              <LinearGradient colors={buttonGradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.inlineCTAButton}>
+              <LinearGradient
+                colors={buttonGradient as [string, string]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.inlineCTAButton}
+              >
                 <Animated.View style={{ transform: [{ scale: ctaIconScale }] }}>
                   <Feather name="camera" size={24} color="#FFFFFF" />
                 </Animated.View>
@@ -363,7 +368,6 @@ const styles = StyleSheet.create({
   blob1: { width: 250, height: 250, top: -80, right: -60 },
   blob2: { width: 160, height: 160, bottom: -50, left: -50 },
   blob3: { width: 100, height: 100, bottom: 0, right: 80 },
-
   title: {
     fontSize: 30,
     fontWeight: "800",
