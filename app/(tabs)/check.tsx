@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   Dimensions,
   RefreshControl,
+  Alert,
 } from 'react-native';
 import { Text, View } from '@/components/Themed';
 import * as ImagePicker from 'expo-image-picker';
@@ -16,15 +17,19 @@ import { useTheme } from '@/components/ThemeContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useGlobalRefresh } from '@/components/GlobalRefreshContext';
 
+// --- PENTING: GANTI DENGAN ALAMAT IP KOMPUTER ANDA ---
+// Pastikan HP dan komputer terhubung ke jaringan WiFi yang sama.
+const BACKEND_URL = 'http://192.168.123.61:5000/classify';
+// ----------------------------------------------------
+
 const { width } = Dimensions.get('window');
 const IMAGE_CONTAINER_SIZE = width * 0.82;
-
-const diseaseClasses = ['Hawar', 'Sehat', 'Busuk', 'Esca', 'Negative'];
 
 export default function CheckScreen() {
   const [image, setImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [prediction, setPrediction] = useState<{ label: string; confidence: number } | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const { theme } = useTheme();
   const colors = Colors[theme];
   const { refreshApp } = useGlobalRefresh();
@@ -35,8 +40,7 @@ export default function CheckScreen() {
     refreshApp();
     setTimeout(() => {
       setIsRefreshing(false);
-      setImage(null);
-      setPrediction(null);
+      handleReset(); // Panggil fungsi reset untuk membersihkan state
     }, 1000);
   }, [refreshApp]);
 
@@ -49,47 +53,102 @@ export default function CheckScreen() {
       quality: 0.8,
     };
 
-    if (useCamera) {
-      await ImagePicker.requestCameraPermissionsAsync();
-      result = await ImagePicker.launchCameraAsync(options);
-    } else {
-      await ImagePicker.requestMediaLibraryPermissionsAsync();
-      result = await ImagePicker.launchImageLibraryAsync(options);
-    }
-
-    if (!result.canceled) {
-      setImage(result.assets[0].uri);
-      setPrediction(null);
-      classifyImage(result.assets[0].uri);
+    try {
+        if (useCamera) {
+          const perm = await ImagePicker.requestCameraPermissionsAsync();
+          if (perm.status !== 'granted') {
+              Alert.alert('Izin Diperlukan', 'Anda perlu memberikan izin kamera untuk menggunakan fitur ini.');
+              return;
+          }
+          result = await ImagePicker.launchCameraAsync(options);
+        } else {
+          const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+           if (perm.status !== 'granted') {
+              Alert.alert('Izin Diperlukan', 'Anda perlu memberikan izin galeri untuk menggunakan fitur ini.');
+              return;
+          }
+          result = await ImagePicker.launchImageLibraryAsync(options);
+        }
+    
+        if (!result.canceled) {
+          handleReset(); // Reset sebelum menampilkan gambar baru
+          setImage(result.assets[0].uri);
+          classifyImage(result.assets[0].uri);
+        }
+    } catch (e) {
+        Alert.alert('Error', 'Gagal membuka gambar.');
+        console.error(e);
     }
   };
 
   const classifyImage = async (uri: string) => {
     setLoading(true);
-    setTimeout(() => {
-      const randomLabel = diseaseClasses[Math.floor(Math.random() * diseaseClasses.length)];
-      const randomConfidence = Math.random() * (0.99 - 0.85) + 0.85;
+    setError(null);
 
-      setPrediction({
-        label: randomLabel.replace(/___/g, ' - ').replace(/_/g, ' '),
-        confidence: randomConfidence,
+    const formData = new FormData();
+    const filename = uri.split('/').pop();
+    const match = /\.(\w+)$/.exec(filename!);
+    const type = match ? `image/${match[1]}` : `image`;
+    
+    // Asumsikan file bernama 'file' seperti di backend
+    formData.append('file', { uri, name: filename, type } as any);
+
+    try {
+      const response = await fetch(BACKEND_URL, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setPrediction(data);
+      } else {
+        throw new Error(data.error || 'Gagal melakukan klasifikasi.');
+      }
+    } catch (e: any) {
+      console.error(e);
+      setError(e.message || 'Tidak dapat terhubung ke server. Pastikan backend berjalan dan alamat IP sudah benar.');
+    } finally {
       setLoading(false);
-    }, 2000);
+    }
   };
 
   const handleReset = () => {
     setImage(null);
     setPrediction(null);
+    setError(null);
+    setLoading(false);
   };
 
   const renderResult = () => {
     if (loading) {
       return <ActivityIndicator size="large" color={colors.tint} style={{ marginTop: 40 }} />;
     }
+    
+    if (error) {
+        return (
+            <View style={[styles.resultCard, { backgroundColor: colors.surface, shadowColor: colors.text + '20', alignItems:'center' }]}>
+                 <Feather name="alert-triangle" size={32} color={colors.error} />
+                 <Text style={[styles.errorText, {color: colors.error}]}>Terjadi Kesalahan</Text>
+                 <Text style={[styles.subtext, {color: colors.tabIconDefault, marginTop: 4}]}>{error}</Text>
+                 <TouchableOpacity
+                    style={[styles.resetButton, { backgroundColor: colors.background, borderColor: colors.border }]}
+                    onPress={handleReset}
+                >
+                    <Feather name="rotate-ccw" size={18} color={colors.tint} />
+                    <Text style={[styles.resetButtonText, { color: colors.tint }]}>Coba Lagi</Text>
+                </TouchableOpacity>
+            </View>
+        );
+    }
+    
     if (!prediction) return null;
 
-    const isHealthy = prediction.label.toLowerCase().includes('healthy');
+    const isHealthy = prediction.label.toLowerCase().includes('sehat');
     const resultColor = isHealthy ? colors.success : colors.error;
 
     return (
@@ -253,7 +312,6 @@ const styles = StyleSheet.create({
     padding: 22,
     borderRadius: 20,
     width: '100%',
-    alignItems: 'center',
     elevation: 4,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
@@ -263,6 +321,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '700',
     marginBottom: 18,
+    textAlign: 'center'
   },
   predictionBox: {
     borderWidth: 1.4,
@@ -280,6 +339,7 @@ const styles = StyleSheet.create({
   confidenceText: {
     fontSize: 15,
     marginBottom: 8,
+    textAlign:'center'
   },
   resultInfo: {
     fontSize: 14,
@@ -296,9 +356,15 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderWidth: 1,
     gap: 6,
+    alignSelf: 'center'
   },
   resetButtonText: {
     fontSize: 14,
     fontWeight: '600',
   },
+  errorText: {
+      fontSize: 18,
+      fontWeight: '700',
+      marginTop: 12
+  }
 });
