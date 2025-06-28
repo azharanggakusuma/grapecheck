@@ -280,7 +280,7 @@ export default function HomeScreen() {
           </Text>
           <Text style={styles.subtitle}>
             Deteksi dini penyakit daun anggur melalui analisis gambar untuk
-            mendukung kesehatan tanaman Anda.
+            mendukung kesehatan tanaman Anggur.
           </Text>
 
           <Animated.View style={[ styles.inlineCTAWrapper, { transform: [{ scale: ctaButtonScale }] }]}>
