@@ -6,7 +6,7 @@ import {
   ScrollView,
   Animated,
   LayoutChangeEvent,
-  RefreshControl, // 1. Impor RefreshControl
+  RefreshControl,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import Colors from "@/constants/Colors";
@@ -16,9 +16,8 @@ import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Haptics from "expo-haptics";
-import { useGlobalRefresh } from "@/components/GlobalRefreshContext"; // Impor hook global refresh
+import { useGlobalRefresh } from "@/components/GlobalRefreshContext";
 
-// Komponen FeatureCard (tidak ada perubahan)
 const FeatureCard = ({
   icon,
   title,
@@ -53,9 +52,7 @@ const FeatureCard = ({
   }, [fadeAnim, slideAnim, index]);
 
   return (
-    <Animated.View
-      style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}
-    >
+    <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
       <DefaultView
         style={[
           styles.featureCard,
@@ -72,15 +69,8 @@ const FeatureCard = ({
           <Feather name={icon} size={24} color={colors.tint} />
         </LinearGradient>
         <DefaultView style={styles.featureTextContainer}>
-          <Text style={[styles.featureTitle, { color: colors.text }]}>
-            {title}
-          </Text>
-          <Text
-            style={[
-              styles.featureDescription,
-              { color: colors.tabIconDefault },
-            ]}
-          >
+          <Text style={[styles.featureTitle, { color: colors.text }]}>{title}</Text>
+          <Text style={[styles.featureDescription, { color: colors.tabIconDefault }]}>
             {description}
           </Text>
         </DefaultView>
@@ -89,7 +79,6 @@ const FeatureCard = ({
   );
 };
 
-// Komponen AnimatedHeader (tidak ada perubahan)
 const AnimatedHeader = ({
   scrollY,
   threshold,
@@ -129,52 +118,29 @@ const AnimatedHeader = ({
   });
 
   return (
-    <Animated.View
-      style={[
-        styles.headerContainer,
-        { height: headerHeight, paddingTop: insets.top },
-      ]}
-    >
+    <Animated.View style={[styles.headerContainer, { height: headerHeight, paddingTop: insets.top }]}>
       <Animated.View
         style={[
           StyleSheet.absoluteFillObject,
-          {
-            backgroundColor: colors.background,
-            opacity: headerBackgroundOpacity,
-          },
+          { backgroundColor: colors.background, opacity: headerBackgroundOpacity },
           styles.headerShadow,
           { shadowOpacity: shadowOpacity },
         ]}
       />
-
       <DefaultView style={styles.headerContent}>
-        <Animated.View
-          style={[styles.headerIcons, { opacity: transparentContentOpacity }]}
-        >
+        <Animated.View style={[styles.headerIcons, { opacity: transparentContentOpacity }]}>
           <Feather name="menu" size={24} color="#FFFFFF" />
           <Text style={styles.headerLogoText}>GrapeCheck</Text>
           <TouchableOpacity onPress={onThemeToggle}>
-            <Feather
-              name={theme === "light" ? "moon" : "sun"}
-              size={24}
-              color="#FFFFFF"
-            />
+            <Feather name={theme === "light" ? "moon" : "sun"} size={24} color="#FFFFFF" />
           </TouchableOpacity>
         </Animated.View>
 
-        <Animated.View
-          style={[styles.headerIcons, { opacity: solidContentOpacity }]}
-        >
+        <Animated.View style={[styles.headerIcons, { opacity: solidContentOpacity }]}>
           <Feather name="menu" size={24} color={colors.text} />
-          <Text style={[styles.headerLogoText, { color: colors.text }]}>
-            GrapeCheck
-          </Text>
+          <Text style={[styles.headerLogoText, { color: colors.text }]}>GrapeCheck</Text>
           <TouchableOpacity onPress={onThemeToggle}>
-            <Feather
-              name={theme === "light" ? "moon" : "sun"}
-              size={24}
-              color={colors.text}
-            />
+            <Feather name={theme === "light" ? "moon" : "sun"} size={24} color={colors.text} />
           </TouchableOpacity>
         </Animated.View>
       </DefaultView>
@@ -187,7 +153,7 @@ export default function HomeScreen() {
   const colors = Colors[theme];
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { refreshApp } = useGlobalRefresh(); // 2. Dapatkan fungsi refresh global
+  const { refreshApp } = useGlobalRefresh();
 
   const scrollY = useRef(new Animated.Value(0)).current;
   const [scrollThreshold, setScrollThreshold] = useState(300);
@@ -195,16 +161,11 @@ export default function HomeScreen() {
   const ctaButtonScale = useRef(new Animated.Value(1)).current;
   const ctaIconScale = useRef(new Animated.Value(1)).current;
 
-  // 3. State untuk mengontrol status loading dari RefreshControl
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // 4. Fungsi yang akan dipanggil saat pull-to-refresh
   const handleRefresh = useCallback(() => {
-    setIsRefreshing(true); // Tampilkan indikator loading
-    refreshApp(); // Panggil fungsi refresh global
-
-    // Sembunyikan indikator loading setelah beberapa saat
-    // Ini memberikan waktu bagi aplikasi untuk me-mount ulang
+    setIsRefreshing(true);
+    refreshApp();
     setTimeout(() => {
       setIsRefreshing(false);
     }, 1000);
@@ -249,33 +210,28 @@ export default function HomeScreen() {
     setScrollThreshold(y - headerHeight - 10);
   };
 
-  const handleScroll = Animated.event(
-    [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-    { useNativeDriver: true }
-  );
+  const handleScroll = Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], {
+    useNativeDriver: true,
+  });
 
-  const gradientColors =
-    theme === "dark" ? ["#00640A", "#1A4D2E"] : ["#00990E", "#22C55E"];
-  const buttonGradient =
-    theme === "dark" ? ["#00B86B", "#007A47"] : ["#4ADE80", "#16A34A"];
+  const gradientColors = theme === "dark" ? ["#00640A", "#1A4D2E"] : ["#00990E", "#22C55E"];
+  const buttonGradient = theme === "dark" ? ["#00B86B", "#007A47"] : ["#4ADE80", "#16A34A"];
 
   const features = [
     {
       icon: "cpu",
-      title: "Akurasi Tinggi",
-      description:
-        "Didukung oleh model Deep Learning untuk hasil klasifikasi yang akurat.",
+      title: "Presisi Tinggi",
+      description: "Didukung oleh model Deep Learning untuk klasifikasi yang lebih akurat.",
     },
     {
       icon: "zap",
       title: "Proses Kilat",
-      description: "Hasil klasifikasi instan hanya dalam beberapa detik.",
+      description: "Analisis cepat dan efisien dalam hitungan detik.",
     },
     {
       icon: "clock",
       title: "Riwayat Analisis",
-      description:
-        "Akses semua hasil klasifikasi yang pernah Anda lakukan dengan mudah.",
+      description: "Akses mudah semua hasil klasifikasi yang pernah dilakukan.",
     },
   ];
 
@@ -288,42 +244,32 @@ export default function HomeScreen() {
         showsVerticalScrollIndicator={false}
         contentInsetAdjustmentBehavior="automatic"
         style={{ overflow: "visible" }}
-        // 5. Tambahkan prop refreshControl
         refreshControl={
           <RefreshControl
             refreshing={isRefreshing}
             onRefresh={handleRefresh}
-            colors={[colors.tint]} // Warna indikator loading
-            tintColor={colors.tint} // Warna indikator loading untuk iOS
+            colors={[colors.tint]}
+            tintColor={colors.tint}
           />
         }
       >
         <LinearGradient
           colors={gradientColors}
-          style={[
-            styles.header,
-            {
-              paddingTop: insets.top + 100,
-              paddingBottom: insets.bottom + 60,
-            },
-          ]}
+          style={[styles.header, { paddingTop: insets.top + 100, paddingBottom: insets.bottom + 60 }]}
         >
           <DefaultView style={[styles.circle, styles.circle1]} />
           <DefaultView style={[styles.circle, styles.circle2]} />
           <DefaultView style={[styles.circle, styles.circle3]} />
 
-          <Text style={styles.title}>Deteksi Penyakit Daun Anggur</Text>
+          <Text style={styles.title} onLayout={onTitleLayout}>
+            Deteksi Penyakit Daun Anggur
+          </Text>
           <Text style={styles.subtitle}>
-            Identifikasi penyakit pada daun anggur secara dini melalui analisis
-            gambar berbasis kecerdasan buatan.
+            Identifikasi penyakit pada daun anggur secara dini melalui analisis gambar berbasis
+            kecerdasan buatan.
           </Text>
 
-          <Animated.View
-            style={[
-              styles.inlineCTAWrapper,
-              { transform: [{ scale: ctaButtonScale }] },
-            ]}
-          >
+          <Animated.View style={[styles.inlineCTAWrapper, { transform: [{ scale: ctaButtonScale }] }]}>
             <TouchableOpacity
               style={styles.ctaButtonShadow}
               onPress={handleCtaPress}
@@ -331,12 +277,7 @@ export default function HomeScreen() {
               onPressOut={handlePressOut}
               activeOpacity={1}
             >
-              <LinearGradient
-                colors={buttonGradient}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.inlineCTAButton}
-              >
+              <LinearGradient colors={buttonGradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.inlineCTAButton}>
                 <Animated.View style={{ transform: [{ scale: ctaIconScale }] }}>
                   <Feather name="camera" size={24} color="#FFFFFF" />
                 </Animated.View>
@@ -346,15 +287,8 @@ export default function HomeScreen() {
           </Animated.View>
         </LinearGradient>
 
-        <DefaultView
-          style={[
-            styles.featuresSection,
-            { backgroundColor: colors.background },
-          ]}
-        >
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>
-            Keunggulan Aplikasi
-          </Text>
+        <DefaultView style={[styles.featuresSection, { backgroundColor: colors.background }]}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Keunggulan Aplikasi</Text>
           {features.map((feature, index) => (
             <FeatureCard
               key={index}
@@ -368,11 +302,7 @@ export default function HomeScreen() {
         </DefaultView>
       </Animated.ScrollView>
 
-      <AnimatedHeader
-        scrollY={scrollY}
-        threshold={scrollThreshold}
-        onThemeToggle={toggleTheme}
-      />
+      <AnimatedHeader scrollY={scrollY} threshold={scrollThreshold} onThemeToggle={toggleTheme} />
     </DefaultView>
   );
 }
@@ -429,18 +359,21 @@ const styles = StyleSheet.create({
   circle2: { width: 150, left: -40, bottom: -60 },
   circle3: { width: 80, right: 80, bottom: -20 },
   title: {
-    fontSize: 32,
+    fontSize: 30,
     fontWeight: "800",
     color: "#fff",
-    lineHeight: 38,
+    lineHeight: 40,
+    letterSpacing: 0.3,
   },
   subtitle: {
     fontSize: 16,
-    color: "rgba(255,255,255,0.92)",
+    color: "rgba(255,255,255,0.95)",
     marginTop: 10,
-    marginBottom: 12,
-    lineHeight: 24,
+    marginBottom: 14,
+    lineHeight: 26,
     fontWeight: "400",
+    letterSpacing: 0.2,
+    maxWidth: 320,
   },
   inlineCTAWrapper: {
     marginTop: 20,
@@ -457,10 +390,11 @@ const styles = StyleSheet.create({
     borderColor: "rgba(255, 255, 255, 0.25)",
   },
   inlineCTAButtonText: {
-    fontSize: 17,
+    fontSize: 16.5,
     fontWeight: "700",
     marginLeft: 12,
     color: "#fff",
+    letterSpacing: 0.3,
   },
   ctaButtonShadow: {
     borderRadius: 30,
@@ -478,9 +412,10 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 30,
   },
   sectionTitle: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: "700",
-    marginBottom: 20,
+    marginBottom: 18,
+    letterSpacing: 0.3,
   },
   featureCard: {
     flexDirection: "row",
@@ -503,12 +438,14 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent",
   },
   featureTitle: {
-    fontSize: 17,
+    fontSize: 16.5,
     fontWeight: "600",
+    lineHeight: 22,
   },
   featureDescription: {
     fontSize: 14,
     marginTop: 4,
     lineHeight: 20,
+    letterSpacing: 0.2,
   },
 });
