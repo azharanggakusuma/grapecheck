@@ -6,14 +6,12 @@ import tensorflow as tf
 
 app = Flask(__name__)
 
-# --- Konfigurasi Model ---
-# Ganti dengan path ke file model .tflite Anda
+# --- Konfigurasi ---
 MODEL_PATH = os.path.join('model', 'model.tflite') 
-# Sesuaikan dengan ukuran input yang diharapkan oleh model Anda
 IMG_HEIGHT = 224
 IMG_WIDTH = 224
-# Sesuaikan dengan kelas penyakit yang ada
-DISEASE_CLASSES = ['Hawar', 'Sehat', 'Busuk', 'Esca', 'Negative']
+# Pastikan urutan kelas ini SAMA PERSIS dengan saat model Anda dilatih
+DISEASE_CLASSES = ['Hawar', 'Sehat', 'Busuk', 'Esca', 'Negative'] 
 
 # --- Muat Model TFLite ---
 try:
@@ -21,62 +19,78 @@ try:
     interpreter.allocate_tensors()
     input_details = interpreter.get_input_details()
     output_details = interpreter.get_output_details()
-except (ValueError, RuntimeError) as e:
-    print(f"Error loading TFLite model from {MODEL_PATH}: {e}")
+    print("Model TFLite berhasil dimuat.")
+except Exception as e:
+    print(f"Error: Gagal memuat model TFLite dari {MODEL_PATH}. Detail: {e}")
     interpreter = None
 
-def preprocess_image(image):
+def preprocess_image(image: Image.Image) -> np.ndarray:
     """
-    Fungsi untuk melakukan pra-pemrosesan gambar sebelum dimasukkan ke model.
+    Fungsi untuk memproses gambar agar sesuai dengan input model.
+    1. Mengubah ukuran gambar ke 224x224.
+    2. Mengonversi gambar ke array numpy.
+    3. **PENTING: Normalisasi nilai piksel ke rentang [0, 1].**
+       Langkah ini harus cocok dengan cara gambar diproses saat training.
+    4. Menambahkan dimensi batch.
     """
     img = image.resize((IMG_WIDTH, IMG_HEIGHT))
     img_array = tf.keras.preprocessing.image.img_to_array(img)
-    img_array = tf.expand_dims(img_array, 0) # Membuat batch
-    return img_array
+    
+    # Normalisasi gambar. Ini adalah langkah krusial untuk akurasi.
+    img_array = img_array / 255.0
+    
+    # Membuat batch dan memastikan tipe data float32
+    img_array = tf.expand_dims(img_array, 0)
+    return np.float32(img_array)
 
 @app.route('/classify', methods=['POST'])
 def classify_image():
     """
-    Endpoint untuk menerima gambar dan mengembalikan hasil klasifikasi.
+    Endpoint untuk menerima gambar, melakukan klasifikasi, dan mengembalikan hasilnya.
     """
     if interpreter is None:
-        return jsonify({'error': 'Model tidak dapat dimuat, periksa path dan file model.'}), 500
+        return jsonify({'error': 'Kesalahan pada server: Model tidak dapat dimuat.'}), 500
 
     if 'file' not in request.files:
-        return jsonify({'error': 'Tidak ada file gambar yang dikirim'}), 400
+        return jsonify({'error': 'Tidak ada file gambar yang dikirim dalam permintaan.'}), 400
 
     file = request.files['file']
-
     if file.filename == '':
-        return jsonify({'error': 'Tidak ada file yang dipilih'}), 400
+        return jsonify({'error': 'Tidak ada file yang dipilih.'}), 400
 
     try:
-        # Buka gambar menggunakan Pillow
-        image = Image.open(file.stream).convert('RGB') # Pastikan format RGB
+        # Buka gambar dan pastikan formatnya RGB
+        image = Image.open(file.stream).convert('RGB')
         
-        # Lakukan pra-pemrosesan pada gambar
+        # Proses gambar menggunakan fungsi yang sudah disempurnakan
         processed_image = preprocess_image(image)
 
         # Lakukan prediksi dengan TFLite Interpreter
         interpreter.set_tensor(input_details[0]['index'], processed_image)
         interpreter.invoke()
+        
+        # Dapatkan hasil prediksi
         predictions = interpreter.get_tensor(output_details[0]['index'])
         
+        # Gunakan Softmax untuk mendapatkan probabilitas
         score = tf.nn.softmax(predictions[0])
         
-        # Dapatkan label dan confidence
-        label = DISEASE_CLASSES[np.argmax(score)]
+        # Dapatkan label dan keyakinan murni dari model
         confidence = np.max(score)
+        label = DISEASE_CLASSES[np.argmax(score)]
 
-        # Kirim respon dalam format JSON
+        print(f"Prediksi: Label='{label}', Confidence={confidence:.2f}")
+
+        # Kirim hasil dalam format JSON
         return jsonify({
-            'label': label.replace('_', ' '),
+            'label': label,
             'confidence': float(confidence)
         })
 
     except Exception as e:
-        return jsonify({'error': f'Terjadi kesalahan saat memproses gambar: {str(e)}'}), 500
+        print(f"Error saat memproses gambar: {e}")
+        return jsonify({'error': f'Terjadi kesalahan saat memproses gambar di server.'}), 500
 
 if __name__ == '__main__':
-    # Ganti host menjadi '0.0.0.0' agar dapat diakses dari jaringan lokal
+    # Jalankan server agar bisa diakses dari jaringan lokal
     app.run(debug=True, host='0.0.0.0')
