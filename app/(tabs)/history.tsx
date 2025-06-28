@@ -30,7 +30,7 @@ export default function HistoryScreen() {
   const renderEmpty = () => (
     <View style={styles.emptyContainer}>
       <RNView style={[styles.emptyIconWrapper, { backgroundColor: colors.surface + 'AA' }]}>
-        <Feather name="clock" size={36} color={colors.tint} />
+        <Feather name="clock" size={36} color="#A0A0A0" />
       </RNView>
       <Text style={[styles.emptyText, { color: colors.text }]}>Tidak Ada Riwayat</Text>
       <Text style={[styles.subText, { color: colors.tabIconDefault }]}>
@@ -41,7 +41,7 @@ export default function HistoryScreen() {
 
   const renderItem = ({ item }: { item: typeof historyData[0] }) => (
     <View style={[styles.card, { backgroundColor: colors.surface, shadowColor: colors.tint + '40' }]}>
-      <Feather name="activity" size={22} color={colors.tint} style={{ marginRight: 12 }} />
+      <Feather name="activity" size={22} color="#A0A0A0" style={{ marginRight: 12 }} />
       <View style={{ flex: 1 }}>
         <Text style={[styles.cardTitle, { color: colors.text }]}>{item.label}</Text>
         <Text style={[styles.cardDate, { color: colors.tabIconDefault }]}>{item.date}</Text>

@@ -40,7 +40,7 @@ export default function NotificationsScreen() {
       >
         <View style={styles.emptyWrapper}>
           <View style={[styles.iconWrapper, { backgroundColor: colors.surface + '80' }]}>
-            <Feather name="bell-off" size={40} color={colors.tabIconDefault} />
+            <Feather name="bell-off" size={40} color="#A0A0A0" />
           </View>
           <Text style={[styles.title, { color: colors.text }]}>Tidak Ada Notifikasi</Text>
           <Text style={[styles.subtitle, { color: colors.tabIconDefault }]}>
