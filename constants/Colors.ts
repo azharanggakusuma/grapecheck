@@ -1,20 +1,20 @@
 // constants/Colors.ts
 
-const primary = '#10B981'; // Emerald 500
-const primaryLight = '#6EE7B7'; // Emerald 300
-const textLight = '#1F2937'; // Gray 800
-const textDark = '#F9FAFB'; // Gray 50
-const backgroundLight = '#F9FAFB'; // Gray 50
-const backgroundDark = '#111827'; // Gray 900
+const primary = '#2E7D32';
+const primaryLight = '#A5D6A7';
+const textLight = '#1C1C1E';
+const textDark = '#F2F2F7';
+const backgroundLight = '#F9FAFB';
+const backgroundDark = '#111827';
 const surfaceLight = '#FFFFFF';
-const surfaceDark = '#1F2937'; // Gray 800
-const success = '#22C55E'; // Green 500
-const warning = '#F59E0B'; // Amber 500
-const error = '#EF4444'; // Red 500
-const borderLight = '#E5E7EB'; // Gray 200
-const borderDark = '#374151'; // Gray 700
-const tabIconDefaultLight = '#6B7280'; // Gray 500
-const tabIconDefaultDark = '#9CA3AF'; // Gray 400
+const surfaceDark = '#1F2937';
+const success = '#22C55E';
+const warning = '#F59E0B';
+;const error = '#EF4444';
+const borderLight = '#E5E7EB';
+const borderDark = '#374151';
+const tabIconDefaultLight = '#8E8E93';
+const tabIconDefaultDark = '#8E8E93';
 const confidenceBarLight = '#D1FAE5'; // Green 100
 const confidenceBarDark = '#374151'; // Gray 700
 
@@ -33,9 +33,9 @@ export default {
     tabIconDefault: tabIconDefaultLight,
     tabIconSelected: primary,
     confidenceBar: confidenceBarLight,
-    blurTint: 'rgba(255, 255, 255, 0.7)',
-    cardGradientStart: '#FFFFFF',
-    cardGradientEnd: '#F9FAFB',
+    blurTint: 'rgba(249, 249, 249, 0.8)',
+    cardGradientStart: surfaceLight,
+    cardGradientEnd: backgroundLight,
   },
   dark: {
     text: textDark,
@@ -51,8 +51,8 @@ export default {
     tabIconDefault: tabIconDefaultDark,
     tabIconSelected: primaryLight,
     confidenceBar: confidenceBarDark,
-    blurTint: 'rgba(20, 20, 20, 0.7)',
-    cardGradientStart: '#374151', // Gray 700
-    cardGradientEnd: '#1F2937',   // Gray 800
+    blurTint: 'rgba(30, 30, 30, 0.8)',
+    cardGradientStart: surfaceDark,
+    cardGradientEnd: '#2C2C2E',
   },
 };
