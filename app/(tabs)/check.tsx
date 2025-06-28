@@ -182,14 +182,20 @@ const ResultCard = ({ prediction, onReset, colors }: any) => {
             <Text style={styles.detailsButtonText}>Lihat Detail</Text>
           </TouchableOpacity>
         )}
+        {/* --- AWAL PERUBAHAN --- */}
         <TouchableOpacity
-          style={[styles.resetButton, { backgroundColor: colors.border }]}
+          style={[styles.resetButton, { 
+            backgroundColor: 'transparent',
+            borderColor: colors.tint,
+            borderWidth: 2,
+          }]}
           onPress={onReset}
         >
-          <Text style={[styles.resetButtonText, { color: colors.text }]}>
+          <Text style={[styles.resetButtonText, { color: colors.tint }]}>
             Ulangi Analisis
           </Text>
         </TouchableOpacity>
+        {/* --- AKHIR PERUBAHAN --- */}
       </View>
     </Animated.View>
   );
@@ -269,8 +275,6 @@ export default function CheckScreen() {
         : await ImagePicker.launchImageLibraryAsync(options);
 
       if (!result.canceled) {
-        // --- AWAL PERUBAHAN ---
-        // Memeriksa tipe file yang dipilih
         const asset = result.assets[0];
         if (asset.mimeType && !asset.mimeType.startsWith("image/")) {
           Alert.alert(
@@ -279,7 +283,6 @@ export default function CheckScreen() {
           );
           return;
         }
-        // --- AKHIR PERUBAHAN ---
 
         handleReset();
         setImage(asset.uri);
@@ -487,7 +490,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 10,
     elevation: 5,
-    alignItems: 'stretch', 
+    alignItems: 'stretch',
   },
   resultHeader: {
     flexDirection: "row",
@@ -522,12 +525,14 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
   detailsButtonText: { fontSize: 16, fontWeight: "bold", color: "#FFFFFF" },
+  // --- AWAL PERUBAHAN ---
   resetButton: {
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 16,
+    paddingVertical: 14, // Disesuaikan agar tinggi sama dengan border
     borderRadius: 16,
   },
+  // --- AKHIR PERUBAHAN ---
   resetButtonText: { fontSize: 16, fontWeight: "bold" },
 
   // --- Kartu Error ---
