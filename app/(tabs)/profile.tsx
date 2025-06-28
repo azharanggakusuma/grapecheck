@@ -39,12 +39,14 @@ export default function ProfileScreen() {
           />
         }
       >
-        <View style={[styles.avatarContainer, { backgroundColor: colors.surface }]}>
+        <View style={[styles.avatarContainer, { backgroundColor: colors.tint + '20', shadowColor: colors.tint + '50' }]}>
           <Text style={[styles.avatarText, { color: colors.tint }]}>A</Text>
         </View>
 
         <Text style={[styles.name, { color: colors.text }]}>Azharangga Kusuma</Text>
         <Text style={[styles.email, { color: colors.tabIconDefault }]}>azhar@example.com</Text>
+
+        <View style={styles.divider} />
 
         <View style={styles.buttonGroup}>
           <TouchableOpacity style={[styles.actionButton, { backgroundColor: colors.surface }]}>
@@ -56,12 +58,14 @@ export default function ProfileScreen() {
             <Feather name="lock" size={18} color={colors.tint} />
             <Text style={[styles.actionText, { color: colors.tint }]}>Ganti Password</Text>
           </TouchableOpacity>
-
-          <TouchableOpacity style={[styles.logoutButton, { borderColor: colors.error }]} onPress={() => console.log('Logout')}>
-            <Feather name="log-out" size={18} color={colors.error} />
-            <Text style={[styles.logoutText, { color: colors.error }]}>Keluar</Text>
-          </TouchableOpacity>
         </View>
+
+        <View style={styles.divider} />
+
+        <TouchableOpacity style={[styles.logoutButton, { borderColor: colors.error }]} onPress={() => console.log('Logout')}>
+          <Feather name="log-out" size={18} color={colors.error} />
+          <Text style={[styles.logoutText, { color: colors.error }]}>Keluar</Text>
+        </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );
@@ -75,30 +79,40 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     alignItems: 'center',
     paddingHorizontal: 24,
-    paddingTop: 40,
+    paddingTop: 48,
     paddingBottom: 60,
   },
   avatarContainer: {
-    width: 90,
-    height: 90,
-    borderRadius: 45,
+    width: 110,
+    height: 110,
+    borderRadius: 55,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
-    elevation: 3,
+    marginBottom: 18,
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 4,
   },
   avatarText: {
-    fontSize: 32,
+    fontSize: 38,
     fontWeight: 'bold',
   },
   name: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: '700',
+    marginBottom: 4,
   },
   email: {
     fontSize: 14,
-    marginTop: 4,
-    marginBottom: 24,
+    opacity: 0.7,
+    marginBottom: 28,
+  },
+  divider: {
+    width: '100%',
+    height: 1,
+    backgroundColor: '#DADADA30',
+    marginVertical: 20,
   },
   buttonGroup: {
     width: '100%',
@@ -107,10 +121,15 @@ const styles = StyleSheet.create({
   actionButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 14,
-    borderRadius: 12,
-    gap: 10,
-    elevation: 1,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 14,
+    elevation: 2,
+    gap: 12,
+    shadowColor: '#00000010',
+    shadowOpacity: 0.06,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
   },
   actionText: {
     fontSize: 15,
@@ -119,11 +138,12 @@ const styles = StyleSheet.create({
   logoutButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 14,
-    borderRadius: 12,
-    borderWidth: 1.2,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 14,
+    borderWidth: 1.3,
     justifyContent: 'center',
-    marginTop: 16,
+    marginTop: 12,
     gap: 10,
   },
   logoutText: {
