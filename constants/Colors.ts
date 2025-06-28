@@ -1,6 +1,6 @@
 // constants/Colors.ts
 
-const primary = '#00880C'; // Hijau Gojek
+const primary = '#00880C';
 const primaryLight = '#A3E6A5';
 const textLight = '#1D2A32';
 const textDark = '#F0F2F5';
@@ -33,8 +33,10 @@ export default {
     tabIconDefault: tabIconDefaultLight,
     tabIconSelected: primary,
     confidenceBar: confidenceBarLight,
-    // --- TAMBAHKAN INI ---
     blurTint: 'rgba(255, 255, 255, 0.7)',
+    // --- TAMBAHKAN INI ---
+    cardGradientStart: '#FFFFFF',
+    cardGradientEnd: '#F9FAFB',
     // --------------------
   },
   dark: {
@@ -51,8 +53,10 @@ export default {
     tabIconDefault: tabIconDefaultDark,
     tabIconSelected: primaryLight,
     confidenceBar: confidenceBarDark,
-    // --- TAMBAHKAN INI ---
     blurTint: 'rgba(20, 20, 20, 0.7)',
+    // --- TAMBAHKAN INI ---
+    cardGradientStart: '#1E1E1E',
+    cardGradientEnd: '#242424',
     // --------------------
   },
 };
