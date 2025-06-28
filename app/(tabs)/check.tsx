@@ -21,6 +21,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { BlurView } from "expo-blur";
 import * as Progress from "react-native-progress";
 import { useGlobalRefresh } from "@/components/GlobalRefreshContext";
+import { LinearGradient } from "expo-linear-gradient";
 
 // --- PENTING: GANTI DENGAN ALAMAT IP KOMPUTER ANDA ---
 const BACKEND_URL = "http://192.168.123.61:5000/classify";
@@ -71,7 +72,7 @@ const LoadingOverlay = ({
 };
 
 // Kartu Hasil Klasifikasi
-const ResultCard = ({ prediction, onReset, colors }: any) => {
+const ResultCard = ({ prediction, onReset, colors, theme }: any) => {
   const slideAnim = useRef(new Animated.Value(50)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
 
@@ -125,6 +126,8 @@ const ResultCard = ({ prediction, onReset, colors }: any) => {
     ? "healthy"
     : "disease";
   const { title, desc, icon, color } = statusConfig[currentStatus];
+  
+  const buttonGradient = theme === "dark" ? ["#00B86B", "#007A47"] : ["#4ADE80", "#16A34A"];
 
   return (
     <Animated.View
@@ -170,8 +173,9 @@ const ResultCard = ({ prediction, onReset, colors }: any) => {
 
       <View style={[styles.resultActions, { backgroundColor: "transparent" }]}>
         {!isNegative && (
+          // --- AWAL PERUBAHAN ---
           <TouchableOpacity
-            style={[styles.detailsButton, { backgroundColor: colors.tint }]}
+            style={styles.detailsButton}
             onPress={() =>
               Alert.alert(
                 "Segera Hadir",
@@ -179,23 +183,25 @@ const ResultCard = ({ prediction, onReset, colors }: any) => {
               )
             }
           >
-            <Text style={styles.detailsButtonText}>Lihat Detail</Text>
+            <LinearGradient
+              colors={buttonGradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.gradientButton}
+            >
+              <Text style={styles.detailsButtonText}>Lihat Detail</Text>
+            </LinearGradient>
           </TouchableOpacity>
+          // --- AKHIR PERUBAHAN ---
         )}
-        {/* --- AWAL PERUBAHAN --- */}
         <TouchableOpacity
-          style={[styles.resetButton, { 
-            backgroundColor: 'transparent',
-            borderColor: colors.tint,
-            borderWidth: 2,
-          }]}
+          style={[styles.resetButton, { backgroundColor: colors.border }]}
           onPress={onReset}
         >
-          <Text style={[styles.resetButtonText, { color: colors.tint }]}>
+          <Text style={[styles.resetButtonText, { color: colors.text }]}>
             Ulangi Analisis
           </Text>
         </TouchableOpacity>
-        {/* --- AKHIR PERUBAHAN --- */}
       </View>
     </Animated.View>
   );
@@ -237,6 +243,8 @@ export default function CheckScreen() {
   const colors = Colors[theme];
   const { refreshApp } = useGlobalRefresh();
   const [isRefreshing, setIsRefreshing] = useState(false);
+  
+  const buttonGradient = theme === "dark" ? ["#00B86B", "#007A47"] : ["#4ADE80", "#16A34A"];
 
   const handleRefresh = useCallback(() => {
     setIsRefreshing(true);
@@ -348,6 +356,7 @@ export default function CheckScreen() {
               prediction={prediction}
               onReset={handleReset}
               colors={colors}
+              theme={theme}
             />
           ) : (
             <View style={{ width: "100%", alignItems: "center" }}>
@@ -398,14 +407,23 @@ export default function CheckScreen() {
                 <LoadingOverlay visible={loading} colors={colors} />
               </TouchableOpacity>
 
+              {/* --- AWAL PERUBAHAN --- */}
               <TouchableOpacity
-                style={[styles.cameraButton, { backgroundColor: colors.tint }]}
+                style={styles.cameraButton}
                 onPress={() => pickImage(true)}
                 disabled={loading}
               >
-                <Feather name="camera" size={20} color="#FFFFFF" />
-                <Text style={styles.cameraButtonText}>Ambil Gambar</Text>
+                <LinearGradient
+                    colors={buttonGradient}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.gradientButton}
+                >
+                    <Feather name="camera" size={20} color="#FFFFFF" />
+                    <Text style={styles.cameraButtonText}>Ambil Gambar</Text>
+                </LinearGradient>
               </TouchableOpacity>
+              {/* --- AKHIR PERUBAHAN --- */}
 
               {error && (
                 <ErrorCard
@@ -462,21 +480,26 @@ const styles = StyleSheet.create({
   },
   placeholderText: { fontSize: 16, fontWeight: "600" },
   placeholderSubtext: { fontSize: 14, opacity: 0.7 },
+  // --- AWAL PERUBAHAN ---
   cameraButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 16,
-    paddingHorizontal: 24,
-    borderRadius: 16,
     width: "100%",
-    gap: 10,
+    borderRadius: 16,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 5,
     elevation: 5,
   },
+  gradientButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 16,
+    gap: 10,
+  },
+  // --- AKHIR PERUBAHAN ---
   cameraButtonText: { color: "#FFFFFF", fontSize: 16, fontWeight: "bold" },
   overlayContainer: { justifyContent: "center", alignItems: "center" },
   loadingText: { marginTop: 16, fontSize: 16, fontWeight: "600" },
@@ -518,21 +541,19 @@ const styles = StyleSheet.create({
     textAlign: 'left',
   },
   resultActions: { gap: 12, width: "100%", backgroundColor: "transparent" },
+  // --- AWAL PERUBAHAN ---
   detailsButton: {
+    borderRadius: 16,
+    overflow: 'hidden', // Untuk memastikan gradasi tidak keluar dari border radius
+  },
+  // --- AKHIR PERUBAHAN ---
+  detailsButtonText: { fontSize: 16, fontWeight: "bold", color: "#FFFFFF" },
+  resetButton: {
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 16,
     borderRadius: 16,
   },
-  detailsButtonText: { fontSize: 16, fontWeight: "bold", color: "#FFFFFF" },
-  // --- AWAL PERUBAHAN ---
-  resetButton: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 14, // Disesuaikan agar tinggi sama dengan border
-    borderRadius: 16,
-  },
-  // --- AKHIR PERUBAHAN ---
   resetButtonText: { fontSize: 16, fontWeight: "bold" },
 
   // --- Kartu Error ---
