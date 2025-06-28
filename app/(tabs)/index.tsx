@@ -257,9 +257,9 @@ export default function HomeScreen() {
           colors={gradientColors}
           style={[styles.header, { paddingTop: insets.top + 100, paddingBottom: insets.bottom + 60 }]}
         >
-          <DefaultView style={[styles.circle, styles.circle1]} />
-          <DefaultView style={[styles.circle, styles.circle2]} />
-          <DefaultView style={[styles.circle, styles.circle3]} />
+          <Animated.View style={[styles.blob, styles.blob1]} />
+          <Animated.View style={[styles.blob, styles.blob2]} />
+          <Animated.View style={[styles.blob, styles.blob3]} />
 
           <Text style={styles.title} onLayout={onTitleLayout}>
             Deteksi Penyakit Daun Anggur
@@ -349,15 +349,21 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 10,
     overflow: "visible",
   },
-  circle: {
+  blob: {
     position: "absolute",
-    borderRadius: 100,
     backgroundColor: "rgba(255, 255, 255, 0.07)",
-    aspectRatio: 1,
+    borderRadius: 9999,
+    opacity: 0.5,
+    transform: [{ rotate: "15deg" }],
+    shadowColor: "#fff",
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.1,
+    shadowRadius: 20,
   },
-  circle1: { width: 200, right: -50, top: -30 },
-  circle2: { width: 150, left: -40, bottom: -60 },
-  circle3: { width: 80, right: 80, bottom: -20 },
+  blob1: { width: 250, height: 250, top: -80, right: -60 },
+  blob2: { width: 160, height: 160, bottom: -50, left: -50 },
+  blob3: { width: 100, height: 100, bottom: 0, right: 80 },
+
   title: {
     fontSize: 30,
     fontWeight: "800",
