@@ -34,7 +34,7 @@ export default {
     tabIconSelected: primary,
     confidenceBar: confidenceBarLight,
     blurTint: 'rgba(255, 255, 255, 0.7)',
-    // --- TAMBAHKAN INI ---
+    // --- TAMBAHAN BARU ---
     cardGradientStart: '#FFFFFF',
     cardGradientEnd: '#F9FAFB',
     // --------------------
@@ -54,7 +54,7 @@ export default {
     tabIconSelected: primaryLight,
     confidenceBar: confidenceBarDark,
     blurTint: 'rgba(20, 20, 20, 0.7)',
-    // --- TAMBAHKAN INI ---
+    // --- TAMBAHAN BARU ---
     cardGradientStart: '#1E1E1E',
     cardGradientEnd: '#242424',
     // --------------------

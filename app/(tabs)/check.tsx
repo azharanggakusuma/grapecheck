@@ -22,6 +22,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useGlobalRefresh } from '@/components/GlobalRefreshContext';
 import { BlurView } from 'expo-blur';
 import * as Progress from 'react-native-progress';
+import { LinearGradient } from 'expo-linear-gradient'; // Import LinearGradient
 
 // --- PENTING: GANTI DENGAN ALAMAT IP KOMPUTER ANDA ---
 const BACKEND_URL = 'http://192.168.123.61:5000/classify';
@@ -92,39 +93,57 @@ const ResultCard = ({ prediction, onReset, colors }: any) => {
   }
 
   return (
-    <Animated.View style={[styles.resultCard, { backgroundColor: colors.surface, transform: [{ scale: scaleAnim }], opacity: opacityAnim, borderColor: colors.border }]}>
-      <View style={[styles.statusBadge, { backgroundColor: color + '20' }]}>
-        <Feather name={icon} size={16} color={color} />
-        <Text style={[styles.statusText, { color }]}>{status}</Text>
-      </View>
-      <Text style={[styles.resultTitle, { color: colors.text }]}>{title}</Text>
-      <Progress.Circle
-        size={100}
-        progress={prediction.confidence}
-        showsText
-        formatText={() => `${confidencePercentage.toFixed(1)}%`}
-        color={progressColor}
-        unfilledColor={colors.confidenceBar}
-        borderColor={colors.background}
-        thickness={8}
-        strokeCap="round"
-        textStyle={{ color: colors.text, fontWeight: '700', fontSize: 18 }}
-      />
-      <Text style={[styles.resultInfo, { color: colors.tabIconDefault }]}>{description}</Text>
-      <View style={styles.resultActions}>
-        <TouchableOpacity style={[styles.resetButton, { borderColor: colors.border }]} onPress={onReset}>
-          <Text style={[styles.resetButtonText, { color: colors.text }]}>Analisis Lain</Text>
-        </TouchableOpacity>
-        {!isNegative && (
-          <TouchableOpacity style={[styles.detailsButton, { backgroundColor: colors.tint }]} onPress={() => Alert.alert("Segera Hadir", "Fitur detail penanganan penyakit akan segera tersedia.")}>
-            <Text style={[styles.detailsButtonText]}>Lihat Penanganan</Text>
+    <Animated.View style={[{ transform: [{ scale: scaleAnim }], opacity: opacityAnim }]}>
+      <LinearGradient 
+        colors={[colors.cardGradientStart, colors.cardGradientEnd]}
+        style={[styles.resultCard, { borderColor: colors.border }]}
+      >
+        <View style={[styles.statusBadge, { backgroundColor: color + '20' }]}>
+          <Feather name={icon} size={16} color={color} />
+          <Text style={[styles.statusText, { color }]}>{status}</Text>
+        </View>
+        <Text style={[styles.resultTitle, { color: colors.text }]}>{title}</Text>
+        <Progress.Circle
+          size={100}
+          progress={prediction.confidence}
+          showsText
+          formatText={() => `${confidencePercentage.toFixed(1)}%`}
+          color={progressColor}
+          unfilledColor={colors.confidenceBar}
+          borderColor={'transparent'} // Background gradient will show through
+          thickness={8}
+          strokeCap="round"
+          textStyle={{ color: colors.text, fontWeight: '700', fontSize: 18 }}
+        />
+        <Text style={[styles.resultInfo, { color: colors.tabIconDefault }]}>{description}</Text>
+        <View style={styles.resultActions}>
+          <TouchableOpacity style={[styles.resetButton, { borderColor: colors.border }]} onPress={onReset}>
+            <Text style={[styles.resetButtonText, { color: colors.text }]}>Analisis Lain</Text>
           </TouchableOpacity>
-        )}
-      </View>
+          {!isNegative && (
+            <TouchableOpacity style={[styles.detailsButton, { backgroundColor: colors.tint }]} onPress={() => Alert.alert("Segera Hadir", "Fitur detail penanganan penyakit akan segera tersedia.")}>
+              <Text style={[styles.detailsButtonText]}>Lihat Penanganan</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      </LinearGradient>
     </Animated.View>
   );
 };
 
+const ErrorCard = ({ message, onRetry }: { message: string; onRetry: () => void }) => {
+    const { theme } = useTheme();
+    const colors = Colors[theme];
+    return (
+        <View style={[styles.errorCard, { backgroundColor: colors.error + '20', borderColor: colors.error }]}>
+            <Feather name="alert-circle" size={24} color={colors.error} />
+            <Text style={[styles.errorText, { color: colors.error }]}>{message}</Text>
+            <TouchableOpacity style={[styles.retryButton, { backgroundColor: colors.error }]} onPress={onRetry}>
+                <Text style={styles.retryButtonText}>Coba Lagi</Text>
+            </TouchableOpacity>
+        </View>
+    );
+};
 
 export default function CheckScreen() {
   const [image, setImage] = useState<string | null>(null);
@@ -292,7 +311,8 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.08,
         shadowRadius: 12,
         borderWidth: 1,
-        minHeight: 300
+        minHeight: 300,
+        backgroundColor: 'transparent', // Dibuat transparan agar gradien terlihat
     },
     statusBadge: {
         flexDirection: 'row',
@@ -301,7 +321,8 @@ const styles = StyleSheet.create({
         paddingHorizontal: 12,
         borderRadius: 20,
         marginBottom: 16,
-        gap: 6
+        gap: 6,
+        backgroundColor: 'transparent', // Latar belakang sudah diatur oleh parent
     },
     statusText: {
         fontSize: 13,
@@ -317,6 +338,7 @@ const styles = StyleSheet.create({
         marginTop: 'auto',
         paddingTop: 20,
         gap: 12,
+        backgroundColor: 'transparent'
     },
     resetButton: {
         flex: 1,
@@ -335,4 +357,27 @@ const styles = StyleSheet.create({
         borderRadius: 16,
     },
     detailsButtonText: { fontSize: 16, fontWeight: '700', color: '#FFFFFF' },
+    // Gaya untuk ErrorCard
+    errorCard: {
+        borderRadius: 16,
+        borderWidth: 1.5,
+        padding: 20,
+        alignItems: 'center',
+        gap: 12
+    },
+    errorText: {
+        fontSize: 16,
+        fontWeight: '600',
+        textAlign: 'center'
+    },
+    retryButton: {
+        paddingVertical: 12,
+        paddingHorizontal: 30,
+        borderRadius: 12
+    },
+    retryButtonText: {
+        color: '#FFFFFF',
+        fontSize: 15,
+        fontWeight: '700'
+    }
 });
