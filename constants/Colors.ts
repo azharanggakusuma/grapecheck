@@ -4,7 +4,7 @@ const primary = '#00880C'; // Hijau Gojek
 const primaryLight = '#A3E6A5';
 const textLight = '#1D2A32';
 const textDark = '#F0F2F5';
-const backgroundLight = '#F9FAFB'; // Sedikit abu-abu untuk kontras
+const backgroundLight = '#F9FAFB';
 const backgroundDark = '#121212';
 const surfaceLight = '#FFFFFF';
 const surfaceDark = '#1E1E1E';
@@ -15,11 +15,8 @@ const borderLight = '#E5E7EB';
 const borderDark = '#2C2C2E';
 const tabIconDefaultLight = '#8A94A6';
 const tabIconDefaultDark = '#6E7A8A';
-
-// --- TAMBAHKAN INI ---
-const confidenceBarLight = '#D1FAE5'; // Latar belakang bar untuk tema terang
-const confidenceBarDark = '#374151'; // Latar belakang bar untuk tema gelap
-// --------------------
+const confidenceBarLight = '#D1FAE5';
+const confidenceBarDark = '#374151';
 
 export default {
   light: {
@@ -35,8 +32,9 @@ export default {
     tabBar: surfaceLight,
     tabIconDefault: tabIconDefaultLight,
     tabIconSelected: primary,
-    // --- TAMBAHKAN INI ---
     confidenceBar: confidenceBarLight,
+    // --- TAMBAHKAN INI ---
+    blurTint: 'rgba(255, 255, 255, 0.7)',
     // --------------------
   },
   dark: {
@@ -52,8 +50,9 @@ export default {
     tabBar: surfaceDark,
     tabIconDefault: tabIconDefaultDark,
     tabIconSelected: primaryLight,
-    // --- TAMBAHKAN INI ---
     confidenceBar: confidenceBarDark,
+    // --- TAMBAHKAN INI ---
+    blurTint: 'rgba(20, 20, 20, 0.7)',
     // --------------------
   },
 };

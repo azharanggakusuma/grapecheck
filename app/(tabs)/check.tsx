@@ -6,12 +6,12 @@ import {
   TouchableOpacity,
   Image,
   ScrollView,
-  ActivityIndicator,
   Dimensions,
   RefreshControl,
   Alert,
   Animated,
   Easing,
+  Platform,
 } from 'react-native';
 import { Text, View } from '@/components/Themed';
 import * as ImagePicker from 'expo-image-picker';
@@ -20,109 +20,111 @@ import Colors from '@/constants/Colors';
 import { useTheme } from '@/components/ThemeContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useGlobalRefresh } from '@/components/GlobalRefreshContext';
+import { BlurView } from 'expo-blur';
+import * as Progress from 'react-native-progress';
 
 // --- PENTING: GANTI DENGAN ALAMAT IP KOMPUTER ANDA ---
 const BACKEND_URL = 'http://192.168.123.61:5000/classify';
 // ----------------------------------------------------
 
 const { width } = Dimensions.get('window');
-const IMAGE_CONTAINER_SIZE = width * 0.85;
+const IMAGE_SIZE = width * 0.85;
 
-// Komponen Kartu Hasil yang Baru
+const AnimatedFeather = Animated.createAnimatedComponent(Feather);
+
+// Komponen Overlay dengan efek Glassmorphism
+const ImageOverlay = ({ loading, colors }: { loading: boolean; colors: any }) => {
+  if (!loading) return null;
+  return (
+    <View style={styles.overlayContainer}>
+      <BlurView intensity={Platform.OS === 'ios' ? 20 : 80} tint={colors.blurTint} style={StyleSheet.absoluteFill} />
+      <Progress.Circle
+        size={80}
+        indeterminate
+        color={colors.tint}
+        borderWidth={4}
+      />
+      <Text style={[styles.loadingText, { color: colors.text }]}>Menganalisis Gambar...</Text>
+    </View>
+  );
+};
+
 const ResultCard = ({ prediction, onReset, colors }: any) => {
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(30)).current;
+  const scaleAnim = useRef(new Animated.Value(0.95)).current;
+  const opacityAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 400,
-        easing: Easing.out(Easing.ease),
-        useNativeDriver: true,
-      }),
-      Animated.spring(slideAnim, {
-        toValue: 0,
-        bounciness: 5,
-        speed: 12,
-        useNativeDriver: true,
-      }),
+      Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: true, bounciness: 10 }),
+      Animated.timing(opacityAnim, { toValue: 1, duration: 300, useNativeDriver: true }),
     ]).start();
   }, []);
 
   if (!prediction) return null;
 
   const isNegative = prediction.label.toLowerCase() === 'negative';
+  const isHealthy = !isNegative && prediction.label.toLowerCase().includes('sehat');
+  const confidencePercentage = prediction.confidence * 100;
+  
+  let status, title, description, icon, color, progressColor;
+
   if (isNegative) {
-    return (
-      <Animated.View style={[styles.resultCard, { backgroundColor: colors.surface, shadowColor: colors.text + '20', transform: [{ translateY: slideAnim }], opacity: fadeAnim }]}>
-        <Feather name="alert-circle" size={40} color={colors.warning} />
-        <Text style={[styles.resultTitle, { color: colors.warning, marginTop: 12 }]}>Gambar Tidak Sesuai</Text>
-        <Text style={[styles.resultInfo, { color: colors.text }]}>
-          Gambar yang Anda unggah sepertinya bukan daun anggur. Mohon gunakan gambar yang relevan untuk hasil terbaik.
-        </Text>
-        <TouchableOpacity style={[styles.resetButton, { backgroundColor: colors.tint }]} onPress={onReset}>
-          <Feather name="rotate-ccw" size={18} color={'#FFFFFF'} />
-          <Text style={[styles.resetButtonText, { color: '#FFFFFF' }]}>Coba Gambar Lain</Text>
-        </TouchableOpacity>
-      </Animated.View>
-    );
+    status = 'Ditolak';
+    title = 'Gambar Tidak Sesuai';
+    description = 'Objek tidak terdeteksi sebagai daun anggur. Mohon unggah gambar yang benar.';
+    icon = 'help-circle';
+    color = colors.warning;
+    progressColor = colors.warning;
+  } else if (isHealthy) {
+    status = 'Sehat';
+    title = 'Tanaman Terdeteksi Sehat';
+    description = 'Kondisi tanaman Anda sangat baik. Tetap jaga perawatannya!';
+    icon = 'shield-check';
+    color = colors.success;
+    progressColor = colors.success;
+  } else {
+    status = 'Terdeteksi Penyakit';
+    title = prediction.label;
+    description = 'Tanaman Anda terindikasi memiliki penyakit. Segera periksa detail untuk penanganan.';
+    icon = 'alert-triangle';
+    color = colors.error;
+    progressColor = colors.error;
   }
 
-  const isHealthy = prediction.label.toLowerCase().includes('sehat');
-  const resultColor = isHealthy ? colors.success : colors.error;
-  const confidencePercentage = (prediction.confidence * 100).toFixed(2);
-
   return (
-    <Animated.View style={[styles.resultCard, { backgroundColor: colors.surface, shadowColor: colors.text + '20', transform: [{ translateY: slideAnim }], opacity: fadeAnim }]}>
-      <Feather name={isHealthy ? "shield-check" : "alert-triangle"} size={40} color={resultColor} />
-      <Text style={[styles.resultTitle, { color: colors.text, marginTop: 12 }]}>Hasil Deteksi</Text>
-      
-      <View style={[styles.predictionBox, { borderColor: resultColor, backgroundColor: resultColor + '15' }]}>
-        <Text style={[styles.predictionLabel, { color: resultColor }]}>{prediction.label}</Text>
+    <Animated.View style={[styles.resultCard, { backgroundColor: colors.surface, transform: [{ scale: scaleAnim }], opacity: opacityAnim, borderColor: colors.border }]}>
+      <View style={[styles.statusBadge, { backgroundColor: color + '20' }]}>
+        <Feather name={icon} size={16} color={color} />
+        <Text style={[styles.statusText, { color }]}>{status}</Text>
       </View>
-
-      <Text style={[styles.confidenceText, { color: colors.tabIconDefault, marginBottom: 5 }]}>Tingkat Keyakinan</Text>
-      <View style={[styles.confidenceBarContainer, { backgroundColor: colors.confidenceBar }]}>
-        <View style={[styles.confidenceBar, { width: `${confidencePercentage}%`, backgroundColor: resultColor }]} />
-      </View>
-      <Text style={[styles.confidencePercentage, { color: colors.text }]}>{confidencePercentage}%</Text>
-
-      <Text style={[styles.resultInfo, { color: colors.text, marginTop: 15 }]}>
-        {isHealthy
-          ? 'Tanaman Anda dalam kondisi baik. Lanjutkan perawatan rutin untuk menjaganya tetap sehat.'
-          : 'Terdeteksi potensi penyakit pada tanaman. Pelajari lebih lanjut untuk tindakan penanganan.'}
-      </Text>
-
+      <Text style={[styles.resultTitle, { color: colors.text }]}>{title}</Text>
+      <Progress.Circle
+        size={100}
+        progress={prediction.confidence}
+        showsText
+        formatText={() => `${confidencePercentage.toFixed(1)}%`}
+        color={progressColor}
+        unfilledColor={colors.confidenceBar}
+        borderColor={colors.background}
+        thickness={8}
+        strokeCap="round"
+        textStyle={{ color: colors.text, fontWeight: '700', fontSize: 18 }}
+      />
+      <Text style={[styles.resultInfo, { color: colors.tabIconDefault }]}>{description}</Text>
       <View style={styles.resultActions}>
-        <TouchableOpacity style={[styles.resetButton, { backgroundColor: colors.surface, borderColor: colors.border }]} onPress={onReset}>
-          <Feather name="rotate-ccw" size={18} color={colors.tint} />
-          <Text style={[styles.resetButtonText, { color: colors.tint }]}>Ulangi</Text>
+        <TouchableOpacity style={[styles.resetButton, { borderColor: colors.border }]} onPress={onReset}>
+          <Text style={[styles.resetButtonText, { color: colors.text }]}>Analisis Lain</Text>
         </TouchableOpacity>
-         <TouchableOpacity style={[styles.detailsButton, { backgroundColor: colors.tint }]} onPress={() => Alert.alert("Fitur Segera Hadir", "Halaman detail informasi penyakit akan segera tersedia.")}>
-          <Text style={[styles.detailsButtonText, { color: '#FFFFFF' }]}>Lihat Detail</Text>
-          <Feather name="arrow-right" size={18} color={'#FFFFFF'} />
-        </TouchableOpacity>
+        {!isNegative && (
+          <TouchableOpacity style={[styles.detailsButton, { backgroundColor: colors.tint }]} onPress={() => Alert.alert("Segera Hadir", "Fitur detail penanganan penyakit akan segera tersedia.")}>
+            <Text style={[styles.detailsButtonText]}>Lihat Penanganan</Text>
+          </TouchableOpacity>
+        )}
       </View>
     </Animated.View>
   );
 };
 
-const ErrorCard = ({ message, onRetry }: { message: string, onRetry: () => void }) => {
-  const { theme } = useTheme();
-  const colors = Colors[theme];
-  return (
-    <View style={[styles.resultCard, { backgroundColor: colors.surface, shadowColor: colors.text + '20' }]}>
-      <Feather name="wifi-off" size={40} color={colors.error} />
-      <Text style={[styles.resultTitle, { color: colors.error, marginTop: 12 }]}>Gagal Terhubung</Text>
-      <Text style={[styles.resultInfo, { color: colors.text }]}>{message}</Text>
-      <TouchableOpacity style={[styles.resetButton, { backgroundColor: colors.tint }]} onPress={onRetry}>
-        <Feather name="refresh-cw" size={18} color={'#FFFFFF'} />
-        <Text style={[styles.resetButtonText, { color: '#FFFFFF' }]}>Coba Lagi</Text>
-      </TouchableOpacity>
-    </View>
-  )
-}
 
 export default function CheckScreen() {
   const [image, setImage] = useState<string | null>(null);
@@ -133,6 +135,15 @@ export default function CheckScreen() {
   const colors = Colors[theme];
   const { refreshApp } = useGlobalRefresh();
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const iconAnim = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    const sequence = Animated.sequence([
+        Animated.timing(iconAnim, { toValue: 1.15, duration: 1500, useNativeDriver: true, easing: Easing.inOut(Easing.ease) }),
+        Animated.timing(iconAnim, { toValue: 1, duration: 1500, useNativeDriver: true, easing: Easing.inOut(Easing.ease) }),
+    ]);
+    Animated.loop(sequence).start();
+  }, []);
 
   const handleRefresh = useCallback(() => {
     setIsRefreshing(true);
@@ -145,26 +156,15 @@ export default function CheckScreen() {
 
   const pickImage = async (useCamera: boolean) => {
     let result;
-    const options: ImagePicker.ImagePickerOptions = {
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.8,
-    };
+    const options: ImagePicker.ImagePickerOptions = { mediaTypes: ImagePicker.MediaTypeOptions.Images, allowsEditing: true, aspect: [1, 1], quality: 0.8, };
 
     try {
-      const permission = useCamera 
-        ? await ImagePicker.requestCameraPermissionsAsync()
-        : await ImagePicker.requestMediaLibraryPermissionsAsync();
-
+      const permission = useCamera ? await ImagePicker.requestCameraPermissionsAsync() : await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (permission.status !== 'granted') {
           Alert.alert('Izin Diperlukan', `Anda perlu memberikan izin ${useCamera ? 'kamera' : 'galeri'}.`);
           return;
       }
-      
-      result = useCamera
-        ? await ImagePicker.launchCameraAsync(options)
-        : await ImagePicker.launchImageLibraryAsync(options);
+      result = useCamera ? await ImagePicker.launchCameraAsync(options) : await ImagePicker.launchImageLibraryAsync(options);
     
       if (!result.canceled) {
         handleReset();
@@ -187,19 +187,12 @@ export default function CheckScreen() {
     formData.append('file', { uri, name: filename, type } as any);
 
     try {
-      const response = await fetch(BACKEND_URL, {
-        method: 'POST',
-        body: formData,
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+      const response = await fetch(BACKEND_URL, { method: 'POST', body: formData, headers: { 'Content-Type': 'multipart/form-data' } });
       const data = await response.json();
-      if (response.ok) {
-        setPrediction(data);
-      } else {
-        throw new Error(data.error || 'Gagal melakukan klasifikasi.');
-      }
+      if (response.ok) setPrediction(data);
+      else throw new Error(data.error || 'Gagal melakukan klasifikasi.');
     } catch (e: any) {
-      setError(e.message || 'Tidak dapat terhubung ke server. Pastikan Anda terhubung ke jaringan yang sama.');
+      setError(e.message || 'Tidak dapat terhubung ke server. Periksa koneksi Anda.');
     } finally {
       setLoading(false);
     }
@@ -212,71 +205,38 @@ export default function CheckScreen() {
     setLoading(false);
   };
   
-  const renderContent = () => {
-    if (loading) {
-      return (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={colors.tint} />
-          <Text style={[styles.loadingText, { color: colors.tabIconDefault }]}>Menganalisis...</Text>
-        </View>
-      );
-    }
-    if (error) {
-      return <ErrorCard message={error} onRetry={() => image ? classifyImage(image) : handleReset()} />;
-    }
-    if (prediction) {
-      return <ResultCard prediction={prediction} onReset={handleReset} colors={colors}/>;
-    }
-    return null;
-  }
-
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-      <ScrollView
-        contentContainerStyle={styles.scrollContainer}
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={isRefreshing}
-            onRefresh={handleRefresh}
-            tintColor={colors.tint}
-            colors={[colors.tint]}
-          />
-        }
-      >
+      <ScrollView contentContainerStyle={styles.scrollContainer} refreshControl={ <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} tintColor={colors.tint} colors={[colors.tint]} /> }>
         <View style={styles.container}>
-          <Text style={[styles.heading, { color: colors.text }]}>Klasifikasi Daun Anggur</Text>
-          <Text style={[styles.subtext, { color: colors.tabIconDefault }]}>
-            Pilih gambar daun anggur untuk dideteksi menggunakan AI.
-          </Text>
+          <Text style={[styles.heading, { color: colors.text }]}>Deteksi Cerdas</Text>
+          <Text style={[styles.subtext, { color: colors.tabIconDefault }]}>Analisis kesehatan daun anggur Anda dengan sekali sentuh.</Text>
 
-          <TouchableOpacity
-            disabled={loading}
-            onPress={() => pickImage(false)}
-            style={[ styles.imageContainer, { borderColor: colors.border, backgroundColor: colors.surface } ]}
-          >
-            {image ? (
-              <Image source={{ uri: image }} style={styles.image} />
-            ) : (
-              <View style={[styles.placeholderContainer, { backgroundColor: 'transparent' }]}>
-                <Feather name="image" size={48} color={colors.tabIconDefault} />
-                <Text style={[styles.placeholderText, { color: colors.tabIconDefault }]}>
-                  Pilih Gambar dari Galeri
-                </Text>
-              </View>
-            )}
-          </TouchableOpacity>
-
-          {!image && (
-              <View style={styles.buttonRow}>
-                <TouchableOpacity style={[styles.actionButton, { backgroundColor: colors.surface }]} onPress={() => pickImage(true)}>
-                  <Feather name="camera" size={20} color={colors.tint} />
-                  <Text style={[styles.actionButtonText, { color: colors.tint }]}>Buka Kamera</Text>
-                </TouchableOpacity>
-              </View>
+          <View style={[styles.imageWrapper, { shadowColor: colors.text + '25' }]}>
+            <TouchableOpacity disabled={loading} onPress={() => pickImage(false)} style={[ styles.imageContainer, { borderColor: colors.border, backgroundColor: colors.surface } ]}>
+              {image ? (
+                <Image source={{ uri: image }} style={styles.image} />
+              ) : (
+                <View style={styles.placeholderContainer}>
+                    <AnimatedFeather name="upload-cloud" size={48} color={colors.tabIconDefault} style={{transform: [{ scale: iconAnim }]}}/>
+                    <Text style={[styles.placeholderText, { color: colors.tabIconDefault }]}>Ketuk untuk Memilih Gambar</Text>
+                </View>
+              )}
+              <ImageOverlay loading={loading} colors={colors}/>
+            </TouchableOpacity>
+          </View>
+          
+          {!image && !loading && (
+              <TouchableOpacity style={[styles.cameraButton, { backgroundColor: colors.surface, borderColor: colors.border }]} onPress={() => pickImage(true)}>
+                <Feather name="camera" size={20} color={colors.text} />
+                <Text style={[styles.actionButtonText, { color: colors.text }]}>Gunakan Kamera</Text>
+              </TouchableOpacity>
           )}
 
-          {renderContent()}
+          <View style={{marginTop: 20, width: '100%'}}>
+            {error && !loading && <ErrorCard message={error} onRetry={() => image ? classifyImage(image) : handleReset()} />}
+            {prediction && !loading && <ResultCard prediction={prediction} onReset={handleReset} colors={colors}/>}
+          </View>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -284,97 +244,95 @@ export default function CheckScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1 },
-  scrollContainer: { flexGrow: 1, paddingBottom: 40 },
-  container: { alignItems: 'center', paddingHorizontal: 24, paddingTop: 32 },
-  heading: { fontSize: 26, fontWeight: '800', marginBottom: 8, textAlign: 'center' },
-  subtext: { fontSize: 15, textAlign: 'center', marginBottom: 28, color: '#6B7280', lineHeight: 22 },
-  imageContainer: {
-    width: IMAGE_CONTAINER_SIZE,
-    height: IMAGE_CONTAINER_SIZE,
-    borderRadius: 24,
-    borderWidth: 2,
-    borderStyle: 'dashed',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 24,
-    overflow: 'hidden',
-  },
-  image: { width: '100%', height: '100%', resizeMode: 'cover' },
-  placeholderContainer: { alignItems: 'center' },
-  placeholderText: { marginTop: 12, fontSize: 16, fontWeight: '500', opacity: 0.7, textAlign: 'center' },
-  buttonRow: { flexDirection: 'row', justifyContent: 'center', width: '100%', gap: 12, marginBottom: 28 },
-  actionButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 24,
-    borderRadius: 16,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 5,
-    gap: 10,
-  },
-  actionButtonText: { fontSize: 15, fontWeight: '600' },
-  loadingContainer: { marginTop: 40, alignItems: 'center' },
-  loadingText: { marginTop: 10, fontSize: 14 },
-  resultCard: {
-    padding: 22,
-    borderRadius: 24,
-    width: '100%',
-    alignItems: 'center',
-    elevation: 5,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    marginTop: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.05)',
-  },
-  resultTitle: { fontSize: 22, fontWeight: '700', marginBottom: 20, textAlign: 'center' },
-  predictionBox: {
-    borderWidth: 2,
-    borderRadius: 16,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    marginBottom: 16,
-    width: '100%',
-  },
-  predictionLabel: { fontSize: 20, fontWeight: '800', textAlign: 'center' },
-  confidenceText: { fontSize: 14, marginBottom: 8, textAlign: 'center', fontWeight: '500' },
-  confidenceBarContainer: { width: '80%', height: 8, borderRadius: 4, overflow: 'hidden' },
-  confidenceBar: { height: '100%', borderRadius: 4 },
-  confidencePercentage: { fontSize: 13, marginTop: 6, fontWeight: '600' },
-  resultInfo: { fontSize: 15, textAlign: 'center', lineHeight: 22, opacity: 0.8, marginBottom: 24 },
-  resultActions: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
-    marginTop: 10,
-    gap: 12,
-  },
-  resetButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 14,
-    borderRadius: 14,
-    borderWidth: 1.5,
-    gap: 8,
-  },
-  resetButtonText: { fontSize: 15, fontWeight: '600' },
-  detailsButton: {
-    flex: 1.5,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 14,
-    borderRadius: 14,
-    gap: 8,
-  },
-  detailsButtonText: { fontSize: 15, fontWeight: '700' },
+    safeArea: { flex: 1 },
+    scrollContainer: { flexGrow: 1, paddingBottom: 40 },
+    container: { alignItems: 'center', paddingHorizontal: 20, paddingTop: 32 },
+    heading: { fontSize: 28, fontWeight: '800', marginBottom: 8, textAlign: 'center' },
+    subtext: { fontSize: 16, textAlign: 'center', marginBottom: 32, color: '#6B7280', lineHeight: 24, maxWidth: '90%'},
+    imageWrapper: {
+        borderRadius: 28,
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.15,
+        shadowRadius: 16,
+        elevation: 10,
+    },
+    imageContainer: {
+        width: IMAGE_SIZE,
+        height: IMAGE_SIZE,
+        borderRadius: 28,
+        borderWidth: 2,
+        borderStyle: 'dashed',
+        justifyContent: 'center',
+        alignItems: 'center',
+        overflow: 'hidden',
+    },
+    image: { width: '100%', height: '100%', resizeMode: 'cover' },
+    placeholderContainer: { alignItems: 'center', backgroundColor: 'transparent' },
+    placeholderText: { marginTop: 16, fontSize: 16, fontWeight: '600', opacity: 0.7 },
+    overlayContainer: { ...StyleSheet.absoluteFillObject, justifyContent: 'center', alignItems: 'center', backgroundColor: 'transparent' },
+    loadingText: { marginTop: 16, fontSize: 16, fontWeight: '600' },
+    cameraButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 16,
+        paddingHorizontal: 24,
+        borderRadius: 16,
+        borderWidth: 1,
+        marginTop: 20,
+        gap: 10,
+    },
+    actionButtonText: { fontSize: 16, fontWeight: '700' },
+    resultCard: {
+        padding: 20,
+        borderRadius: 24,
+        width: '100%',
+        alignItems: 'center',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.08,
+        shadowRadius: 12,
+        borderWidth: 1,
+        minHeight: 300
+    },
+    statusBadge: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 6,
+        paddingHorizontal: 12,
+        borderRadius: 20,
+        marginBottom: 16,
+        gap: 6
+    },
+    statusText: {
+        fontSize: 13,
+        fontWeight: '700',
+        textTransform: 'uppercase',
+    },
+    resultTitle: { fontSize: 24, fontWeight: '800', marginBottom: 20, textAlign: 'center' },
+    resultInfo: { fontSize: 15, textAlign: 'center', lineHeight: 22, color: '#6B7280', marginTop: 20, maxWidth: '90%'},
+    resultActions: {
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        width: '100%',
+        marginTop: 'auto',
+        paddingTop: 20,
+        gap: 12,
+    },
+    resetButton: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 15,
+        borderRadius: 16,
+        borderWidth: 1.5,
+    },
+    resetButtonText: { fontSize: 16, fontWeight: '700' },
+    detailsButton: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 15,
+        borderRadius: 16,
+    },
+    detailsButtonText: { fontSize: 16, fontWeight: '700', color: '#FFFFFF' },
 });
