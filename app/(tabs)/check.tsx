@@ -22,6 +22,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { BlurView } from "expo-blur";
 import * as Progress from "react-native-progress";
 import { useGlobalRefresh } from "@/components/GlobalRefreshContext";
+import { LinearGradient } from "expo-linear-gradient";
 
 // --- PENTING: GANTI DENGAN ALAMAT IP KOMPUTER ANDA ---
 const BACKEND_URL = "http://192.168.123.61:5000/classify";
@@ -71,7 +72,7 @@ const LoadingOverlay = ({
   );
 };
 
-// Kartu Hasil Klasifikasi
+// Kartu Hasil Klasifikasi (dengan Rata Kiri)
 const ResultCard = ({ prediction, onReset, colors }: any) => {
   const slideAnim = useRef(new Animated.Value(50)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
@@ -165,7 +166,8 @@ const ResultCard = ({ prediction, onReset, colors }: any) => {
         height={8}
         style={styles.progressBar}
       />
-      <Text style={[styles.resultInfo, { color: colors.tabIconDefault }]}>
+      {/* --- PERUBAHAN DISINI --- */}
+      <Text style={[styles.resultInfo, { color: colors.tabIconDefault, textAlign: 'left' }]}>
         {desc}
       </Text>
 
@@ -408,9 +410,7 @@ export default function CheckScreen() {
   );
 }
 
-// StyleSheet Gabungan
 const styles = StyleSheet.create({
-  // --- Tampilan Upload (Desain "Sempurna") ---
   safeArea: { flex: 1 },
   scrollContainer: { flexGrow: 1, justifyContent: "center" },
   container: { alignItems: "center", padding: 20 },
@@ -468,8 +468,8 @@ const styles = StyleSheet.create({
   cameraButtonText: { color: "#FFFFFF", fontSize: 16, fontWeight: "bold" },
   overlayContainer: { justifyContent: "center", alignItems: "center" },
   loadingText: { marginTop: 16, fontSize: 16, fontWeight: "600" },
-
-  // --- Tampilan Hasil (Sesuai kode yang Anda berikan) ---
+  
+  // --- Tampilan Hasil ---
   resultCard: {
     padding: 20,
     borderRadius: 24,
@@ -478,7 +478,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 10,
     elevation: 5,
-    alignItems: "center",
+    // --- PERUBAHAN DISINI ---
+    alignItems: 'stretch', // Mengganti dari 'center'
   },
   resultHeader: {
     flexDirection: "row",
@@ -503,7 +504,8 @@ const styles = StyleSheet.create({
     fontSize: 15,
     lineHeight: 22,
     marginBottom: 24,
-    textAlign: "center",
+    // --- PERUBAHAN DISINI ---
+    textAlign: 'left', // Mengganti dari 'center'
   },
   resultActions: { gap: 12, width: "100%", backgroundColor: "transparent" },
   detailsButton: {
