@@ -18,7 +18,7 @@ export default function HistoryScreen() {
   const { refreshApp } = useGlobalRefresh();
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Contoh data riwayat (kosong)
+  // Ganti dengan data asli nantinya
   const historyData: { id: string; label: string; date: string }[] = [];
 
   const handleRefresh = useCallback(() => {
@@ -31,7 +31,9 @@ export default function HistoryScreen() {
 
   const renderEmpty = () => (
     <View style={styles.emptyContainer}>
-      <Feather name="clock" size={64} color={colors.tabIconDefault} />
+      <View style={[styles.iconCircle, { backgroundColor: colors.surface }]}>
+        <Feather name="clock" size={36} color={colors.tabIconDefault} />
+      </View>
       <Text style={[styles.emptyText, { color: colors.text }]}>Belum ada riwayat</Text>
       <Text style={[styles.subText, { color: colors.tabIconDefault }]}>
         Hasil klasifikasi yang Anda lakukan akan tampil di sini.
@@ -41,8 +43,11 @@ export default function HistoryScreen() {
 
   const renderItem = ({ item }: { item: typeof historyData[0] }) => (
     <View style={[styles.itemContainer, { backgroundColor: colors.surface }]}>
-      <Text style={[styles.itemLabel, { color: colors.text }]}>{item.label}</Text>
-      <Text style={[styles.itemDate, { color: colors.tabIconDefault }]}>{item.date}</Text>
+      <Feather name="activity" size={20} color={colors.tint} style={{ marginRight: 10 }} />
+      <View style={{ flex: 1 }}>
+        <Text style={[styles.itemLabel, { color: colors.text }]}>{item.label}</Text>
+        <Text style={[styles.itemDate, { color: colors.tabIconDefault }]}>{item.date}</Text>
+      </View>
     </View>
   );
 
@@ -61,7 +66,7 @@ export default function HistoryScreen() {
       >
         <Text style={[styles.title, { color: colors.text }]}>Riwayat Pengecekan</Text>
         <Text style={[styles.subtitle, { color: colors.tabIconDefault }]}>
-          Tarik ke bawah untuk menyegarkan halaman.
+          Tarik ke bawah untuk menyegarkan halaman
         </Text>
 
         {historyData.length === 0 ? (
@@ -71,7 +76,7 @@ export default function HistoryScreen() {
             data={historyData}
             keyExtractor={(item) => item.id}
             renderItem={renderItem}
-            contentContainerStyle={{ marginTop: 20 }}
+            contentContainerStyle={{ paddingTop: 10 }}
           />
         )}
       </ScrollView>
@@ -99,12 +104,25 @@ const styles = StyleSheet.create({
   emptyContainer: {
     alignItems: 'center',
     marginTop: 60,
+    paddingHorizontal: 20,
+  },
+  iconCircle: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 2,
   },
   emptyText: {
     fontSize: 16,
     fontWeight: '600',
-    marginTop: 12,
-    marginBottom: 4,
+    marginBottom: 6,
   },
   subText: {
     fontSize: 13,
@@ -113,14 +131,16 @@ const styles = StyleSheet.create({
     maxWidth: 260,
   },
   itemContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
     padding: 16,
     borderRadius: 12,
     marginBottom: 14,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 2,
+    shadowRadius: 6,
+    elevation: 3,
   },
   itemLabel: {
     fontSize: 16,
