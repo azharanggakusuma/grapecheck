@@ -83,6 +83,11 @@ export default function CheckScreen() {
     }, 2000);
   };
 
+  const handleReset = () => {
+    setImage(null);
+    setPrediction(null);
+  };
+
   const renderResult = () => {
     if (loading) {
       return <ActivityIndicator size="large" color={colors.tint} style={{ marginTop: 40 }} />;
@@ -90,7 +95,7 @@ export default function CheckScreen() {
     if (!prediction) return null;
 
     const isHealthy = prediction.label.toLowerCase().includes('healthy');
-    const resultColor = isHealthy ? colors.success : '#ff5c5c';
+    const resultColor = isHealthy ? colors.success : colors.error;
 
     return (
       <View style={[styles.resultCard, { backgroundColor: colors.surface }]}>
@@ -99,15 +104,21 @@ export default function CheckScreen() {
           <Text style={[styles.predictionLabel, { color: resultColor }]}>{prediction.label}</Text>
         </View>
         <Text style={[styles.confidenceText, { color: colors.tabIconDefault }]}>
-          Akurasi: <Text style={{ fontWeight: '600', color: colors.text }}>
+          Akurasi:{' '}
+          <Text style={{ fontWeight: '600', color: colors.text }}>
             {` ${(prediction.confidence * 100).toFixed(2)}%`}
           </Text>
         </Text>
         <Text style={styles.resultInfo}>
           {isHealthy
-            ? 'Tanaman tampak sehat.'
-            : 'Kemungkinan terdapat penyakit, segera lakukan tindakan pencegahan.'}
+            ? '✅ Tanaman tampak sehat.'
+            : '⚠️ Kemungkinan penyakit terdeteksi. Perlu tindakan lanjutan.'}
         </Text>
+
+        <TouchableOpacity style={[styles.resetButton, { backgroundColor: colors.background }]} onPress={handleReset}>
+          <Feather name="rotate-ccw" size={18} color={colors.tint} />
+          <Text style={[styles.resetButtonText, { color: colors.tint }]}>Reset</Text>
+        </TouchableOpacity>
       </View>
     );
   };
@@ -126,6 +137,11 @@ export default function CheckScreen() {
         }
       >
         <View style={styles.container}>
+          <Text style={[styles.heading, { color: colors.text }]}>Deteksi Penyakit Daun Anggur</Text>
+          <Text style={[styles.subtext, { color: colors.tabIconDefault }]}>
+            Unggah gambar daun untuk mendeteksi kemungkinan penyakit.
+          </Text>
+
           <TouchableOpacity
             onPress={() => pickImage(false)}
             style={[
@@ -175,6 +191,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingTop: 24,
+  },
+  heading: {
+    fontSize: 20,
+    fontWeight: '700',
+    marginBottom: 6,
+  },
+  subtext: {
+    fontSize: 14,
+    textAlign: 'center',
+    marginBottom: 20,
+    opacity: 0.7,
   },
   imageContainer: {
     width: IMAGE_CONTAINER_SIZE,
@@ -261,5 +288,20 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 20,
     opacity: 0.75,
+    marginBottom: 16,
+  },
+  resetButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    gap: 6,
+  },
+  resetButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
   },
 });
