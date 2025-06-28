@@ -214,8 +214,8 @@ export default function HomeScreen() {
     useNativeDriver: true,
   });
 
-  const gradientColors = theme === "dark" ? ["#00640A", "#1A4D2E"] : ["#00990E", "#22C55E"];
-  const buttonGradient = theme === "dark" ? ["#00B86B", "#007A47"] : ["#4ADE80", "#16A34A"];
+  const gradientColors = theme === 'dark' ? ['#00640A', colors.background] : [colors.tint, '#00990E'];
+  const buttonGradient = theme === 'dark' ? [colors.primaryLight, colors.tint] : [colors.primaryLight, colors.tint];
 
   const features = [
     {

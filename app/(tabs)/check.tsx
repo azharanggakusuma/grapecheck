@@ -244,7 +244,7 @@ export default function CheckScreen() {
   const { refreshApp } = useGlobalRefresh();
   const [isRefreshing, setIsRefreshing] = useState(false);
   
-  const buttonGradient = theme === "dark" ? ["#00B86B", "#007A47"] : ["#4ADE80", "#16A34A"];
+  const buttonGradient = theme === 'dark' ? [colors.primaryLight, colors.tint] : [colors.primaryLight, colors.tint];
 
   const handleRefresh = useCallback(() => {
     setIsRefreshing(true);

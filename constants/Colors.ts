@@ -1,26 +1,22 @@
 // constants/Colors.ts
 
-const primary = '#00AA13'; // Hijau Gojek
-const primaryLight = '#4ADE80'; // Hijau muda (green-400)
-const textLight = '#1F2937'; // Abu gelap (gray-800)
-const textDark = '#F9FAFB'; // Abu terang (gray-50)
-const backgroundLight = '#F3F4F6'; // Abu muda (gray-100)
-const backgroundDark = '#111827'; // Abu sangat gelap (gray-900)
-const surfaceLight = '#FFFFFF'; // Putih
-const surfaceDark = '#1F2937'; // Abu gelap
-const success = '#10B981'; // Emerald-500
-const warning = '#FACC15'; // Yellow-400
-const error = '#EF4444'; // Red-500
-const borderLight = '#E5E7EB'; // Abu border
-const borderDark = '#374151'; // Abu border gelap
-const tabIconDefaultLight = '#9CA3AF'; // Abu icon
-const tabIconDefaultDark = '#6B7280'; // Abu icon gelap
-const confidenceBarLight = '#D1FAE5'; // Emerald-100
-const confidenceBarDark = '#064E3B'; // Emerald-900
+const primary = '#00AA13'; // Warna hijau utama, tetap konsisten
+const primaryLight = '#4ADE80'; // Hijau muda yang vibrant
+const text = '#111827'; // Abu-abu sangat gelap untuk teks (kontras tinggi)
+const textSecondary = '#6B7280'; // Abu-abu untuk teks sekunder
+const backgroundLight = '#F9FAFB'; // Abu-abu sangat terang untuk background
+const backgroundDark = '#111827'; // Abu-abu sangat gelap untuk background mode gelap
+const surfaceLight = '#FFFFFF'; // Putih untuk permukaan kartu/kontainer
+const surfaceDark = '#1F2937'; // Abu-abu gelap untuk permukaan di mode gelap
+const success = '#10B981'; // Hijau untuk notifikasi sukses
+const warning = '#F59E0B'; // Kuning untuk peringatan
+const error = '#EF4444'; // Merah untuk kesalahan
+const border = '#E5E7EB'; // Warna border terang
+const borderDark = '#374151'; // Warna border gelap
 
 export default {
   light: {
-    text: textLight,
+    text: text,
     background: backgroundLight,
     tint: primary,
     primaryLight: primaryLight,
@@ -28,17 +24,15 @@ export default {
     success: success,
     warning: warning,
     error: error,
-    border: borderLight,
+    border: border,
     tabBar: surfaceLight,
-    tabIconDefault: tabIconDefaultLight,
+    tabIconDefault: textSecondary,
     tabIconSelected: primary,
-    confidenceBar: confidenceBarLight,
-    blurTint: 'rgba(243, 244, 246, 0.85)',
-    cardGradientStart: surfaceLight,
-    cardGradientEnd: backgroundLight,
+    confidenceBar: '#D1FAE5', // Varian terang dari warna sukses
+    blurTint: 'rgba(249, 250, 251, 0.85)',
   },
   dark: {
-    text: textDark,
+    text: '#F9FAFB', // Putih keabuan untuk teks mode gelap
     background: backgroundDark,
     tint: primaryLight,
     primaryLight: primaryLight,
@@ -48,11 +42,9 @@ export default {
     error: error,
     border: borderDark,
     tabBar: surfaceDark,
-    tabIconDefault: tabIconDefaultDark,
+    tabIconDefault: textSecondary,
     tabIconSelected: primaryLight,
-    confidenceBar: confidenceBarDark,
+    confidenceBar: '#064E3B', // Varian gelap dari warna sukses
     blurTint: 'rgba(17, 24, 39, 0.85)',
-    cardGradientStart: surfaceDark,
-    cardGradientEnd: '#1F2937',
   },
 };

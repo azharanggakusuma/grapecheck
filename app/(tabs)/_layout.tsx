@@ -43,7 +43,7 @@ function TabBarIcon({ name, color, focused }: {
   );
 }
 
-// Komponen CustomTabBar tidak berubah
+// Komponen CustomTabBar dengan penyesuaian warna
 function CustomTabBar({ state, descriptors, navigation, insets }: any) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
@@ -114,6 +114,8 @@ function CustomTabBar({ state, descriptors, navigation, insets }: any) {
     }
   }
 
+  const centerButtonGradientColors = colorScheme === 'dark' ? ['#22C55E', '#00880C'] : [colors.primaryLight, colors.tint];
+
   return (
     <View 
       style={[
@@ -171,7 +173,7 @@ function CustomTabBar({ state, descriptors, navigation, insets }: any) {
               <Animated.View style={{ transform: [{ scale: centerButtonScale }] }}>
                 <View style={[styles.centerButtonWrapper, { backgroundColor: colors.surface, shadowColor: '#000' }]}>
                   <LinearGradient
-                    colors={['#22C55E', '#00880C']}
+                    colors={centerButtonGradientColors}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}
                     style={styles.centerButtonGradient}
@@ -212,9 +214,7 @@ export default function TabLayout() {
         tabBarShowLabel: false,
       }}
     >
-      {/* --- UBAH BARIS INI --- */}
       <Tabs.Screen name="index" options={{ title: 'Beranda', headerShown: false }} /> 
-      {/* -------------------- */}
       <Tabs.Screen name="history" options={{ title: 'Riwayat' }} />
       <Tabs.Screen name="check" options={{ title: 'Klasifikasi' }} />
       <Tabs.Screen name="notifications" options={{ title: 'Notifikasi' }} />
@@ -237,7 +237,6 @@ const styles = StyleSheet.create({
   },
   slidingPill: {
     position: 'absolute',
-    // --- PERUBAHAN: Dinaikkan sedikit ---
     top: 8, 
   },
   centerButtonWrapper: {
