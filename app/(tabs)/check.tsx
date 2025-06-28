@@ -19,12 +19,7 @@ import { useGlobalRefresh } from '@/components/GlobalRefreshContext';
 const { width } = Dimensions.get('window');
 const IMAGE_CONTAINER_SIZE = width * 0.82;
 
-const diseaseClasses = [
-  'Grape___Black_rot',
-  'Grape___Esca_(Black_Measles)',
-  'Grape___healthy',
-  'Grape___Leaf_blight_(Isariopsis_Leaf_Spot)',
-];
+const diseaseClasses = ['Hawar', 'Sehat', 'Busuk', 'Esca', 'Negative'];
 
 export default function CheckScreen() {
   const [image, setImage] = useState<string | null>(null);
