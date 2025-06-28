@@ -11,7 +11,7 @@ MODEL_PATH = os.path.join('model', 'model.tflite')
 IMG_HEIGHT = 224
 IMG_WIDTH = 224
 # Pastikan urutan kelas ini SAMA PERSIS dengan saat model Anda dilatih
-DISEASE_CLASSES = ['Hawar', 'Sehat', 'Busuk', 'Esca', 'Negative'] 
+DISEASE_CLASSES = ['Esca', 'Busuk', 'Hawar', 'Sehat', 'Negative'] 
 
 # --- Muat Model TFLite ---
 try:
