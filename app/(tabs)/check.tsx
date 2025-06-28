@@ -30,7 +30,7 @@ const BACKEND_URL = "http://192.168.123.61:5000/classify";
 const { width } = Dimensions.get("window");
 const IMAGE_SIZE = width * 0.85;
 
-// Komponen Overlay Loading (Dari Desain "Sempurna")
+// Komponen Overlay Loading
 const LoadingOverlay = ({
   visible,
   colors,
@@ -71,7 +71,7 @@ const LoadingOverlay = ({
   );
 };
 
-// Kartu Hasil Klasifikasi (Sesuai yang Anda Inginkan)
+// Kartu Hasil Klasifikasi
 const ResultCard = ({ prediction, onReset, colors }: any) => {
   const slideAnim = useRef(new Animated.Value(50)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
@@ -410,7 +410,7 @@ export default function CheckScreen() {
 
 // StyleSheet Gabungan
 const styles = StyleSheet.create({
-  // --- Tampilan Upload (Desain "Sempurna" yang Anda sukai) ---
+  // --- Tampilan Upload (Desain "Sempurna") ---
   safeArea: { flex: 1 },
   scrollContainer: { flexGrow: 1, justifyContent: "center" },
   container: { alignItems: "center", padding: 20 },
