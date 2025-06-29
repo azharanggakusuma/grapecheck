@@ -1,18 +1,18 @@
 // constants/Colors.ts
 
-const primary = '#00AA13'; // Warna hijau utama, tetap konsisten
-const primaryLight = '#4ADE80'; // Hijau muda yang vibrant
-const text = '#111827'; // Abu-abu sangat gelap untuk teks (kontras tinggi)
-const textSecondary = '#6B7280'; // Abu-abu untuk teks sekunder
-const backgroundLight = '#F9FAFB'; // Abu-abu sangat terang untuk background
-const backgroundDark = '#111827'; // Abu-abu sangat gelap untuk background mode gelap
-const surfaceLight = '#FFFFFF'; // Putih untuk permukaan kartu/kontainer
-const surfaceDark = '#1F2937'; // Abu-abu gelap untuk permukaan di mode gelap
-const success = '#10B981'; // Hijau untuk notifikasi sukses
-const warning = '#F59E0B'; // Kuning untuk peringatan
-const error = '#EF4444'; // Merah untuk kesalahan
-const border = '#E5E7EB'; // Warna border terang
-const borderDark = '#374151'; // Warna border gelap
+const primary = '#00AA13'; // Hijau utama (konsisten)
+const primaryLight = '#4ADE80'; // Hijau muda vibrant
+const text = '#111827'; // Abu gelap untuk teks
+const textSecondary = '#6B7280'; // Abu sekunder
+const backgroundLight = '#F9FAFB'; // Background terang
+const backgroundDark = '#0A0A0A'; // Hitam netral untuk background dark mode
+const surfaceLight = '#FFFFFF'; // Putih bersih
+const surfaceDark = '#121212'; // Permukaan gelap solid
+const success = '#10B981'; // Hijau sukses
+const warning = '#F59E0B'; // Kuning peringatan
+const error = '#EF4444'; // Merah error
+const border = '#E5E7EB'; // Border terang
+const borderDark = '#2A2A2A'; // Border gelap netral
 
 export default {
   light: {
@@ -28,12 +28,12 @@ export default {
     tabBar: surfaceLight,
     tabIconDefault: textSecondary,
     tabIconSelected: primary,
-    confidenceBar: '#D1FAE5', // Varian terang dari warna sukses
+    confidenceBar: '#D1FAE5',
     blurTint: 'rgba(249, 250, 251, 0.85)',
   },
   dark: {
-    text: '#F9FAFB', // Putih keabuan untuk teks mode gelap
-    background: backgroundDark,
+    text: '#FAFAFA', // Putih terang
+    background: backgroundDark, // Lebih gelap dari sebelumnya
     tint: primaryLight,
     primaryLight: primaryLight,
     surface: surfaceDark,
@@ -42,9 +42,9 @@ export default {
     error: error,
     border: borderDark,
     tabBar: surfaceDark,
-    tabIconDefault: textSecondary,
+    tabIconDefault: '#9CA3AF', // Abu terang
     tabIconSelected: primaryLight,
-    confidenceBar: '#064E3B', // Varian gelap dari warna sukses
-    blurTint: 'rgba(17, 24, 39, 0.85)',
+    confidenceBar: '#064E3B',
+    blurTint: 'rgba(10, 10, 10, 0.85)', // Matching backgroundDark
   },
 };
