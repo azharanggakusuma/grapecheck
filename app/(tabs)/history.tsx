@@ -5,7 +5,6 @@ import {
   RefreshControl,
   FlatList,
   Animated,
-  View as RNView,
 } from 'react-native';
 import { Text, View } from '@/components/Themed';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -54,15 +53,15 @@ export default function HistoryScreen() {
         opacity: fadeAnim,
         transform: [{ translateY: slideAnim }],
         alignItems: 'center',
-        marginTop: 80,
+        marginTop: 60,
         paddingHorizontal: 20,
       }}
     >
-      <RNView style={[styles.emptyIconWrapper, { backgroundColor: colors.surface + 'AA' }]}>
-        <Feather name="clock" size={36} color="#A0A0A0" />
-      </RNView>
-      <Text style={[styles.emptyText, { color: colors.text }]}>Tidak Ada Riwayat</Text>
-      <Text style={[styles.subText, { color: colors.tabIconDefault }]}>
+      <View style={[styles.emptyIconWrapper, { backgroundColor: colors.surface + '80' }]}>
+        <Feather name="clock" size={40} color="#A0A0A0" />
+      </View>
+      <Text style={[styles.emptyTitle, { color: colors.text }]}>Tidak Ada Riwayat</Text>
+      <Text style={[styles.emptySubtitle, { color: colors.tabIconDefault }]}>
         Riwayat analisis Anda akan muncul di sini setelah melakukan unggahan.
       </Text>
     </Animated.View>
@@ -103,7 +102,7 @@ export default function HistoryScreen() {
             data={historyData}
             keyExtractor={(item) => item.id}
             renderItem={renderItem}
-            contentContainerStyle={{ marginTop: 16 }}
+            contentContainerStyle={{ marginTop: 24 }}
           />
         )}
       </ScrollView>
@@ -116,41 +115,41 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   container: {
-    padding: 20,
+    paddingHorizontal: 20,
+    paddingTop: 40,
+    paddingBottom: 60,
     flexGrow: 1,
   },
   title: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: '700',
     marginBottom: 6,
+    textAlign: 'left', // ✅ rata kiri
   },
   subtitle: {
     fontSize: 14,
-    marginBottom: 24,
+    marginBottom: 32,
+    textAlign: 'left', // ✅ rata kiri
     opacity: 0.75,
   },
   emptyIconWrapper: {
-    width: 90,
-    height: 90,
-    borderRadius: 45,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,
-    shadowColor: '#000',
-    shadowOpacity: 0.08,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 6,
   },
-  emptyText: {
-    fontSize: 17,
-    fontWeight: '600',
-    marginBottom: 8,
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    marginBottom: 6,
   },
-  subText: {
-    fontSize: 13,
+  emptySubtitle: {
+    fontSize: 14,
     textAlign: 'center',
-    opacity: 0.65,
-    maxWidth: 280,
+    opacity: 0.7,
+    maxWidth: 260,
   },
   card: {
     flexDirection: 'row',
