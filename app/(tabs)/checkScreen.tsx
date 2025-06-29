@@ -12,11 +12,11 @@ import {
   Platform,
   RefreshControl,
 } from "react-native";
-import { Text, View } from "@/components/theme/Themed";
+import { Text, View } from "@/components/ui/Themed";
 import * as ImagePicker from "expo-image-picker";
 import { Feather } from "@expo/vector-icons";
 import Colors from "@/constants/Colors";
-import { useTheme } from "@/components/theme/ThemeProvider";
+import { useTheme } from "@/components/ui/ThemeProvider";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { BlurView } from "expo-blur";
 import * as Progress from "react-native-progress";

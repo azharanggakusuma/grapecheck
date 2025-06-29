@@ -6,9 +6,9 @@ import {
   TouchableOpacity,
   Animated,
 } from 'react-native';
-import { Text, View } from '@/components/theme/Themed';
+import { Text, View } from '@/components/ui/Themed';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useTheme } from '@/components/theme/ThemeProvider';
+import { useTheme } from '@/components/ui/ThemeProvider';
 import Colors from '@/constants/Colors';
 import { useGlobalRefresh } from '@/components/GlobalRefreshContext';
 import { Feather } from '@expo/vector-icons';
