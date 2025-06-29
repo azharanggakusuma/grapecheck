@@ -111,10 +111,6 @@ export default function ProfileScreen() {
           <SectionHeader title="Akun" colors={colors} />
           <View style={styles.section}>
             <ProfileItem icon="edit-2" label="Edit Profil" colors={colors} onPress={() => {}} />
-          </View>
-
-          <SectionHeader title="Keamanan" colors={colors} />
-          <View style={styles.section}>
             <ProfileItem icon="lock" label="Ganti Password" colors={colors} onPress={() => {}} />
           </View>
 
