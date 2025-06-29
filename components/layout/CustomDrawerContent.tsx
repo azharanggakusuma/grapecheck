@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Share, Alert } from 'react-native';
 import { DrawerContentScrollView } from '@react-navigation/drawer';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
@@ -7,45 +7,72 @@ import { useTheme } from '../ui/ThemeProvider';
 import Colors from '@/constants/Colors';
 import { useRouter, usePathname } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as Linking from 'expo-linking';
 
-// Komponen untuk setiap item menu dengan gaya kustom
+// Komponen untuk setiap item menu dengan gaya yang lebih baik
 function CustomDrawerItem({ icon, label, isFocused, colors, onPress }: any) {
-    return (
-        <TouchableOpacity
-            onPress={onPress}
-            style={[styles.drawerItem, { backgroundColor: isFocused ? colors.primaryLight + '20' : 'transparent' }]}
-        >
-            <View style={[styles.iconContainer, isFocused && { backgroundColor: colors.tint }]}>
-              <Feather name={icon} size={20} color={isFocused ? '#FFFFFF' : colors.tabIconDefault} />
-            </View>
-            <Text style={[styles.drawerLabel, { color: isFocused ? colors.tint : colors.text }]}>
-                {label}
-            </Text>
-        </TouchableOpacity>
-    );
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      style={[
+        styles.drawerItem,
+        isFocused ? { backgroundColor: colors.tint + '20' } : {}
+      ]}
+    >
+      <View style={[
+        styles.iconContainer,
+        isFocused ? { backgroundColor: colors.tint } : { backgroundColor: colors.surface }
+      ]}>
+        <Feather name={icon} size={20} color={isFocused ? '#FFFFFF' : colors.tabIconDefault} />
+      </View>
+      <Text style={[styles.drawerLabel, { color: isFocused ? colors.tint : colors.text }]}>
+        {label}
+      </Text>
+    </TouchableOpacity>
+  );
 }
+
+// Komponen pemisah
+const DrawerSeparator = ({ colors }: { colors: any }) => (
+  <View style={[styles.separator, { backgroundColor: colors.border + '80' }]} />
+);
 
 export function CustomDrawerContent(props: any) {
   const { bottom, top } = useSafeAreaInsets();
-  const { theme } = useTheme();
+  const { theme, toggleTheme } = useTheme();
   const colors = Colors[theme];
   const router = useRouter();
   const pathname = usePathname();
 
-  // --- PERUBAHAN UTAMA: Sesuaikan item menu di sini ---
+  // Fungsi untuk menangani navigasi
+  const handleNavigate = (path: string) => {
+    router.navigate(path);
+    props.navigation.closeDrawer();
+  };
+  
+  // Fungsi untuk berbagi aplikasi
+  const handleShareApp = async () => {
+    try {
+      await Share.share({
+        message: 'Ayo cek kesehatan daun anggurmu dengan GrapeCheck! Unduh sekarang di [Link App Store/Play Store]',
+      });
+    } catch (error: any) {
+      Alert.alert('Error', 'Gagal membagikan aplikasi.');
+    }
+  };
+
   const menuItems = [
-    {
-      icon: 'home' as const,
-      label: 'Beranda',
-      path: '/(tabs)',
-    },
-    {
-      icon: 'settings' as const,
-      label: 'Pengaturan',
-      path: '/settings',
-    },
+    { icon: 'home' as const, label: 'Beranda', path: '/(tabs)' },
+    { icon: 'bar-chart-2' as const, label: 'Riwayat Analisis', path: '/historyScreen' },
+    { icon: 'user' as const, label: 'Profil', path: '/profileScreen' },
   ];
 
+  const secondaryMenuItems = [
+    { icon: 'settings' as const, label: 'Pengaturan', path: '/settings' },
+    { icon: 'share-2' as const, label: 'Bagikan Aplikasi', action: handleShareApp },
+    { icon: 'help-circle' as const, label: 'Bantuan', action: () => Linking.openURL('https://github.com/azharanggakusuma/grapecheck') },
+  ];
+  
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       {/* Header Drawer */}
@@ -67,26 +94,41 @@ export function CustomDrawerContent(props: any) {
         {...props}
         contentContainerStyle={{ paddingTop: 10, backgroundColor: colors.background }}
       >
-        {menuItems.map((item) => {
-          // Logika untuk menentukan apakah item sedang aktif/fokus
-          const isFocused = (item.path === '/(tabs)')
-            ? pathname.startsWith('/(tabs)')
-            : pathname === item.path;
-            
-          return (
-            <CustomDrawerItem 
-                key={item.label}
-                icon={item.icon}
-                label={item.label}
-                isFocused={isFocused}
-                colors={colors}
-                onPress={() => {
-                    router.navigate(item.path);
-                    props.navigation.closeDrawer();
-                }}
-            />
-          )
-        })}
+        {/* Menu Utama */}
+        {menuItems.map((item) => (
+          <CustomDrawerItem 
+            key={item.label}
+            icon={item.icon}
+            label={item.label}
+            isFocused={pathname.startsWith(item.path)}
+            colors={colors}
+            onPress={() => handleNavigate(item.path)}
+          />
+        ))}
+
+        <DrawerSeparator colors={colors} />
+
+        {/* Menu Sekunder */}
+        {secondaryMenuItems.map((item) => (
+          <CustomDrawerItem 
+            key={item.label}
+            icon={item.icon}
+            label={item.label}
+            isFocused={item.path ? pathname === item.path : false}
+            colors={colors}
+            onPress={() => item.action ? item.action() : handleNavigate(item.path!)}
+          />
+        ))}
+
+        {/* Toggle Tema */}
+        <TouchableOpacity onPress={toggleTheme} style={styles.drawerItem}>
+          <View style={[styles.iconContainer, { backgroundColor: colors.surface }]}>
+            <Feather name={theme === 'dark' ? 'sun' : 'moon'} size={20} color={colors.tabIconDefault} />
+          </View>
+          <Text style={[styles.drawerLabel, { color: colors.text }]}>
+            Mode {theme === 'dark' ? 'Terang' : 'Gelap'}
+          </Text>
+        </TouchableOpacity>
       </DrawerContentScrollView>
 
       {/* Footer Drawer */}
@@ -143,16 +185,26 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   iconContainer: {
-    width: 32,
-    height: 32,
+    width: 36,
+    height: 36,
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 8,
+    borderRadius: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
   drawerLabel: {
     marginLeft: 15,
     fontSize: 16,
     fontWeight: '600',
+  },
+  separator: {
+    height: 1,
+    marginVertical: 10,
+    marginHorizontal: 20,
   },
   footer: {
     paddingHorizontal: 20,
