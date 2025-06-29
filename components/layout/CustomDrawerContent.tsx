@@ -9,6 +9,11 @@ import { useRouter, usePathname } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Linking from 'expo-linking';
 
+// Komponen Judul Kategori
+const MenuCategory = ({ title, colors }: { title: string, colors: any }) => (
+  <Text style={[styles.categoryTitle, { color: colors.tabIconDefault }]}>{title}</Text>
+);
+
 // Komponen untuk setiap item menu dengan gaya yang lebih baik
 function CustomDrawerItem({ icon, label, isFocused, colors, onPress }: any) {
   return (
@@ -90,26 +95,23 @@ export function CustomDrawerContent(props: any) {
       {/* Konten Menu */}
       <DrawerContentScrollView
         {...props}
-        contentContainerStyle={{ paddingTop: 10, backgroundColor: colors.background }}
+        contentContainerStyle={{ paddingTop: 10, paddingHorizontal: 10, backgroundColor: colors.background }}
       >
-        {/* Menu Utama */}
+        <MenuCategory title="Navigasi" colors={colors} />
         {mainMenuItems.map((item) => (
           <CustomDrawerItem 
             key={item.label}
             icon={item.icon}
             label={item.label}
-            // --- PERUBAHAN DI SINI ---
-            // Logika isFocused: aktif jika route navigator saat ini adalah (tabs)
             isFocused={props.state.routeNames[props.state.index] === '(tabs)'}
-            // --- AKHIR PERUBAHAN ---
             colors={colors}
             onPress={() => handleNavigate(item.path)}
           />
         ))}
 
         <DrawerSeparator colors={colors} />
-
-        {/* Menu Sekunder */}
+        
+        <MenuCategory title="Aplikasi" colors={colors} />
         {secondaryMenuItems.map((item) => (
           <CustomDrawerItem 
             key={item.label}
@@ -123,7 +125,7 @@ export function CustomDrawerContent(props: any) {
 
         <DrawerSeparator colors={colors} />
         
-        {/* Toggle Tema */}
+        <MenuCategory title="Preferensi" colors={colors} />
         <TouchableOpacity onPress={toggleTheme} style={styles.drawerItem}>
           <View style={[styles.iconContainer, { backgroundColor: colors.surface }]}>
             <Feather name={theme === 'dark' ? 'sun' : 'moon'} size={20} color={colors.tabIconDefault} />
@@ -135,7 +137,8 @@ export function CustomDrawerContent(props: any) {
       </DrawerContentScrollView>
 
       {/* Footer Drawer */}
-      <View style={[styles.footer, { paddingBottom: bottom + 15, borderTopColor: colors.border }]}>
+      <View style={[styles.footer, { paddingBottom: bottom + 15, borderTopColor: colors.border, paddingHorizontal: 10 }]}>
+        <MenuCategory title="Akun" colors={colors} />
         <TouchableOpacity style={styles.footerButton}>
           <Feather name="log-out" size={20} color={colors.tabIconDefault} />
           <Text style={[styles.footerText, { color: colors.text }]}>Keluar</Text>
@@ -206,17 +209,17 @@ const styles = StyleSheet.create({
     separator: {
       height: 1,
       marginVertical: 10,
-      marginHorizontal: 20,
+      marginHorizontal: 10,
     },
     footer: {
-      paddingHorizontal: 20,
-      paddingTop: 15,
+      paddingTop: 5,
       borderTopWidth: 1,
     },
     footerButton: {
       flexDirection: 'row',
       alignItems: 'center',
-      paddingVertical: 10,
+      paddingVertical: 12,
+      paddingHorizontal: 10,
     },
     footerText: {
       marginLeft: 15,
@@ -228,5 +231,14 @@ const styles = StyleSheet.create({
       textAlign: 'center',
       marginTop: 10,
       opacity: 0.6,
+    },
+    // --- STYLE BARU UNTUK KATEGORI ---
+    categoryTitle: {
+        fontSize: 12,
+        fontWeight: 'bold',
+        textTransform: 'uppercase',
+        paddingHorizontal: 10,
+        marginTop: 15,
+        marginBottom: 5,
     }
 });
