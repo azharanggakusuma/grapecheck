@@ -90,12 +90,19 @@ export function CustomDrawerContent(props: any) {
         </View>
         <Text style={styles.headerTitle}>Azharangga Kusuma</Text>
         <Text style={styles.headerSubtitle}>azhar@example.com</Text>
+
+        <TouchableOpacity 
+            onPress={() => props.navigation.closeDrawer()}
+            style={[styles.closeButton, { top: top + 10 }]}
+        >
+            <Feather name="x" size={24} color="rgba(255, 255, 255, 0.8)" />
+        </TouchableOpacity>
       </LinearGradient>
 
       {/* Konten Menu */}
       <DrawerContentScrollView
         {...props}
-        contentContainerStyle={{ paddingTop: 10, paddingHorizontal: 10, backgroundColor: colors.background }}
+        contentContainerStyle={{ paddingTop: 10, paddingHorizontal: 20 }}
       >
         <MenuCategory title="Navigasi" colors={colors} />
         {mainMenuItems.map((item) => (
@@ -126,23 +133,24 @@ export function CustomDrawerContent(props: any) {
         <DrawerSeparator colors={colors} />
         
         <MenuCategory title="Preferensi" colors={colors} />
-        <TouchableOpacity onPress={toggleTheme} style={styles.drawerItem}>
-          <View style={[styles.iconContainer, { backgroundColor: colors.surface }]}>
-            <Feather name={theme === 'dark' ? 'sun' : 'moon'} size={20} color={colors.tabIconDefault} />
-          </View>
-          <Text style={[styles.drawerLabel, { color: colors.text }]}>
-            Mode {theme === 'dark' ? 'Terang' : 'Gelap'}
-          </Text>
-        </TouchableOpacity>
+        <CustomDrawerItem
+          icon={theme === 'dark' ? 'sun' : 'moon'}
+          label={`Mode ${theme === 'dark' ? 'Terang' : 'Gelap'}`}
+          isFocused={false}
+          colors={colors}
+          onPress={toggleTheme}
+        />
       </DrawerContentScrollView>
 
       {/* Footer Drawer */}
-      <View style={[styles.footer, { paddingBottom: bottom + 15, borderTopColor: colors.border, paddingHorizontal: 10 }]}>
-        <MenuCategory title="Akun" colors={colors} />
-        <TouchableOpacity style={styles.footerButton}>
-          <Feather name="log-out" size={20} color={colors.tabIconDefault} />
-          <Text style={[styles.footerText, { color: colors.text }]}>Keluar</Text>
-        </TouchableOpacity>
+      <View style={[styles.footer, { paddingBottom: bottom + 15, borderTopColor: colors.border }]}>
+        <CustomDrawerItem
+          icon="log-out"
+          label="Keluar"
+          isFocused={false}
+          colors={colors}
+          onPress={() => Alert.alert('Keluar', 'Anda yakin ingin keluar?')}
+        />
         <Text style={[styles.versionText, { color: colors.tabIconDefault }]}>
           Versi 1.0.0
         </Text>
@@ -184,10 +192,10 @@ const styles = StyleSheet.create({
     drawerItem: {
       flexDirection: 'row',
       alignItems: 'center',
-      paddingVertical: 12,
-      paddingHorizontal: 10,
+      paddingVertical: 10,
       borderRadius: 12,
       marginBottom: 5,
+      paddingHorizontal: 10,
     },
     iconContainer: {
       width: 36,
@@ -195,50 +203,42 @@ const styles = StyleSheet.create({
       justifyContent: 'center',
       alignItems: 'center',
       borderRadius: 10,
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 1 },
-      shadowOpacity: 0.05,
-      shadowRadius: 2,
-      elevation: 1,
     },
     drawerLabel: {
       marginLeft: 15,
+      marginTop: 4,
       fontSize: 16,
       fontWeight: '600',
     },
     separator: {
       height: 1,
       marginVertical: 10,
-      marginHorizontal: 10,
     },
     footer: {
-      paddingTop: 5,
+      paddingHorizontal: 15,
+      paddingTop: 10,
       borderTopWidth: 1,
-    },
-    footerButton: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      paddingVertical: 12,
-      paddingHorizontal: 10,
-    },
-    footerText: {
-      marginLeft: 15,
-      fontSize: 15,
-      fontWeight: '500',
     },
     versionText: {
       fontSize: 12,
       textAlign: 'center',
-      marginTop: 10,
+      marginTop: 5,
       opacity: 0.6,
     },
-    // --- STYLE BARU UNTUK KATEGORI ---
     categoryTitle: {
         fontSize: 12,
         fontWeight: 'bold',
         textTransform: 'uppercase',
-        paddingHorizontal: 10,
         marginTop: 15,
-        marginBottom: 5,
+        marginBottom: 8,
+        paddingHorizontal: 5,
+    },
+    closeButton: {
+        position: 'absolute',
+        right: 15,
+        width: 40,
+        height: 40,
+        justifyContent: 'center',
+        alignItems: 'center',
     }
 });
