@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
 import { useColorScheme as useDeviceColorScheme } from 'react-native';
 
 type ThemeContextType = {
@@ -8,11 +8,10 @@ type ThemeContextType = {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-export const CustomThemeProvider = ({ children }: { children: React.ReactNode }) => {
+export const CustomThemeProvider = ({ children }: { children: ReactNode }) => {
   const deviceScheme = useDeviceColorScheme();
   const [theme, setTheme] = useState<'light' | 'dark'>(deviceScheme || 'light');
 
-  // Set theme based on device settings on initial load
   useEffect(() => {
     setTheme(deviceScheme || 'light');
   }, [deviceScheme]);
@@ -35,3 +34,9 @@ export const useTheme = () => {
   }
   return context;
 };
+
+// Hook `useColorScheme` sekarang menjadi bagian dari file ini
+export function useColorScheme() {
+  const { theme } = useTheme();
+  return theme;
+}

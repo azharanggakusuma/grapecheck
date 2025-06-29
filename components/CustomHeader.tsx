@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { useTheme } from './ThemeContext';
+// --- PERUBAHAN ---
+import { useTheme } from './theme/ThemeProvider';
 import Colors from '@/constants/Colors';
 import { getHeaderTitle } from '@react-navigation/elements';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -37,23 +38,18 @@ export function CustomHeader(props: any) {
           })
         }
       ]}>
-        {/* Kontainer Kiri: Tombol kembali atau tombol menu */}
         <View style={[styles.sideContainer, { alignItems: 'flex-start' }]}>
           {navigation.canGoBack() ? (
             <TouchableOpacity onPress={() => navigation.goBack()} style={styles.button}>
               <Feather name="arrow-left" size={24} color={headerTintColor} />
             </TouchableOpacity>
           ) : (
-            // --- AWAL PERUBAHAN ---
-            // Isi dengan tombol menu untuk menyeimbangkan tampilan
-            <TouchableOpacity style={styles.button} onPress={() => { /* Aksi menu bisa ditambahkan di sini nanti */ }}>
+            <TouchableOpacity style={styles.button} onPress={() => { /* Aksi menu */ }}>
               <Feather name="menu" size={24} color={headerTintColor} />
             </TouchableOpacity>
-            // --- AKHIR PERUBAHAN ---
           )}
         </View>
 
-        {/* Kontainer Tengah: Untuk Judul Halaman atau Logo */}
         <View style={styles.centerContainer}>
            <Text 
             style={[
@@ -66,7 +62,6 @@ export function CustomHeader(props: any) {
           </Text>
         </View>
         
-        {/* Kontainer Kanan: Untuk tombol ganti tema */}
         <View style={[styles.sideContainer, { alignItems: 'flex-end' }]}>
           <TouchableOpacity onPress={toggleTheme} style={styles.button}>
             <Feather name={theme === 'light' ? 'moon' : 'sun'} size={24} color={headerTintColor} />

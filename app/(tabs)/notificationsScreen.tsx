@@ -5,9 +5,9 @@ import {
   RefreshControl,
   Animated,
 } from 'react-native';
-import { Text, View } from '@/components/Themed';
+import { Text, View } from '@/components/theme/Themed';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useTheme } from '@/components/ThemeContext';
+import { useTheme } from '@/components/theme/ThemeProvider';
 import Colors from '@/constants/Colors';
 import { useGlobalRefresh } from '@/components/GlobalRefreshContext';
 import { Feather } from '@expo/vector-icons';

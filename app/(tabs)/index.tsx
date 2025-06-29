@@ -10,8 +10,8 @@ import {
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import Colors from "@/constants/Colors";
-import { useTheme } from "@/components/ThemeContext";
-import { View as DefaultView } from "@/components/Themed";
+import { useTheme } from "@/components/theme/ThemeProvider";
+import { View as DefaultView } from "@/components/theme/Themed";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";

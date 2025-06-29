@@ -2,7 +2,7 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
-import { CustomThemeProvider } from '@/components/ThemeContext';
+import { CustomThemeProvider } from '@/components/theme/ThemeProvider';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GlobalRefreshProvider, useGlobalRefresh } from '@/components/GlobalRefreshContext';
 
