@@ -7,7 +7,7 @@ import Colors from '@/constants/Colors';
 import { getHeaderTitle } from '@react-navigation/elements';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-export function CustomHeader(props: any) {
+export function Header(props: any) {
   const { navigation, route, options } = props;
   const { theme, toggleTheme } = useTheme();
   const colors = Colors[theme];

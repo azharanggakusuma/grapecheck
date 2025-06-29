@@ -4,7 +4,7 @@ import { useColorScheme } from '@/components/hooks/useColorScheme';
 import Colors from '@/constants/Colors';
 import { Feather } from '@expo/vector-icons';
 import { View, StyleSheet, Animated, TouchableOpacity, Text } from 'react-native';
-import { CustomHeader } from '@/components/layout/CustomHeader';
+import { Header } from '@/components/layout/Header';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -212,7 +212,7 @@ export default function TabLayout() {
     <Tabs
       tabBar={(props) => <CustomTabBar {...props} insets={insets} />}
       screenOptions={{
-        header: (props) => <CustomHeader {...props} />,
+        header: (props) => <Header {...props} />,
         tabBarShowLabel: false,
       }}
     >
