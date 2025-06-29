@@ -1,5 +1,3 @@
-// File: app/_layout.tsx
-
 import { Drawer } from 'expo-router/drawer';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
@@ -7,6 +5,8 @@ import 'react-native-reanimated';
 import { CustomThemeProvider } from '@/components/ui/ThemeProvider';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GlobalRefreshProvider, useGlobalRefresh } from '@/components/contexts/GlobalRefreshContext';
+// --- PERUBAHAN: Impor komponen drawer kustom ---
+import { CustomDrawerContent } from '@/components/layout/CustomDrawerContent';
 
 export {
   ErrorBoundary,
@@ -30,20 +30,29 @@ function RootLayout() {
 
 function RootLayoutNav() {
   return (
-    // Konfigurasi Drawer sebagai layout utama
-    <Drawer screenOptions={{
+    <Drawer
+      // --- PERUBAHAN: Gunakan komponen kustom untuk merender konten drawer ---
+      drawerContent={(props) => <CustomDrawerContent {...props} />}
+      screenOptions={{
         swipeEnabled: true,
-    }}>
-      {/* Tampilkan grup (tabs) sebagai satu layar di dalam Drawer */}
+      }}
+    >
       <Drawer.Screen 
-          name="(tabs)" 
-          options={{ 
-              // --- PERUBAHAN PENTING ---
-              // Sembunyikan header yang dibuat oleh Drawer untuk grup (tabs)
-              headerShown: false, 
-              drawerLabel: 'Beranda',
-              title: 'GrapeCheck',
-          }} 
+        name="(tabs)" 
+        options={{ 
+            headerShown: false,
+            drawerLabel: 'Beranda',
+            title: 'GrapeCheck',
+        }} 
+      />
+      {/* --- PERUBAHAN: Tambahkan halaman baru ke drawer --- */}
+      <Drawer.Screen
+        name="settings"
+        options={{
+            drawerLabel: 'Pengaturan',
+            title: 'Pengaturan',
+            headerShown: true, // Halaman ini akan punya header sendiri
+        }}
       />
     </Drawer>
   );
