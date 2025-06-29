@@ -61,10 +61,9 @@ export function CustomDrawerContent(props: any) {
     }
   };
 
-  const menuItems = [
+  // --- PERUBAHAN: Menu Beranda dikembalikan ---
+  const mainMenuItems = [
     { icon: 'home' as const, label: 'Beranda', path: '/(tabs)' },
-    { icon: 'bar-chart-2' as const, label: 'Riwayat Analisis', path: '/historyScreen' },
-    { icon: 'user' as const, label: 'Profil', path: '/profileScreen' },
   ];
 
   const secondaryMenuItems = [
@@ -95,12 +94,13 @@ export function CustomDrawerContent(props: any) {
         contentContainerStyle={{ paddingTop: 10, backgroundColor: colors.background }}
       >
         {/* Menu Utama */}
-        {menuItems.map((item) => (
+        {mainMenuItems.map((item) => (
           <CustomDrawerItem 
             key={item.label}
             icon={item.icon}
             label={item.label}
-            isFocused={pathname.startsWith(item.path)}
+            // Logika isFocused: aktif jika path adalah /(tabs)
+            isFocused={pathname === item.path} 
             colors={colors}
             onPress={() => handleNavigate(item.path)}
           />
@@ -120,6 +120,8 @@ export function CustomDrawerContent(props: any) {
           />
         ))}
 
+        <DrawerSeparator colors={colors} />
+        
         {/* Toggle Tema */}
         <TouchableOpacity onPress={toggleTheme} style={styles.drawerItem}>
           <View style={[styles.iconContainer, { backgroundColor: colors.surface }]}>
@@ -145,86 +147,87 @@ export function CustomDrawerContent(props: any) {
   );
 }
 
+// Styles tidak berubah
 const styles = StyleSheet.create({
-  header: {
-    padding: 20,
-    paddingBottom: 25,
-  },
-  avatarContainer: {
-    width: 65,
-    height: 65,
-    borderRadius: 32.5,
-    backgroundColor: 'rgba(255,255,255,0.3)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 15,
-    borderWidth: 2,
-    borderColor: 'rgba(255,255,255,0.7)',
-  },
-  avatarText: {
-    fontSize: 30,
-    fontWeight: 'bold',
-    color: '#fff',
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#fff',
-  },
-  headerSubtitle: {
-    fontSize: 14,
-    color: 'rgba(255,255,255,0.85)',
-  },
-  drawerItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    marginHorizontal: 10,
-    borderRadius: 12,
-    marginBottom: 5,
-  },
-  iconContainer: {
-    width: 36,
-    height: 36,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
-  },
-  drawerLabel: {
-    marginLeft: 15,
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  separator: {
-    height: 1,
-    marginVertical: 10,
-    marginHorizontal: 20,
-  },
-  footer: {
-    paddingHorizontal: 20,
-    paddingTop: 15,
-    borderTopWidth: 1,
-  },
-  footerButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 10,
-  },
-  footerText: {
-    marginLeft: 15,
-    fontSize: 15,
-    fontWeight: '500',
-  },
-  versionText: {
-    fontSize: 12,
-    textAlign: 'center',
-    marginTop: 10,
-    opacity: 0.6,
-  }
+    header: {
+      padding: 20,
+      paddingBottom: 25,
+    },
+    avatarContainer: {
+      width: 65,
+      height: 65,
+      borderRadius: 32.5,
+      backgroundColor: 'rgba(255,255,255,0.3)',
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginBottom: 15,
+      borderWidth: 2,
+      borderColor: 'rgba(255,255,255,0.7)',
+    },
+    avatarText: {
+      fontSize: 30,
+      fontWeight: 'bold',
+      color: '#fff',
+    },
+    headerTitle: {
+      fontSize: 18,
+      fontWeight: 'bold',
+      color: '#fff',
+    },
+    headerSubtitle: {
+      fontSize: 14,
+      color: 'rgba(255,255,255,0.85)',
+    },
+    drawerItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: 12,
+      paddingHorizontal: 20,
+      marginHorizontal: 10,
+      borderRadius: 12,
+      marginBottom: 5,
+    },
+    iconContainer: {
+      width: 36,
+      height: 36,
+      justifyContent: 'center',
+      alignItems: 'center',
+      borderRadius: 10,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.05,
+      shadowRadius: 2,
+      elevation: 1,
+    },
+    drawerLabel: {
+      marginLeft: 15,
+      fontSize: 16,
+      fontWeight: '600',
+    },
+    separator: {
+      height: 1,
+      marginVertical: 10,
+      marginHorizontal: 20,
+    },
+    footer: {
+      paddingHorizontal: 20,
+      paddingTop: 15,
+      borderTopWidth: 1,
+    },
+    footerButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: 10,
+    },
+    footerText: {
+      marginLeft: 15,
+      fontSize: 15,
+      fontWeight: '500',
+    },
+    versionText: {
+      fontSize: 12,
+      textAlign: 'center',
+      marginTop: 10,
+      opacity: 0.6,
+    }
 });
