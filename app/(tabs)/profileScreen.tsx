@@ -5,6 +5,7 @@ import {
   RefreshControl,
   TouchableOpacity,
   Animated,
+  View as RNView,
 } from 'react-native';
 import { Text, View } from '@/components/ui/Themed';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -12,6 +13,31 @@ import { useTheme } from '@/components/ui/ThemeProvider';
 import Colors from '@/constants/Colors';
 import { useGlobalRefresh } from '@/components/contexts/GlobalRefreshContext';
 import { Feather } from '@expo/vector-icons';
+
+const SectionHeader = ({ title, colors }: { title: string; colors: any }) => (
+  <Text style={[styles.sectionHeader, { color: colors.tabIconDefault }]}>{title}</Text>
+);
+
+const ProfileItem = ({
+  icon,
+  label,
+  onPress,
+  colors,
+}: {
+  icon: any;
+  label: string;
+  onPress?: () => void;
+  colors: any;
+}) => (
+  <TouchableOpacity
+    onPress={onPress}
+    style={[styles.itemContainer, { backgroundColor: colors.surface }]}
+  >
+    <Feather name={icon} size={20} color={colors.tint} style={styles.itemIcon} />
+    <Text style={[styles.itemLabel, { color: colors.text }]}>{label}</Text>
+    <Feather name="chevron-right" size={20} color={colors.tabIconDefault} />
+  </TouchableOpacity>
+);
 
 export default function ProfileScreen() {
   const { theme } = useTheme();
@@ -48,7 +74,6 @@ export default function ProfileScreen() {
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       <ScrollView
-        contentContainerStyle={styles.container}
         refreshControl={
           <RefreshControl
             refreshing={isRefreshing}
@@ -57,60 +82,46 @@ export default function ProfileScreen() {
             colors={[colors.tint]}
           />
         }
+        contentContainerStyle={styles.container}
       >
         <Animated.View
           style={{
             opacity: fadeAnim,
             transform: [{ translateY }],
             width: '100%',
-            alignItems: 'center',
           }}
         >
-          <View
-            style={[
-              styles.avatarContainer,
-              {
-                borderColor: colors.tint,
-                shadowColor: colors.tint + '40',
-                backgroundColor: colors.surface,
-              },
-            ]}
-          >
-            <Text style={[styles.avatarText, { color: colors.tint }]}>A</Text>
+          <RNView style={styles.headerContainer}>
+            <View
+              style={[
+                styles.avatarContainer,
+                {
+                  borderColor: colors.tint,
+                  shadowColor: colors.tint + '40',
+                  backgroundColor: colors.surface,
+                },
+              ]}
+            >
+              <Text style={[styles.avatarText, { color: colors.tint }]}>A</Text>
+            </View>
+            <Text style={[styles.name, { color: colors.text }]}>Azharangga Kusuma</Text>
+            <Text style={[styles.email, { color: colors.tabIconDefault }]}>azhar@example.com</Text>
+          </RNView>
+
+          <SectionHeader title="Akun" colors={colors} />
+          <View style={styles.section}>
+            <ProfileItem icon="edit-2" label="Edit Profil" colors={colors} onPress={() => {}} />
           </View>
 
-          <Text style={[styles.name, { color: colors.text }]}>Azharangga Kusuma</Text>
-          <Text style={[styles.email, { color: colors.tabIconDefault }]}>azhar@example.com</Text>
-
-          <View style={[styles.divider, { backgroundColor: colors.border + '40' }]} />
-
-          <View style={styles.buttonGroup}>
-            <TouchableOpacity style={[styles.actionButton, { backgroundColor: colors.surface }]}>
-              <Feather name="edit-2" size={18} color={colors.tint} />
-              <Text style={[styles.actionText, { color: colors.tint }]}>Edit Profil</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={[styles.actionButton, { backgroundColor: colors.surface }]}>
-              <Feather name="lock" size={18} color={colors.tint} />
-              <Text style={[styles.actionText, { color: colors.tint }]}>Ganti Password</Text>
-            </TouchableOpacity>
+          <SectionHeader title="Keamanan" colors={colors} />
+          <View style={styles.section}>
+            <ProfileItem icon="lock" label="Ganti Password" colors={colors} onPress={() => {}} />
           </View>
 
-          <View style={[styles.divider, { backgroundColor: colors.border + '40' }]} />
-
-          <TouchableOpacity
-            style={[
-              styles.logoutButton,
-              {
-                borderColor: colors.error + 'AA',
-                backgroundColor: colors.error + '10',
-              },
-            ]}
-            onPress={() => console.log('Logout')}
-          >
-            <Feather name="log-out" size={18} color={colors.error} />
-            <Text style={[styles.logoutText, { color: colors.error }]}>Keluar</Text>
-          </TouchableOpacity>
+          <SectionHeader title="Lainnya" colors={colors} />
+          <View style={styles.section}>
+            <ProfileItem icon="log-out" label="Keluar" colors={colors} onPress={() => console.log('Logout')} />
+          </View>
         </Animated.View>
       </ScrollView>
     </SafeAreaView>
@@ -122,80 +133,68 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   container: {
-    flexGrow: 1,
-    alignItems: 'center',
-    paddingHorizontal: 24,
-    paddingTop: 48,
+    paddingHorizontal: 15,
+    paddingTop: 24,
     paddingBottom: 80,
   },
-  avatarContainer: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    justifyContent: 'center',
+  headerContainer: {
     alignItems: 'center',
     marginBottom: 20,
+  },
+  avatarContainer: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
     borderWidth: 3,
     shadowOpacity: 0.25,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 6 },
-    elevation: 8,
+    elevation: 6,
+    marginBottom: 16,
   },
   avatarText: {
-    fontSize: 42,
+    fontSize: 36,
     fontWeight: 'bold',
   },
   name: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: '700',
-    marginBottom: 6,
+    marginBottom: 4,
   },
   email: {
-    fontSize: 15,
+    fontSize: 14,
     opacity: 0.7,
-    marginBottom: 28,
   },
-  divider: {
-    width: '100%',
-    height: 1,
-    marginVertical: 24,
-    borderRadius: 2,
-  },
-  buttonGroup: {
-    width: '100%',
-    gap: 16,
-  },
-  actionButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 14,
-    paddingHorizontal: 18,
-    borderRadius: 16,
-    elevation: 1,
-    gap: 12,
-    shadowColor: '#00000005',
-    shadowOpacity: 0.06,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
-  },
-  actionText: {
-    fontSize: 16,
+  sectionHeader: {
+    fontSize: 14,
     fontWeight: '600',
+    textTransform: 'uppercase',
+    marginBottom: 10,
+    marginTop: 24,
+    marginLeft: 5,
   },
-  logoutButton: {
+  section: {
+    backgroundColor: 'transparent',
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  itemContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
     paddingVertical: 16,
-    paddingHorizontal: 20,
-    borderRadius: 18,
-    borderWidth: 1.5,
-    marginTop: 20,
-    gap: 12,
-    width: '100%',
+    paddingHorizontal: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: 'transparent',
   },
-  logoutText: {
+  itemIcon: {
+    marginRight: 15,
+    width: 24,
+    textAlign: 'center',
+  },
+  itemLabel: {
+    flex: 1,
     fontSize: 16,
-    fontWeight: '700',
   },
 });
