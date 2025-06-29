@@ -12,12 +12,14 @@ import { Feather } from "@expo/vector-icons";
 import Colors from "@/constants/Colors";
 import { useTheme } from "@/components/ui/ThemeProvider";
 import { View as DefaultView } from "@/components/ui/Themed";
-import { useRouter } from "expo-router";
+import { useRouter, useNavigation } from "expo-router"; // Impor useNavigation
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Haptics from "expo-haptics";
 import { useGlobalRefresh } from "@/components/contexts/GlobalRefreshContext";
+import { DrawerActions } from "@react-navigation/native"; // Impor DrawerActions
 
+// ... (Komponen FeatureCard tidak berubah)
 const FeatureCard = ({
   icon,
   title,
@@ -79,6 +81,7 @@ const FeatureCard = ({
   );
 };
 
+
 const AnimatedHeader = ({
   scrollY,
   threshold,
@@ -92,6 +95,8 @@ const AnimatedHeader = ({
   const colors = Colors[theme];
   const insets = useSafeAreaInsets();
   const headerHeight = 60 + insets.top;
+  // --- PERUBAHAN: Dapatkan navigasi untuk membuka drawer ---
+  const navigation = useNavigation();
 
   const headerBackgroundOpacity = scrollY.interpolate({
     inputRange: [threshold, threshold + 30],
@@ -129,7 +134,10 @@ const AnimatedHeader = ({
       />
       <DefaultView style={styles.headerContent}>
         <Animated.View style={[styles.headerIcons, { opacity: transparentContentOpacity }]}>
-          <Feather name="menu" size={24} color="#FFFFFF" />
+          {/* --- PERUBAHAN: Buat tombol menu bisa ditekan --- */}
+          <TouchableOpacity onPress={() => navigation.dispatch(DrawerActions.openDrawer())}>
+            <Feather name="menu" size={24} color="#FFFFFF" />
+          </TouchableOpacity>
           <Text style={styles.headerLogoText}>GrapeCheck</Text>
           <TouchableOpacity onPress={onThemeToggle}>
             <Feather name={theme === "light" ? "moon" : "sun"} size={24} color="#FFFFFF" />
@@ -137,7 +145,10 @@ const AnimatedHeader = ({
         </Animated.View>
 
         <Animated.View style={[styles.headerIcons, { opacity: solidContentOpacity }]}>
-          <Feather name="menu" size={24} color={colors.text} />
+          {/* --- PERUBAHAN: Buat tombol menu bisa ditekan --- */}
+          <TouchableOpacity onPress={() => navigation.dispatch(DrawerActions.openDrawer())}>
+            <Feather name="menu" size={24} color={colors.text} />
+          </TouchableOpacity>
           <Text style={[styles.headerLogoText, { color: colors.text }]}>GrapeCheck</Text>
           <TouchableOpacity onPress={onThemeToggle}>
             <Feather name={theme === "light" ? "moon" : "sun"} size={24} color={colors.text} />
@@ -148,6 +159,7 @@ const AnimatedHeader = ({
   );
 };
 
+// ... (Sisa komponen HomeScreen tidak berubah)
 export default function HomeScreen() {
   const { theme, toggleTheme } = useTheme();
   const colors = Colors[theme];
@@ -173,7 +185,6 @@ export default function HomeScreen() {
 
   const handleCtaPress = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    // --- PERUBAHAN ---
     router.push("/(tabs)/checkScreen");
   };
 

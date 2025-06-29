@@ -1,7 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-// --- PERUBAHAN ---
 import { useTheme } from '../ui/ThemeProvider';
 import Colors from '@/constants/Colors';
 import { getHeaderTitle } from '@react-navigation/elements';
@@ -15,7 +14,8 @@ export function Header(props: any) {
   
   const title = getHeaderTitle(options, route.name);
   const isTransparent = options.headerTransparent === true;
-  const headerTintColor = isTransparent ? '#FFFFFF' : colors.text;
+  // Untuk header standar, warna teks tidak transparan
+  const headerTintColor = colors.text; 
 
   const isLogo = !title;
   const displayTitle = title || 'GrapeCheck';
@@ -39,13 +39,16 @@ export function Header(props: any) {
         }
       ]}>
         <View style={[styles.sideContainer, { alignItems: 'flex-start' }]}>
+          {/* --- PERUBAHAN LOGIKA --- */}
           {navigation.canGoBack() ? (
+            // Jika bisa kembali di stack saat ini, lakukan goBack()
             <TouchableOpacity onPress={() => navigation.goBack()} style={styles.button}>
               <Feather name="arrow-left" size={24} color={headerTintColor} />
             </TouchableOpacity>
           ) : (
-            <TouchableOpacity style={styles.button} onPress={() => { /* Aksi menu */ }}>
-              <Feather name="menu" size={24} color={headerTintColor} />
+            // Jika tidak, kembali ke tab 'index' (Beranda)
+            <TouchableOpacity onPress={() => navigation.navigate('index')} style={styles.button}>
+              <Feather name="arrow-left" size={24} color={headerTintColor} />
             </TouchableOpacity>
           )}
         </View>

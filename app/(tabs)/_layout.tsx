@@ -1,14 +1,17 @@
+// File: app/(tabs)/_layout.tsx
+
 import React, { useEffect, useRef, useState } from 'react';
 import { Tabs } from 'expo-router';
 import { useColorScheme } from '@/components/hooks/useColorScheme';
 import Colors from '@/constants/Colors';
 import { Feather } from '@expo/vector-icons';
 import { View, StyleSheet, Animated, TouchableOpacity, Text } from 'react-native';
-import { Header } from '@/components/layout/Header';
+import { Header } from '@/components/layout/Header'; // Header akan digunakan di sini
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 
-// Komponen TabBarIcon tidak berubah
+// Komponen TabBarIcon dan CustomTabBar tidak perlu diubah...
+
 function TabBarIcon({ name, color, focused }: {
   name: React.ComponentProps<typeof Feather>['name'];
   color: string;
@@ -43,7 +46,6 @@ function TabBarIcon({ name, color, focused }: {
   );
 }
 
-// Komponen CustomTabBar dengan penyesuaian warna
 function CustomTabBar({ state, descriptors, navigation, insets }: any) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
@@ -54,7 +56,6 @@ function CustomTabBar({ state, descriptors, navigation, insets }: any) {
   const pillOpacity = useRef(new Animated.Value(1)).current;
   const centerButtonScale = useRef(new Animated.Value(1)).current;
 
-  // --- PERUBAHAN ---
   const centerRouteName = 'checkScreen';
 
   useEffect(() => {
@@ -104,7 +105,6 @@ function CustomTabBar({ state, descriptors, navigation, insets }: any) {
     });
   };
 
-  // --- PERUBAHAN ---
   const getIcon = (routeName: string): React.ComponentProps<typeof Feather>['name'] => {
     switch (routeName) {
       case 'index': return 'home';
@@ -203,6 +203,7 @@ function CustomTabBar({ state, descriptors, navigation, insets }: any) {
   );
 }
 
+
 export default function TabLayout() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
@@ -212,12 +213,15 @@ export default function TabLayout() {
     <Tabs
       tabBar={(props) => <CustomTabBar {...props} insets={insets} />}
       screenOptions={{
+        // --- PERUBAHAN: Header sekarang dikelola oleh navigator ini ---
         header: (props) => <Header {...props} />,
         tabBarShowLabel: false,
       }}
     >
-      {/* --- PERUBAHAN --- */}
+      {/* Layar "Beranda" tidak akan menampilkan header dari Tabs navigator */}
       <Tabs.Screen name="index" options={{ title: 'Beranda', headerShown: false }} /> 
+
+      {/* Layar-layar ini akan menampilkan header dari Tabs navigator */}
       <Tabs.Screen name="historyScreen" options={{ title: 'Riwayat' }} />
       <Tabs.Screen name="checkScreen" options={{ title: 'Klasifikasi' }} />
       <Tabs.Screen name="notificationsScreen" options={{ title: 'Notifikasi' }} />
@@ -226,7 +230,6 @@ export default function TabLayout() {
   );
 }
 
-// Styles tidak berubah
 const styles = StyleSheet.create({
   tabBarContainer: {
     flexDirection: 'row',

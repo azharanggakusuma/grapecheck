@@ -1,4 +1,6 @@
-import { Stack } from 'expo-router';
+// File: app/_layout.tsx
+
+import { Drawer } from 'expo-router/drawer';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
@@ -17,26 +19,36 @@ export const unstable_settings = {
 SplashScreen.preventAutoHideAsync();
 
 function RootLayout() {
-  // Gunakan refreshKey untuk me-render ulang komponen ini saat refreshApp dipanggil
   const { refreshKey } = useGlobalRefresh();
   
   useEffect(() => {
     SplashScreen.hideAsync();
   }, []);
 
-  // Tambahkan `key` prop yang akan berubah untuk me-mount ulang komponen
   return <RootLayoutNav key={refreshKey} />;
 }
 
 function RootLayoutNav() {
   return (
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      </Stack>
+    // Konfigurasi Drawer sebagai layout utama
+    <Drawer screenOptions={{
+        swipeEnabled: true,
+    }}>
+      {/* Tampilkan grup (tabs) sebagai satu layar di dalam Drawer */}
+      <Drawer.Screen 
+          name="(tabs)" 
+          options={{ 
+              // --- PERUBAHAN PENTING ---
+              // Sembunyikan header yang dibuat oleh Drawer untuk grup (tabs)
+              headerShown: false, 
+              drawerLabel: 'Beranda',
+              title: 'GrapeCheck',
+          }} 
+      />
+    </Drawer>
   );
 }
 
-// Bungkus aplikasi dengan semua provider yang diperlukan
 export default function AppWrapper() {
   return (
     <SafeAreaProvider>
