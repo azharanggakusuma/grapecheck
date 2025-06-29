@@ -54,7 +54,8 @@ function CustomTabBar({ state, descriptors, navigation, insets }: any) {
   const pillOpacity = useRef(new Animated.Value(1)).current;
   const centerButtonScale = useRef(new Animated.Value(1)).current;
 
-  const centerRouteName = 'check';
+  // --- PERUBAHAN ---
+  const centerRouteName = 'checkScreen';
 
   useEffect(() => {
     if (tabLayouts.length === state.routes.length) {
@@ -103,13 +104,14 @@ function CustomTabBar({ state, descriptors, navigation, insets }: any) {
     });
   };
 
+  // --- PERUBAHAN ---
   const getIcon = (routeName: string): React.ComponentProps<typeof Feather>['name'] => {
     switch (routeName) {
       case 'index': return 'home';
-      case 'check': return 'camera';
-      case 'history': return 'clock';
-      case 'notifications': return 'bell';
-      case 'profile': return 'user';
+      case 'checkScreen': return 'camera';
+      case 'historyScreen': return 'clock';
+      case 'notificationsScreen': return 'bell';
+      case 'profileScreen': return 'user';
       default: return 'home';
     }
   }
@@ -214,16 +216,17 @@ export default function TabLayout() {
         tabBarShowLabel: false,
       }}
     >
+      {/* --- PERUBAHAN --- */}
       <Tabs.Screen name="index" options={{ title: 'Beranda', headerShown: false }} /> 
-      <Tabs.Screen name="history" options={{ title: 'Riwayat' }} />
-      <Tabs.Screen name="check" options={{ title: 'Klasifikasi' }} />
-      <Tabs.Screen name="notifications" options={{ title: 'Notifikasi' }} />
-      <Tabs.Screen name="profile" options={{ title: 'Profil' }} />
+      <Tabs.Screen name="historyScreen" options={{ title: 'Riwayat' }} />
+      <Tabs.Screen name="checkScreen" options={{ title: 'Klasifikasi' }} />
+      <Tabs.Screen name="notificationsScreen" options={{ title: 'Notifikasi' }} />
+      <Tabs.Screen name="profileScreen" options={{ title: 'Profil' }} />
     </Tabs>
   );
 }
 
-
+// Styles tidak berubah
 const styles = StyleSheet.create({
   tabBarContainer: {
     flexDirection: 'row',

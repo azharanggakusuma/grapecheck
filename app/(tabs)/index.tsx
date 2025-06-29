@@ -173,7 +173,8 @@ export default function HomeScreen() {
 
   const handleCtaPress = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    router.push("/(tabs)/check");
+    // --- PERUBAHAN ---
+    router.push("/(tabs)/checkScreen");
   };
 
   const handlePressIn = () => {
@@ -312,6 +313,7 @@ export default function HomeScreen() {
   );
 }
 
+// Styles tidak berubah
 const styles = StyleSheet.create({
   headerContainer: {
     position: "absolute",
