@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, Alert } from 'react-native';
 import { useTheme } from '@/components/ui/ThemeProvider';
 import Colors from '@/constants/Colors';
 import { Feather } from '@expo/vector-icons';
@@ -12,7 +12,11 @@ const SectionHeader = ({ title, colors }: { title: string, colors: any }) => (
 
 // Komponen untuk setiap item pengaturan
 const SettingsItem = ({ icon, label, value, onPress, colors, children }: any) => (
-  <TouchableOpacity onPress={onPress} style={[styles.itemContainer, { backgroundColor: colors.surface }]}>
+  <TouchableOpacity
+    onPress={onPress}
+    style={[styles.itemContainer, { backgroundColor: colors.surface }]}
+    disabled={!onPress && !children}
+  >
     <Feather name={icon} size={20} color={colors.tint} style={styles.itemIcon} />
     <Text style={[styles.itemLabel, { color: colors.text }]}>{label}</Text>
     <View style={styles.itemValueContainer}>
@@ -29,29 +33,37 @@ export default function SettingsScreen() {
   const colors = Colors[theme];
   const isDarkMode = theme === 'dark';
 
+  const showComingSoonAlert = () => Alert.alert('Segera Hadir', 'Fitur ini sedang dalam pengembangan.');
+
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={styles.container}>
-        <Text style={[styles.title, { color: colors.text }]}>Pengaturan</Text>
-
+        <Text style={[styles.title, { color: colors.text }]}>Pengaturan</Text>/}
+        
         <SectionHeader title="Tampilan" colors={colors} />
-        <SettingsItem icon="moon" label="Mode Gelap" colors={colors}>
-          <Switch
-            value={isDarkMode}
-            onValueChange={toggleTheme}
-            trackColor={{ false: colors.border, true: colors.tint }}
-            thumbColor={isDarkMode ? colors.surface : colors.background}
-          />
-        </SettingsItem>
+        <View style={styles.section}>
+          <SettingsItem icon="moon" label="Mode Gelap" colors={colors}>
+            <Switch
+              value={isDarkMode}
+              onValueChange={toggleTheme}
+              trackColor={{ false: colors.border, true: colors.tint }}
+              thumbColor={isDarkMode ? colors.surface : '#f4f3f4'}
+            />
+          </SettingsItem>
+        </View>
 
         <SectionHeader title="Notifikasi" colors={colors} />
-        <SettingsItem icon="bell" label="Notifikasi" value="Aktif" onPress={() => {}} colors={colors} />
-        <SettingsItem icon="mail" label="Langganan Email" value="Nonaktif" onPress={() => {}} colors={colors} />
+        <View style={styles.section}>
+          <SettingsItem icon="bell" label="Notifikasi" value="Aktif" onPress={showComingSoonAlert} colors={colors} />
+          <SettingsItem icon="mail" label="Langganan Email" value="Nonaktif" onPress={showComingSoonAlert} colors={colors} />
+        </View>
 
         <SectionHeader title="Tentang" colors={colors} />
-        <SettingsItem icon="info" label="Versi Aplikasi" value="1.0.0" colors={colors} />
-        <SettingsItem icon="shield" label="Kebijakan Privasi" onPress={() => {}} colors={colors} />
-        <SettingsItem icon="file-text" label="Syarat & Ketentuan" onPress={() => {}} colors={colors} />
+        <View style={styles.section}>
+          <SettingsItem icon="info" label="Versi Aplikasi" value="1.0.0" colors={colors} />
+          <SettingsItem icon="shield" label="Kebijakan Privasi" onPress={showComingSoonAlert} colors={colors} />
+          <SettingsItem icon="file-text" label="Syarat & Ketentuan" onPress={showComingSoonAlert} colors={colors} />
+        </View>
         
       </ScrollView>
     </SafeAreaView>
@@ -63,14 +75,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   container: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 15,
     paddingVertical: 10,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    marginBottom: 24,
-    marginTop: 10,
   },
   sectionHeader: {
     fontSize: 14,
@@ -80,20 +86,23 @@ const styles = StyleSheet.create({
     marginTop: 20,
     marginLeft: 5,
   },
+  section: {
+    backgroundColor: 'transparent',
+    borderRadius: 12,
+    overflow: 'hidden', // Untuk memastikan item di dalamnya mengikuti bentuk border radius
+  },
   itemContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 15,
-    borderRadius: 12,
-    marginBottom: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
+    paddingVertical: 16,
+    paddingHorizontal: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: 'transparent', // Default transparan
   },
   itemIcon: {
     marginRight: 15,
+    width: 24,
+    textAlign: 'center',
   },
   itemLabel: {
     flex: 1,
@@ -107,5 +116,12 @@ const styles = StyleSheet.create({
   },
   itemValue: {
     fontSize: 16,
+  },
+
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    marginBottom: 24,
+    marginTop: 10,
   },
 });
