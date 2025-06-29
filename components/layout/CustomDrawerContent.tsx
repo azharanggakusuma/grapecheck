@@ -61,7 +61,6 @@ export function CustomDrawerContent(props: any) {
     }
   };
 
-  // --- PERUBAHAN: Menu Beranda dikembalikan ---
   const mainMenuItems = [
     { icon: 'home' as const, label: 'Beranda', path: '/(tabs)' },
   ];
@@ -99,8 +98,10 @@ export function CustomDrawerContent(props: any) {
             key={item.label}
             icon={item.icon}
             label={item.label}
-            // Logika isFocused: aktif jika path adalah /(tabs)
-            isFocused={pathname === item.path} 
+            // --- PERUBAHAN DI SINI ---
+            // Logika isFocused: aktif jika route navigator saat ini adalah (tabs)
+            isFocused={props.state.routeNames[props.state.index] === '(tabs)'}
+            // --- AKHIR PERUBAHAN ---
             colors={colors}
             onPress={() => handleNavigate(item.path)}
           />
@@ -177,7 +178,6 @@ const styles = StyleSheet.create({
       fontSize: 14,
       color: 'rgba(255,255,255,0.85)',
     },
-    // --- PERUBAHAN DI SINI ---
     drawerItem: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -186,7 +186,6 @@ const styles = StyleSheet.create({
       borderRadius: 12,
       marginBottom: 5,
     },
-    // --- AKHIR PERUBAHAN ---
     iconContainer: {
       width: 36,
       height: 36,
