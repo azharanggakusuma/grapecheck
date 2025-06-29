@@ -22,10 +22,7 @@ import { BlurView } from "expo-blur";
 import * as Progress from "react-native-progress";
 import { useGlobalRefresh } from "@/components/contexts/GlobalRefreshContext";
 import { LinearGradient } from "expo-linear-gradient";
-
-// --- PENTING: GANTI DENGAN ALAMAT IP KOMPUTER ANDA ---
-const BACKEND_URL = "http://192.168.114.61:5000/classify";
-// ----------------------------------------------------
+import { BACKEND_URL } from "@/constants/api";
 
 const { width } = Dimensions.get("window");
 const IMAGE_SIZE = width * 0.85;
