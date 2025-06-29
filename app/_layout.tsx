@@ -5,8 +5,9 @@ import 'react-native-reanimated';
 import { CustomThemeProvider } from '@/components/ui/ThemeProvider';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GlobalRefreshProvider, useGlobalRefresh } from '@/components/contexts/GlobalRefreshContext';
-// --- PERUBAHAN: Impor komponen drawer kustom ---
 import { CustomDrawerContent } from '@/components/layout/CustomDrawerContent';
+import { useTheme } from '@/components/ui/ThemeProvider';
+import Colors from '@/constants/Colors';
 
 export {
   ErrorBoundary,
@@ -29,12 +30,19 @@ function RootLayout() {
 }
 
 function RootLayoutNav() {
+  const { theme } = useTheme();
+  const colors = Colors[theme];
+
   return (
     <Drawer
-      // --- PERUBAHAN: Gunakan komponen kustom untuk merender konten drawer ---
       drawerContent={(props) => <CustomDrawerContent {...props} />}
       screenOptions={{
         swipeEnabled: true,
+        // Gaya untuk item di drawer
+        drawerActiveBackgroundColor: colors.primaryLight + '33',
+        drawerActiveTintColor: colors.text,
+        drawerInactiveTintColor: colors.tabIconDefault,
+        drawerLabelStyle: { marginLeft: -20, fontSize: 15, fontWeight: '500' },
       }}
     >
       <Drawer.Screen 
@@ -45,15 +53,12 @@ function RootLayoutNav() {
             title: 'GrapeCheck',
         }} 
       />
-      {/* --- PERUBAHAN: Tambahkan halaman baru ke drawer --- */}
-      <Drawer.Screen
-        name="settings"
-        options={{
-            drawerLabel: 'Pengaturan',
-            title: 'Pengaturan',
-            headerShown: true, // Halaman ini akan punya header sendiri
-        }}
-      />
+      {/* Kita tidak perlu lagi mendaftarkan setiap layar di sini
+        karena CustomDrawerContent sudah menanganinya secara manual
+        untuk mendapatkan desain yang lebih fleksibel.
+        Jika Anda ingin menambahkan halaman di luar Tabs, 
+        Anda bisa menambahkannya di sini.
+       */}
     </Drawer>
   );
 }
