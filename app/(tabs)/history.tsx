@@ -1,9 +1,10 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import {
   StyleSheet,
   ScrollView,
   RefreshControl,
   FlatList,
+  Animated,
   View as RNView,
 } from 'react-native';
 import { Text, View } from '@/components/Themed';
@@ -21,6 +22,26 @@ export default function HistoryScreen() {
 
   const historyData: { id: string; label: string; date: string }[] = [];
 
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(20)).current;
+
+  useEffect(() => {
+    if (historyData.length === 0) {
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 500,
+          useNativeDriver: true,
+        }),
+        Animated.timing(slideAnim, {
+          toValue: 0,
+          duration: 500,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }
+  }, [historyData.length]);
+
   const handleRefresh = useCallback(() => {
     setIsRefreshing(true);
     refreshApp();
@@ -28,7 +49,15 @@ export default function HistoryScreen() {
   }, [refreshApp]);
 
   const renderEmpty = () => (
-    <View style={styles.emptyContainer}>
+    <Animated.View
+      style={{
+        opacity: fadeAnim,
+        transform: [{ translateY: slideAnim }],
+        alignItems: 'center',
+        marginTop: 80,
+        paddingHorizontal: 20,
+      }}
+    >
       <RNView style={[styles.emptyIconWrapper, { backgroundColor: colors.surface + 'AA' }]}>
         <Feather name="clock" size={36} color="#A0A0A0" />
       </RNView>
@@ -36,7 +65,7 @@ export default function HistoryScreen() {
       <Text style={[styles.subText, { color: colors.tabIconDefault }]}>
         Riwayat analisis Anda akan muncul di sini setelah melakukan unggahan.
       </Text>
-    </View>
+    </Animated.View>
   );
 
   const renderItem = ({ item }: { item: typeof historyData[0] }) => (
@@ -99,11 +128,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginBottom: 24,
     opacity: 0.75,
-  },
-  emptyContainer: {
-    alignItems: 'center',
-    marginTop: 80,
-    paddingHorizontal: 20,
   },
   emptyIconWrapper: {
     width: 90,

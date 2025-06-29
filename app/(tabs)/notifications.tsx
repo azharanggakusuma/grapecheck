@@ -1,8 +1,9 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import {
   StyleSheet,
   ScrollView,
   RefreshControl,
+  Animated,
 } from 'react-native';
 import { Text, View } from '@/components/Themed';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -16,6 +17,24 @@ export default function NotificationsScreen() {
   const colors = Colors[theme];
   const { refreshApp } = useGlobalRefresh();
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const translateY = useRef(new Animated.Value(30)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+      Animated.timing(translateY, {
+        toValue: 0,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
 
   const handleRefresh = useCallback(() => {
     setIsRefreshing(true);
@@ -38,7 +57,15 @@ export default function NotificationsScreen() {
           />
         }
       >
-        <View style={styles.emptyWrapper}>
+        <Animated.View
+          style={{
+            opacity: fadeAnim,
+            transform: [{ translateY }],
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '100%',
+          }}
+        >
           <View style={[styles.iconWrapper, { backgroundColor: colors.surface + '80' }]}>
             <Feather name="bell-off" size={40} color="#A0A0A0" />
           </View>
@@ -46,7 +73,7 @@ export default function NotificationsScreen() {
           <Text style={[styles.subtitle, { color: colors.tabIconDefault }]}>
             Anda akan melihat pembaruan terbaru di sini.
           </Text>
-        </View>
+        </Animated.View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -62,10 +89,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 20,
     paddingVertical: 40,
-  },
-  emptyWrapper: {
-    alignItems: 'center',
-    marginTop: -60,
   },
   iconWrapper: {
     width: 80,
