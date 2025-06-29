@@ -1,10 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Tabs } from 'expo-router';
-import { useColorScheme } from '@/components/useColorScheme';
+import { useColorScheme } from '@/components/hooks/useColorScheme';
 import Colors from '@/constants/Colors';
 import { Feather } from '@expo/vector-icons';
 import { View, StyleSheet, Animated, TouchableOpacity, Text } from 'react-native';
-import { CustomHeader } from '@/components/CustomHeader';
+import { CustomHeader } from '@/components/layout/CustomHeader';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 

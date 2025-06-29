@@ -16,7 +16,7 @@ import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Haptics from "expo-haptics";
-import { useGlobalRefresh } from "@/components/GlobalRefreshContext";
+import { useGlobalRefresh } from "@/components/contexts/GlobalRefreshContext";
 
 const FeatureCard = ({
   icon,

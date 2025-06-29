@@ -20,7 +20,7 @@ import { useTheme } from "@/components/ui/ThemeProvider";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { BlurView } from "expo-blur";
 import * as Progress from "react-native-progress";
-import { useGlobalRefresh } from "@/components/GlobalRefreshContext";
+import { useGlobalRefresh } from "@/components/contexts/GlobalRefreshContext";
 import { LinearGradient } from "expo-linear-gradient";
 
 // --- PENTING: GANTI DENGAN ALAMAT IP KOMPUTER ANDA ---

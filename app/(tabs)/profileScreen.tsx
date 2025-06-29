@@ -10,7 +10,7 @@ import { Text, View } from '@/components/ui/Themed';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '@/components/ui/ThemeProvider';
 import Colors from '@/constants/Colors';
-import { useGlobalRefresh } from '@/components/GlobalRefreshContext';
+import { useGlobalRefresh } from '@/components/contexts/GlobalRefreshContext';
 import { Feather } from '@expo/vector-icons';
 
 export default function ProfileScreen() {

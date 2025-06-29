@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 // --- PERUBAHAN ---
-import { useTheme } from './ui/ThemeProvider';
+import { useTheme } from '../ui/ThemeProvider';
 import Colors from '@/constants/Colors';
 import { getHeaderTitle } from '@react-navigation/elements';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';

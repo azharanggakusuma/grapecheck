@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import 'react-native-reanimated';
 import { CustomThemeProvider } from '@/components/ui/ThemeProvider';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { GlobalRefreshProvider, useGlobalRefresh } from '@/components/GlobalRefreshContext';
+import { GlobalRefreshProvider, useGlobalRefresh } from '@/components/contexts/GlobalRefreshContext';
 
 export {
   ErrorBoundary,
