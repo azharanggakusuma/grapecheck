@@ -38,27 +38,23 @@ function RootLayoutNav() {
       drawerContent={(props) => <CustomDrawerContent {...props} />}
       screenOptions={{
         swipeEnabled: true,
-        // Gaya untuk item di drawer
-        drawerActiveBackgroundColor: colors.primaryLight + '33',
-        drawerActiveTintColor: colors.text,
-        drawerInactiveTintColor: colors.tabIconDefault,
-        drawerLabelStyle: { marginLeft: -20, fontSize: 15, fontWeight: '500' },
+        headerTintColor: colors.text, 
       }}
     >
       <Drawer.Screen 
         name="(tabs)" 
         options={{ 
             headerShown: false,
-            drawerLabel: 'Beranda',
             title: 'GrapeCheck',
         }} 
       />
-      {/* Kita tidak perlu lagi mendaftarkan setiap layar di sini
-        karena CustomDrawerContent sudah menanganinya secara manual
-        untuk mendapatkan desain yang lebih fleksibel.
-        Jika Anda ingin menambahkan halaman di luar Tabs, 
-        Anda bisa menambahkannya di sini.
-       */}
+      <Drawer.Screen
+        name="settings"
+        options={{
+            title: 'Pengaturan',
+            headerShown: true, 
+        }}
+      />
     </Drawer>
   );
 }
