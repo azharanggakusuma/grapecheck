@@ -24,7 +24,7 @@ import { useGlobalRefresh } from "@/components/GlobalRefreshContext";
 import { LinearGradient } from "expo-linear-gradient";
 
 // --- PENTING: GANTI DENGAN ALAMAT IP KOMPUTER ANDA ---
-const BACKEND_URL = "http://192.168.123.61:5000/classify";
+const BACKEND_URL = "http://192.168.114.61:5000/classify";
 // ----------------------------------------------------
 
 const { width } = Dimensions.get("window");
