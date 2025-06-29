@@ -1,9 +1,10 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import {
   StyleSheet,
   ScrollView,
   RefreshControl,
   TouchableOpacity,
+  Animated,
 } from 'react-native';
 import { Text, View } from '@/components/Themed';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -17,6 +18,24 @@ export default function ProfileScreen() {
   const colors = Colors[theme];
   const { refreshApp } = useGlobalRefresh();
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const translateY = useRef(new Animated.Value(20)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+      Animated.timing(translateY, {
+        toValue: 0,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
 
   const handleRefresh = useCallback(() => {
     setIsRefreshing(true);
@@ -39,39 +58,60 @@ export default function ProfileScreen() {
           />
         }
       >
-        <View style={[styles.avatarContainer, {
-          borderColor: colors.tint,
-          shadowColor: colors.tint + '40',
-        }]}>
-          <Text style={[styles.avatarText, { color: colors.tint }]}>A</Text>
-        </View>
-
-        <Text style={[styles.name, { color: colors.text }]}>Azharangga Kusuma</Text>
-        <Text style={[styles.email, { color: colors.tabIconDefault }]}>azhar@example.com</Text>
-
-        <View style={[styles.divider, { backgroundColor: colors.border + '40' }]} />
-
-        <View style={styles.buttonGroup}>
-          <TouchableOpacity style={[styles.actionButton, { backgroundColor: colors.surface }]}>
-            <Feather name="edit-2" size={18} color={colors.tint} />
-            <Text style={[styles.actionText, { color: colors.tint }]}>Edit Profil</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={[styles.actionButton, { backgroundColor: colors.surface }]}>
-            <Feather name="lock" size={18} color={colors.tint} />
-            <Text style={[styles.actionText, { color: colors.tint }]}>Ganti Password</Text>
-          </TouchableOpacity>
-        </View>
-
-        <View style={[styles.divider, { backgroundColor: colors.border + '40' }]} />
-
-        <TouchableOpacity
-          style={[styles.logoutButton, { borderColor: colors.error + 'AA', backgroundColor: colors.error + '10' }]}
-          onPress={() => console.log('Logout')}
+        <Animated.View
+          style={{
+            opacity: fadeAnim,
+            transform: [{ translateY }],
+            width: '100%',
+            alignItems: 'center',
+          }}
         >
-          <Feather name="log-out" size={18} color={colors.error} />
-          <Text style={[styles.logoutText, { color: colors.error }]}>Keluar</Text>
-        </TouchableOpacity>
+          <View
+            style={[
+              styles.avatarContainer,
+              {
+                borderColor: colors.tint,
+                shadowColor: colors.tint + '40',
+                backgroundColor: colors.surface,
+              },
+            ]}
+          >
+            <Text style={[styles.avatarText, { color: colors.tint }]}>A</Text>
+          </View>
+
+          <Text style={[styles.name, { color: colors.text }]}>Azharangga Kusuma</Text>
+          <Text style={[styles.email, { color: colors.tabIconDefault }]}>azhar@example.com</Text>
+
+          <View style={[styles.divider, { backgroundColor: colors.border + '40' }]} />
+
+          <View style={styles.buttonGroup}>
+            <TouchableOpacity style={[styles.actionButton, { backgroundColor: colors.surface }]}>
+              <Feather name="edit-2" size={18} color={colors.tint} />
+              <Text style={[styles.actionText, { color: colors.tint }]}>Edit Profil</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={[styles.actionButton, { backgroundColor: colors.surface }]}>
+              <Feather name="lock" size={18} color={colors.tint} />
+              <Text style={[styles.actionText, { color: colors.tint }]}>Ganti Password</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={[styles.divider, { backgroundColor: colors.border + '40' }]} />
+
+          <TouchableOpacity
+            style={[
+              styles.logoutButton,
+              {
+                borderColor: colors.error + 'AA',
+                backgroundColor: colors.error + '10',
+              },
+            ]}
+            onPress={() => console.log('Logout')}
+          >
+            <Feather name="log-out" size={18} color={colors.error} />
+            <Text style={[styles.logoutText, { color: colors.error }]}>Keluar</Text>
+          </TouchableOpacity>
+        </Animated.View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -89,30 +129,29 @@ const styles = StyleSheet.create({
     paddingBottom: 80,
   },
   avatarContainer: {
-    width: 110,
-    height: 110,
-    borderRadius: 55,
+    width: 120,
+    height: 120,
+    borderRadius: 60,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20,
-    borderWidth: 2,
-    backgroundColor: '#ffffff10',
-    shadowOpacity: 0.2,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 5 },
-    elevation: 6,
+    borderWidth: 3,
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 8,
   },
   avatarText: {
-    fontSize: 38,
+    fontSize: 42,
     fontWeight: 'bold',
   },
   name: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: '700',
     marginBottom: 6,
   },
   email: {
-    fontSize: 14,
+    fontSize: 15,
     opacity: 0.7,
     marginBottom: 28,
   },
@@ -120,6 +159,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 1,
     marginVertical: 24,
+    borderRadius: 2,
   },
   buttonGroup: {
     width: '100%',
@@ -130,16 +170,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 14,
     paddingHorizontal: 18,
-    borderRadius: 14,
+    borderRadius: 16,
     elevation: 1,
     gap: 12,
     shadowColor: '#00000005',
-    shadowOpacity: 0.05,
+    shadowOpacity: 0.06,
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 4,
   },
   actionText: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '600',
   },
   logoutButton: {
@@ -148,7 +188,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 16,
     paddingHorizontal: 20,
-    borderRadius: 16,
+    borderRadius: 18,
     borderWidth: 1.5,
     marginTop: 20,
     gap: 12,
