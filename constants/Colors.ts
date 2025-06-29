@@ -1,18 +1,18 @@
 // constants/Colors.ts
 
-const primary = '#00AA13'; // Hijau utama (konsisten)
+const primary = '#00AA13'; // Hijau utama Gojek
 const primaryLight = '#4ADE80'; // Hijau muda vibrant
-const text = '#111827'; // Abu gelap untuk teks
+const text = '#111827'; // Teks gelap (untuk light)
 const textSecondary = '#6B7280'; // Abu sekunder
-const backgroundLight = '#F9FAFB'; // Background terang
-const backgroundDark = '#0A0A0A'; // Hitam netral untuk background dark mode
-const surfaceLight = '#FFFFFF'; // Putih bersih
-const surfaceDark = '#121212'; // Permukaan gelap solid
+const backgroundLight = '#F9FAFB'; // Light mode
+const backgroundDark = '#121212'; // Abu sangat gelap, netral, nyaman di mata
+const surfaceLight = '#FFFFFF'; // Putih
+const surfaceDark = '#1C1C1E'; // Seperti iOS dark card
 const success = '#10B981'; // Hijau sukses
-const warning = '#F59E0B'; // Kuning peringatan
-const error = '#EF4444'; // Merah error
-const border = '#E5E7EB'; // Border terang
-const borderDark = '#2A2A2A'; // Border gelap netral
+const warning = '#F59E0B'; // Kuning
+const error = '#EF4444'; // Merah
+const border = '#E5E7EB'; // Light mode
+const borderDark = '#2D2D2D'; // Border dark mode lembut
 
 export default {
   light: {
@@ -32,19 +32,19 @@ export default {
     blurTint: 'rgba(249, 250, 251, 0.85)',
   },
   dark: {
-    text: '#FAFAFA', // Putih terang
-    background: backgroundDark, // Lebih gelap dari sebelumnya
+    text: '#EDEDED', // Abu terang, nyaman dibaca
+    background: backgroundDark, // Abu gelap netral
     tint: primaryLight,
     primaryLight: primaryLight,
-    surface: surfaceDark,
+    surface: surfaceDark, // Permukaan lebih terang sedikit dari background
     success: success,
     warning: warning,
     error: error,
     border: borderDark,
     tabBar: surfaceDark,
-    tabIconDefault: '#9CA3AF', // Abu terang
+    tabIconDefault: '#A1A1AA', // Abu terang
     tabIconSelected: primaryLight,
     confidenceBar: '#064E3B',
-    blurTint: 'rgba(10, 10, 10, 0.85)', // Matching backgroundDark
+    blurTint: 'rgba(18, 18, 18, 0.85)',
   },
 };
