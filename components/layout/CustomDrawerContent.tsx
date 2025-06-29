@@ -147,7 +147,6 @@ export function CustomDrawerContent(props: any) {
   );
 }
 
-// Styles tidak berubah
 const styles = StyleSheet.create({
     header: {
       padding: 20,
@@ -178,15 +177,16 @@ const styles = StyleSheet.create({
       fontSize: 14,
       color: 'rgba(255,255,255,0.85)',
     },
+    // --- PERUBAHAN DI SINI ---
     drawerItem: {
       flexDirection: 'row',
       alignItems: 'center',
       paddingVertical: 12,
-      paddingHorizontal: 20,
-      marginHorizontal: 10,
+      paddingHorizontal: 10,
       borderRadius: 12,
       marginBottom: 5,
     },
+    // --- AKHIR PERUBAHAN ---
     iconContainer: {
       width: 36,
       height: 36,
