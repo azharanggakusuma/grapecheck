@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, useRef } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from "react";
 import {
   StyleSheet,
   ScrollView,
@@ -10,17 +10,19 @@ import {
   TextInput,
   Image,
   Alert,
-} from 'react-native';
-import { Text, View } from '@/components/ui/Themed';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useTheme } from '@/components/ui/ThemeProvider';
-import Colors from '@/constants/Colors';
-import { useGlobalRefresh } from '@/components/contexts/GlobalRefreshContext';
-import { Feather } from '@expo/vector-icons';
-import * as ImagePicker from 'expo-image-picker';
+} from "react-native";
+import { Text, View } from "@/components/ui/Themed";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useTheme } from "@/components/ui/ThemeProvider";
+import Colors from "@/constants/Colors";
+import { useGlobalRefresh } from "@/components/contexts/GlobalRefreshContext";
+import { Feather } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
 
 const SectionHeader = ({ title, colors }: { title: string; colors: any }) => (
-  <Text style={[styles.sectionHeader, { color: colors.tabIconDefault }]}>{title}</Text>
+  <Text style={[styles.sectionHeader, { color: colors.tabIconDefault }]}>
+    {title}
+  </Text>
 );
 
 const ProfileItem = ({
@@ -38,7 +40,12 @@ const ProfileItem = ({
     onPress={onPress}
     style={[styles.itemContainer, { backgroundColor: colors.surface }]}
   >
-    <Feather name={icon} size={20} color={colors.tint} style={styles.itemIcon} />
+    <Feather
+      name={icon}
+      size={20}
+      color={colors.tint}
+      style={styles.itemIcon}
+    />
     <Text style={[styles.itemLabel, { color: colors.text }]}>{label}</Text>
     <Feather name="chevron-right" size={20} color={colors.tabIconDefault} />
   </TouchableOpacity>
@@ -50,8 +57,8 @@ export default function ProfileScreen() {
   const { refreshApp } = useGlobalRefresh();
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const [name, setName] = useState('Azharangga Kusuma');
-  const [email, setEmail] = useState('azhar@example.com');
+  const [name, setName] = useState("Azharangga Kusuma");
+  const [email, setEmail] = useState("azhar@example.com");
   const [avatar, setAvatar] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
 
@@ -94,14 +101,20 @@ export default function ProfileScreen() {
   };
 
   const handleLogout = () => {
-    Alert.alert('Konfirmasi', 'Apakah kamu yakin ingin keluar?', [
-      { text: 'Batal', style: 'cancel' },
-      { text: 'Keluar', style: 'destructive', onPress: () => console.log('Logout') },
+    Alert.alert("Konfirmasi", "Apakah kamu yakin ingin keluar?", [
+      { text: "Batal", style: "cancel" },
+      {
+        text: "Keluar",
+        style: "destructive",
+        onPress: () => console.log("Logout"),
+      },
     ]);
   };
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+    <SafeAreaView
+      style={[styles.safeArea, { backgroundColor: colors.background }]}
+    >
       <ScrollView
         refreshControl={
           <RefreshControl
@@ -117,32 +130,54 @@ export default function ProfileScreen() {
           style={{
             opacity: fadeAnim,
             transform: [{ translateY }],
-            width: '100%',
+            width: "100%",
           }}
         >
           <RNView style={styles.headerContainer}>
-            <TouchableOpacity onPress={pickImage} activeOpacity={0.8}>
-              <View
+            <RNView style={styles.avatarWrapper}>
+              <TouchableOpacity onPress={pickImage} activeOpacity={0.8}>
+                <View
+                  style={[
+                    styles.avatarContainer,
+                    {
+                      borderColor: colors.tint,
+                      shadowColor: colors.tint + "30",
+                      backgroundColor: colors.surface,
+                    },
+                  ]}
+                >
+                  {avatar ? (
+                    <Image
+                      source={{ uri: avatar }}
+                      style={styles.avatarImage}
+                    />
+                  ) : (
+                    <Text style={[styles.avatarText, { color: colors.tint }]}>
+                      {name[0].toUpperCase()}
+                    </Text>
+                  )}
+                </View>
+              </TouchableOpacity>
+
+              {/* Ikon kamera menimpa ring avatar */}
+              <TouchableOpacity
+                onPress={pickImage}
                 style={[
-                  styles.avatarContainer,
+                  styles.editBadge,
                   {
-                    borderColor: colors.tint,
-                    shadowColor: colors.tint + '30',
-                    backgroundColor: colors.surface,
+                    backgroundColor: colors.tint,
+                    borderColor: colors.background,
                   },
                 ]}
               >
-                {avatar ? (
-                  <Image source={{ uri: avatar }} style={styles.avatarImage} />
-                ) : (
-                  <Text style={[styles.avatarText, { color: colors.tint }]}>
-                    {name[0].toUpperCase()}
-                  </Text>
-                )}
-              </View>
-            </TouchableOpacity>
+                <Feather name="camera" size={14} color="#fff" />
+              </TouchableOpacity>
+            </RNView>
+
             <Text style={[styles.name, { color: colors.text }]}>{name}</Text>
-            <Text style={[styles.email, { color: colors.tabIconDefault }]}>{email}</Text>
+            <Text style={[styles.email, { color: colors.tabIconDefault }]}>
+              {email}
+            </Text>
           </RNView>
 
           <SectionHeader title="Akun" colors={colors} />
@@ -157,13 +192,18 @@ export default function ProfileScreen() {
               icon="lock"
               label="Ganti Password"
               colors={colors}
-              onPress={() => console.log('Ganti password')}
+              onPress={() => console.log("Ganti password")}
             />
           </View>
 
           <SectionHeader title="Lainnya" colors={colors} />
           <View style={styles.section}>
-            <ProfileItem icon="log-out" label="Keluar" colors={colors} onPress={handleLogout} />
+            <ProfileItem
+              icon="log-out"
+              label="Keluar"
+              colors={colors}
+              onPress={handleLogout}
+            />
           </View>
         </Animated.View>
       </ScrollView>
@@ -171,21 +211,31 @@ export default function ProfileScreen() {
       {/* Modal Edit Profil */}
       <Modal visible={editing} transparent animationType="fade">
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { backgroundColor: colors.surface }]}>
-            <Text style={[styles.modalTitle, { color: colors.text }]}>Edit Profil</Text>
+          <View
+            style={[styles.modalContent, { backgroundColor: colors.surface }]}
+          >
+            <Text style={[styles.modalTitle, { color: colors.text }]}>
+              Edit Profil
+            </Text>
 
             <TextInput
               placeholder="Nama"
               value={name}
               onChangeText={setName}
-              style={[styles.input, { color: colors.text, borderColor: colors.border }]}
+              style={[
+                styles.input,
+                { color: colors.text, borderColor: colors.border },
+              ]}
               placeholderTextColor={colors.tabIconDefault}
             />
             <TextInput
               placeholder="Email"
               value={email}
               onChangeText={setEmail}
-              style={[styles.input, { color: colors.text, borderColor: colors.border }]}
+              style={[
+                styles.input,
+                { color: colors.text, borderColor: colors.border },
+              ]}
               placeholderTextColor={colors.tabIconDefault}
               keyboardType="email-address"
             />
@@ -195,7 +245,15 @@ export default function ProfileScreen() {
                 <Text style={{ color: colors.error, fontSize: 16 }}>Batal</Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={() => setEditing(false)}>
-                <Text style={{ color: colors.tint, fontWeight: 'bold', fontSize: 16 }}>Simpan</Text>
+                <Text
+                  style={{
+                    color: colors.tint,
+                    fontWeight: "bold",
+                    fontSize: 16,
+                  }}
+                >
+                  Simpan
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -215,22 +273,23 @@ const styles = StyleSheet.create({
     paddingBottom: 100,
   },
   headerContainer: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 24,
+  },
+  avatarWrapper: {
+    alignItems: "center",
+    justifyContent: "center",
+    position: "relative",
   },
   avatarContainer: {
     width: 120,
     height: 120,
     borderRadius: 60,
     borderWidth: 3,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 5,
+    justifyContent: "center",
+    alignItems: "center",
     marginBottom: 16,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   avatarImage: {
     width: 120,
@@ -239,11 +298,28 @@ const styles = StyleSheet.create({
   },
   avatarText: {
     fontSize: 44,
-    fontWeight: 'bold',
+    fontWeight: "bold",
+  },
+  editBadge: {
+    position: "absolute",
+    right: 4,
+    bottom: 20,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 2,
+    borderColor: "#fff",
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
   },
   name: {
     fontSize: 22,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   email: {
     fontSize: 14,
@@ -252,29 +328,29 @@ const styles = StyleSheet.create({
   },
   sectionHeader: {
     fontSize: 13,
-    fontWeight: '600',
-    textTransform: 'uppercase',
+    fontWeight: "600",
+    textTransform: "uppercase",
     marginTop: 30,
     marginBottom: 12,
     marginLeft: 6,
   },
   section: {
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
     borderRadius: 12,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   itemContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingVertical: 16,
     paddingHorizontal: 18,
     borderBottomWidth: 1,
-    borderBottomColor: '#00000005',
+    borderBottomColor: "#00000005",
   },
   itemIcon: {
     marginRight: 15,
     width: 24,
-    textAlign: 'center',
+    textAlign: "center",
   },
   itemLabel: {
     flex: 1,
@@ -282,18 +358,18 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.35)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "rgba(0,0,0,0.35)",
+    justifyContent: "center",
+    alignItems: "center",
   },
   modalContent: {
-    width: '90%',
+    width: "90%",
     borderRadius: 16,
     padding: 24,
   },
   modalTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 16,
   },
   input: {
@@ -305,8 +381,8 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   modalButtons: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
+    flexDirection: "row",
+    justifyContent: "flex-end",
     marginTop: 24,
     gap: 24,
   },
