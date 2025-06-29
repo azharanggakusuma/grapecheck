@@ -21,7 +21,7 @@ const SettingsItem = ({ icon, label, value, onPress, colors, children }: any) =>
     <Text style={[styles.itemLabel, { color: colors.text }]}>{label}</Text>
     <View style={styles.itemValueContainer}>
       {children ? children : (
-        <Text style={[styles.itemValue, { color: colors.tabIconDefault }]}>{value}</Text>
+        <Text style={[styles.itemValue, { color: colors.tabIconDefault }]}>{value ?? ''}</Text>
       )}
       {onPress && <Feather name="chevron-right" size={20} color={colors.tabIconDefault} />}
     </View>
@@ -38,8 +38,8 @@ export default function SettingsScreen() {
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={styles.container}>
-        <Text style={[styles.title, { color: colors.text }]}>Pengaturan</Text>/}
-        
+        <Text style={[styles.title, { color: colors.text }]}>Pengaturan</Text>
+
         <SectionHeader title="Tampilan" colors={colors} />
         <View style={styles.section}>
           <SettingsItem icon="moon" label="Mode Gelap" colors={colors}>
@@ -64,7 +64,6 @@ export default function SettingsScreen() {
           <SettingsItem icon="shield" label="Kebijakan Privasi" onPress={showComingSoonAlert} colors={colors} />
           <SettingsItem icon="file-text" label="Syarat & Ketentuan" onPress={showComingSoonAlert} colors={colors} />
         </View>
-        
       </ScrollView>
     </SafeAreaView>
   );
@@ -89,7 +88,7 @@ const styles = StyleSheet.create({
   section: {
     backgroundColor: 'transparent',
     borderRadius: 12,
-    overflow: 'hidden', // Untuk memastikan item di dalamnya mengikuti bentuk border radius
+    overflow: 'hidden',
   },
   itemContainer: {
     flexDirection: 'row',
@@ -97,7 +96,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     paddingHorizontal: 15,
     borderBottomWidth: 1,
-    borderBottomColor: 'transparent', // Default transparan
+    borderBottomColor: 'transparent',
   },
   itemIcon: {
     marginRight: 15,
@@ -117,7 +116,6 @@ const styles = StyleSheet.create({
   itemValue: {
     fontSize: 16,
   },
-
   title: {
     fontSize: 28,
     fontWeight: 'bold',
