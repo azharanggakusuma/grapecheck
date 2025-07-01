@@ -12,14 +12,14 @@ import { Feather } from "@expo/vector-icons";
 import Colors from "@/constants/Colors";
 import { useTheme } from "@/components/ui/ThemeProvider";
 import { View as DefaultView } from "@/components/ui/Themed";
-import { useRouter, useNavigation } from "expo-router"; // Impor useNavigation
+import { useRouter, useNavigation } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Haptics from "expo-haptics";
 import { useGlobalRefresh } from "@/components/contexts/GlobalRefreshContext";
-import { DrawerActions } from "@react-navigation/native"; // Impor DrawerActions
+import { DrawerActions } from "@react-navigation/native";
+import { ChatbotModal } from "@/components/chatbot/ChatbotModal"; // Impor modal chatbot
 
-// ... (Komponen FeatureCard tidak berubah)
 const FeatureCard = ({
   icon,
   title,
@@ -81,21 +81,19 @@ const FeatureCard = ({
   );
 };
 
-
 const AnimatedHeader = ({
   scrollY,
   threshold,
-  onThemeToggle,
+  onChatbotToggle,
 }: {
   scrollY: Animated.Value;
   threshold: number;
-  onThemeToggle: () => void;
+  onChatbotToggle: () => void;
 }) => {
   const { theme } = useTheme();
   const colors = Colors[theme];
   const insets = useSafeAreaInsets();
   const headerHeight = 60 + insets.top;
-  // --- PERUBAHAN: Dapatkan navigasi untuk membuka drawer ---
   const navigation = useNavigation();
 
   const headerBackgroundOpacity = scrollY.interpolate({
@@ -134,24 +132,22 @@ const AnimatedHeader = ({
       />
       <DefaultView style={styles.headerContent}>
         <Animated.View style={[styles.headerIcons, { opacity: transparentContentOpacity }]}>
-          {/* --- PERUBAHAN: Buat tombol menu bisa ditekan --- */}
           <TouchableOpacity onPress={() => navigation.dispatch(DrawerActions.openDrawer())}>
             <Feather name="menu" size={24} color="#FFFFFF" />
           </TouchableOpacity>
           <Text style={styles.headerLogoText}>GrapeCheck</Text>
-          <TouchableOpacity onPress={onThemeToggle}>
-            <Feather name={theme === "light" ? "moon" : "sun"} size={24} color="#FFFFFF" />
+          <TouchableOpacity onPress={onChatbotToggle}>
+            <Feather name="message-circle" size={24} color="#FFFFFF" />
           </TouchableOpacity>
         </Animated.View>
 
         <Animated.View style={[styles.headerIcons, { opacity: solidContentOpacity }]}>
-          {/* --- PERUBAHAN: Buat tombol menu bisa ditekan --- */}
           <TouchableOpacity onPress={() => navigation.dispatch(DrawerActions.openDrawer())}>
             <Feather name="menu" size={24} color={colors.text} />
           </TouchableOpacity>
           <Text style={[styles.headerLogoText, { color: colors.text }]}>GrapeCheck</Text>
-          <TouchableOpacity onPress={onThemeToggle}>
-            <Feather name={theme === "light" ? "moon" : "sun"} size={24} color={colors.text} />
+          <TouchableOpacity onPress={onChatbotToggle}>
+            <Feather name="message-circle" size={24} color={colors.text} />
           </TouchableOpacity>
         </Animated.View>
       </DefaultView>
@@ -159,13 +155,13 @@ const AnimatedHeader = ({
   );
 };
 
-// ... (Sisa komponen HomeScreen tidak berubah)
 export default function HomeScreen() {
-  const { theme, toggleTheme } = useTheme();
+  const { theme } = useTheme();
   const colors = Colors[theme];
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { refreshApp } = useGlobalRefresh();
+  const [isChatbotVisible, setChatbotVisible] = useState(false);
 
   const scrollY = useRef(new Animated.Value(0)).current;
   const [scrollThreshold, setScrollThreshold] = useState(300);
@@ -174,6 +170,10 @@ export default function HomeScreen() {
   const ctaIconScale = useRef(new Animated.Value(1)).current;
 
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleToggleChatbot = () => {
+    setChatbotVisible(!isChatbotVisible);
+  };
 
   const handleRefresh = useCallback(() => {
     setIsRefreshing(true);
@@ -189,31 +189,13 @@ export default function HomeScreen() {
   };
 
   const handlePressIn = () => {
-    Animated.spring(ctaButtonScale, {
-      toValue: 0.96,
-      useNativeDriver: true,
-      bounciness: 10,
-    }).start();
-    Animated.spring(ctaIconScale, {
-      toValue: 1.15,
-      useNativeDriver: true,
-      bounciness: 10,
-    }).start();
+    Animated.spring(ctaButtonScale, { toValue: 0.96, useNativeDriver: true }).start();
+    Animated.spring(ctaIconScale, { toValue: 1.15, useNativeDriver: true }).start();
   };
 
   const handlePressOut = () => {
-    Animated.spring(ctaButtonScale, {
-      toValue: 1,
-      useNativeDriver: true,
-      friction: 5,
-      tension: 60,
-    }).start();
-    Animated.spring(ctaIconScale, {
-      toValue: 1,
-      useNativeDriver: true,
-      friction: 5,
-      tension: 60,
-    }).start();
+    Animated.spring(ctaButtonScale, { toValue: 1, useNativeDriver: true }).start();
+    Animated.spring(ctaIconScale, { toValue: 1, useNativeDriver: true }).start();
   };
 
   const onTitleLayout = (event: LayoutChangeEvent) => {
@@ -230,32 +212,19 @@ export default function HomeScreen() {
   const buttonGradient = theme === 'dark' ? [colors.primaryLight, colors.tint] : [colors.primaryLight, colors.tint];
 
   const features = [
-    {
-      icon: "cpu",
-      title: "Presisi Tinggi",
-      description: "Didukung oleh model Deep Learning untuk klasifikasi yang lebih akurat.",
-    },
-    {
-      icon: "zap",
-      title: "Proses Kilat",
-      description: "Analisis cepat dan efisien dalam hitungan detik.",
-    },
-    {
-      icon: "clock",
-      title: "Riwayat Analisis",
-      description: "Akses mudah semua hasil klasifikasi yang pernah dilakukan.",
-    },
+    { icon: "cpu", title: "Presisi Tinggi", description: "Didukung oleh model Deep Learning untuk klasifikasi yang lebih akurat." },
+    { icon: "zap", title: "Proses Kilat", description: "Analisis cepat dan efisien dalam hitungan detik." },
+    { icon: "clock", title: "Riwayat Analisis", description: "Akses mudah semua hasil klasifikasi yang pernah dilakukan." },
   ];
 
   return (
     <DefaultView style={{ flex: 1, backgroundColor: colors.background }}>
+      <ChatbotModal visible={isChatbotVisible} onClose={handleToggleChatbot} />
       <Animated.ScrollView
         onScroll={handleScroll}
         scrollEventThrottle={16}
         contentContainerStyle={{ paddingBottom: 100 }}
         showsVerticalScrollIndicator={false}
-        contentInsetAdjustmentBehavior="automatic"
-        style={{ overflow: "visible" }}
         refreshControl={
           <RefreshControl
             refreshing={isRefreshing}
@@ -269,18 +238,12 @@ export default function HomeScreen() {
           colors={gradientColors as [string, string]}
           style={[styles.header, { paddingTop: insets.top + 100, paddingBottom: insets.bottom + 60 }]}
         >
-          <Animated.View style={[styles.blob, styles.blob1]} />
-          <Animated.View style={[styles.blob, styles.blob2]} />
-          <Animated.View style={[styles.blob, styles.blob3]} />
-
           <Text style={styles.title} onLayout={onTitleLayout}>
             Deteksi Penyakit Daun Anggur
           </Text>
           <Text style={styles.subtitle}>
-            Identifikasi penyakit pada daun anggur secara dini melalui analisis gambar berbasis
-            kecerdasan buatan.
+            Identifikasi penyakit pada daun anggur secara dini melalui analisis gambar berbasis kecerdasan buatan.
           </Text>
-
           <Animated.View style={[styles.inlineCTAWrapper, { transform: [{ scale: ctaButtonScale }] }]}>
             <TouchableOpacity
               style={styles.ctaButtonShadow}
@@ -289,12 +252,7 @@ export default function HomeScreen() {
               onPressOut={handlePressOut}
               activeOpacity={1}
             >
-              <LinearGradient
-                colors={buttonGradient as [string, string]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.inlineCTAButton}
-              >
+              <LinearGradient colors={buttonGradient as [string, string]} style={styles.inlineCTAButton}>
                 <Animated.View style={{ transform: [{ scale: ctaIconScale }] }}>
                   <Feather name="camera" size={24} color="#FFFFFF" />
                 </Animated.View>
@@ -307,24 +265,16 @@ export default function HomeScreen() {
         <DefaultView style={[styles.featuresSection, { backgroundColor: colors.background }]}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>Keunggulan Aplikasi</Text>
           {features.map((feature, index) => (
-            <FeatureCard
-              key={index}
-              index={index}
-              icon={feature.icon}
-              title={feature.title}
-              description={feature.description}
-              colors={colors}
-            />
+            <FeatureCard key={index} index={index} {...feature} colors={colors} />
           ))}
         </DefaultView>
       </Animated.ScrollView>
 
-      <AnimatedHeader scrollY={scrollY} threshold={scrollThreshold} onThemeToggle={toggleTheme} />
+      <AnimatedHeader scrollY={scrollY} threshold={scrollThreshold} onChatbotToggle={handleToggleChatbot} />
     </DefaultView>
   );
 }
 
-// Styles tidak berubah
 const styles = StyleSheet.create({
   headerContainer: {
     position: "absolute",
@@ -367,20 +317,6 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 10,
     overflow: "visible",
   },
-  blob: {
-    position: "absolute",
-    backgroundColor: "rgba(255, 255, 255, 0.07)",
-    borderRadius: 9999,
-    opacity: 0.5,
-    transform: [{ rotate: "15deg" }],
-    shadowColor: "#fff",
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.1,
-    shadowRadius: 20,
-  },
-  blob1: { width: 250, height: 250, top: -80, right: -60 },
-  blob2: { width: 160, height: 160, bottom: -50, left: -50 },
-  blob3: { width: 100, height: 100, bottom: 0, right: 80 },
   title: {
     fontSize: 30,
     fontWeight: "800",

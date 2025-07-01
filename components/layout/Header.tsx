@@ -1,29 +1,30 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useTheme } from '../ui/ThemeProvider';
 import Colors from '@/constants/Colors';
 import { getHeaderTitle } from '@react-navigation/elements';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ChatbotModal } from '../chatbot/ChatbotModal';
 
 export function Header(props: any) {
   const { navigation, route, options } = props;
-  const { theme, toggleTheme } = useTheme();
+  const { theme } = useTheme();
   const colors = Colors[theme];
   const { top } = useSafeAreaInsets();
   
+  const [isChatbotVisible, setChatbotVisible] = useState(false);
+
   const title = getHeaderTitle(options, route.name);
   const isTransparent = options.headerTransparent === true;
-  // Untuk header standar, warna teks tidak transparan
   const headerTintColor = colors.text; 
 
   const isLogo = !title;
   const displayTitle = title || 'GrapeCheck';
 
   return (
-    <View style={{ 
-      backgroundColor: isTransparent ? 'transparent' : colors.background 
-    }}>
+    <View style={{ backgroundColor: isTransparent ? 'transparent' : colors.background }}>
+      <ChatbotModal visible={isChatbotVisible} onClose={() => setChatbotVisible(false)} />
       <View style={[
         styles.headerContainer,
         {
@@ -39,14 +40,11 @@ export function Header(props: any) {
         }
       ]}>
         <View style={[styles.sideContainer, { alignItems: 'flex-start' }]}>
-          {/* --- PERUBAHAN LOGIKA --- */}
           {navigation.canGoBack() ? (
-            // Jika bisa kembali di stack saat ini, lakukan goBack()
             <TouchableOpacity onPress={() => navigation.goBack()} style={styles.button}>
               <Feather name="arrow-left" size={24} color={headerTintColor} />
             </TouchableOpacity>
           ) : (
-            // Jika tidak, kembali ke tab 'index' (Beranda)
             <TouchableOpacity onPress={() => navigation.navigate('index')} style={styles.button}>
               <Feather name="arrow-left" size={24} color={headerTintColor} />
             </TouchableOpacity>
@@ -66,8 +64,8 @@ export function Header(props: any) {
         </View>
         
         <View style={[styles.sideContainer, { alignItems: 'flex-end' }]}>
-          <TouchableOpacity onPress={toggleTheme} style={styles.button}>
-            <Feather name={theme === 'light' ? 'moon' : 'sun'} size={24} color={headerTintColor} />
+          <TouchableOpacity onPress={() => setChatbotVisible(true)} style={styles.button}>
+            <Feather name="message-circle" size={24} color={headerTintColor} />
           </TouchableOpacity>
         </View>
       </View>
