@@ -5,7 +5,11 @@
  */
 
 // --- Alamat IP Server ---
-const IP_ADDRESS = "192.168.114.61"; // Pastikan IP ini sesuai dengan mesin Anda
+// Ganti dengan alamat IP lokal atau alamat server production Anda
+const IP_ADDRESS = "192.168.114.61"; 
 
-export const CLASSIFY_URL = `http://${IP_ADDRESS}:5000/classify`;
-export const CHAT_URL = `http://${IP_ADDRESS}:5000/chat`;
+// --- URL Endpoint ---
+export const API_BASE_URL = `http://${IP_ADDRESS}:5000`;
+export const CLASSIFY_URL = `${API_BASE_URL}/classify`;
+export const CHAT_URL = `${API_BASE_URL}/chat`;
+export const CHAT_RESET_URL = `${API_BASE_URL}/chat/reset`; // URL Baru

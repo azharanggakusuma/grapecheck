@@ -18,7 +18,7 @@ import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useTheme } from "@/components/ui/ThemeProvider";
 import Colors from "@/constants/Colors";
 import { LinearGradient } from "expo-linear-gradient";
-import { CHAT_URL } from "@/constants/api";
+import { CHAT_URL, CHAT_RESET_URL } from "@/constants/api"; // Ambil URL baru
 import Markdown from 'react-native-markdown-display';
 import { staticChatResponses } from "@/constants/staticChatData";
 
@@ -32,7 +32,7 @@ interface Message {
 
 type ConnectionStatus = 'connecting' | 'connected_server' | 'connected_static' | 'error';
 
-// --- SUB-COMPONENTS ---
+// --- SUB-KOMPONEN (Tidak ada perubahan signifikan, hanya perbaikan minor) ---
 
 const SuggestionChip = ({ text, onPress, themeColors }: any) => (
   <TouchableOpacity
@@ -136,22 +136,39 @@ const MessageBubble = ({ message, themeColors }: { message: Message; themeColors
       ]).start();
     }, []);
   
+    // --- PERBAIKAN: Gaya Markdown yang lebih kaya ---
     const markdownStyle = StyleSheet.create({
       body: {
         color: isBot ? themeColors.text : "#FFFFFF",
         fontSize: 15.5,
-        lineHeight: 22,
+        lineHeight: 24,
       },
       heading1: {
-        color: isBot ? themeColors.text : "#FFFFFF",
+        color: isBot ? themeColors.tint : "#FFFFFF",
         fontWeight: 'bold',
-        fontSize: 20,
-        marginTop: 10,
-        marginBottom: 5,
+        fontSize: 18,
+        marginTop: 12,
+        marginBottom: 8,
+        borderBottomWidth: 1,
+        borderBottomColor: isBot ? themeColors.border : '#FFFFFF44',
+        paddingBottom: 4,
+      },
+      bullet_list: {
+        marginBottom: 10,
       },
       bullet_list_icon: {
         color: isBot ? themeColors.tabIconDefault : "#FFFFFF99",
+        marginRight: 10,
+        lineHeight: 24,
       },
+      strong: {
+          fontWeight: 'bold',
+          color: isBot ? themeColors.tint : '#FFFFFF',
+      },
+      link: {
+        color: isBot ? themeColors.tint : '#FFFFFF',
+        textDecorationLine: 'underline',
+      }
     });
   
     return (
@@ -206,29 +223,6 @@ const MessageBubble = ({ message, themeColors }: { message: Message; themeColors
     );
 };
 
-const ErrorFooter = ({ status, onRetry, themeColors }: { status: ConnectionStatus, onRetry: () => void, themeColors: any }) => {
-  if (status !== 'connected_static' && status !== 'error') {
-    return null;
-  }
-
-  const isConnecting = status === 'connecting';
-
-  return (
-    <View style={[styles.errorFooter, { backgroundColor: themeColors.surface, borderTopColor: themeColors.border }]}>
-      <Feather name="wifi-off" size={20} color={themeColors.tabIconDefault} />
-      <Text style={[styles.errorFooterText, { color: themeColors.tabIconDefault }]}>
-        Koneksi gagal.
-      </Text>
-      <TouchableOpacity onPress={onRetry} disabled={isConnecting} style={styles.retryButton}>
-        <Text style={{ color: themeColors.tint, fontWeight: 'bold' }}>
-          {isConnecting ? 'Mencoba...' : 'Coba Lagi'}
-        </Text>
-      </TouchableOpacity>
-    </View>
-  );
-};
-
-
 // --- MAIN COMPONENT ---
 
 export const ChatbotModal: React.FC<{
@@ -272,11 +266,19 @@ export const ChatbotModal: React.FC<{
     }
   };
 
+  const resetChatHistory = async () => {
+      try {
+          await fetch(CHAT_RESET_URL, { method: 'POST' });
+          setMessages([]);
+          checkServerConnection(); // Check connection and provide new greeting
+      } catch (error) {
+          console.error("Failed to reset chat history on server:", error);
+      }
+  }
+
   useEffect(() => {
     if (visible) {
-      setMessages([]);
-      setInput('');
-      checkServerConnection();
+      resetChatHistory();
     }
   }, [visible]);
 
@@ -291,7 +293,7 @@ export const ChatbotModal: React.FC<{
         setMessages([{ id: "1", text: greetingText, sender: "bot", time: getCurrentTime() }]);
       }, 500);
     }
-  }, [connectionStatus, visible]);
+  }, [connectionStatus, visible, messages.length]);
 
   const sendPromptToBackend = async (prompt: string) => {
     setIsTyping(true);
@@ -299,7 +301,7 @@ export const ChatbotModal: React.FC<{
 
     if (connectionStatus === 'connected_server') {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000);
+        const timeoutId = setTimeout(() => controller.abort(), 15000); // Longer timeout for generation
 
         try {
             const response = await fetch(CHAT_URL, {
@@ -314,15 +316,15 @@ export const ChatbotModal: React.FC<{
                 const data = await response.json();
                 botResponseText = data.response || staticChatResponses.default;
             } else {
-                setConnectionStatus('connected_static');
-                botResponseText = staticChatResponses[prompt.toLowerCase()] || staticChatResponses.default;
+                setConnectionStatus('error');
+                botResponseText = staticChatResponses.default;
                 console.error(`Backend error: ${response.status} ${response.statusText}`);
             }
         } catch (error) {
             clearTimeout(timeoutId);
             console.error("Error sending prompt to backend:", error);
-            setConnectionStatus('connected_static');
-            botResponseText = staticChatResponses[prompt.toLowerCase()] || staticChatResponses.default;
+            setConnectionStatus('error');
+            botResponseText = staticChatResponses.default;
         }
     } else {
         botResponseText = staticChatResponses[prompt.toLowerCase()] || staticChatResponses.default;
@@ -352,14 +354,15 @@ export const ChatbotModal: React.FC<{
     if (isTyping && messages.length > 0) return { name: 'dots-horizontal' as const, color: colors.tint };
     switch (connectionStatus) {
       case 'connecting':
-        return { name: 'wifi-off' as const, color: colors.warning };
+        return { name: 'wifi-off' as const, color: colors.warning, text: 'Menyambungkan...' };
       case 'connected_server':
-        return { name: 'wifi-strength-4' as const, color: colors.success };
+        return { name: 'wifi-strength-4' as const, color: colors.success, text: 'Online' };
       case 'connected_static':
+        return { name: 'wifi-strength-2' as const, color: colors.warning, text: 'Mode Offline' };
       case 'error':
-        return { name: 'wifi-off' as const, color: colors.error };
+        return { name: 'wifi-off' as const, color: colors.error, text: 'Gagal Terhubung' };
       default:
-        return { name: 'wifi-off' as const, color: colors.tabIconDefault };
+        return { name: 'wifi-off' as const, color: colors.tabIconDefault, text: 'Tidak Diketahui' };
     }
   };
 
@@ -367,7 +370,7 @@ export const ChatbotModal: React.FC<{
     scrollViewRef.current?.scrollToEnd({ animated: true });
   }, [messages, isTyping]);
   
-  const statusIcon = getStatusIcon();
+  const statusInfo = getStatusIcon();
 
   return (
     <Modal animationType="slide" transparent={true} visible={visible} onRequestClose={onClose}>
@@ -380,8 +383,14 @@ export const ChatbotModal: React.FC<{
                 <Text style={[styles.headerTitle, { color: colors.text }]}>GrapeCheck Bot</Text>
               </View>
               <View style={styles.headerActions}>
-                <MaterialCommunityIcons name={statusIcon.name} size={22} color={statusIcon.color} />
-                <TouchableOpacity onPress={onClose} style={styles.closeButton} accessibilityRole="button" accessibilityLabel="Close chatbot">
+                <View style={styles.statusIndicator}>
+                    <MaterialCommunityIcons name={statusInfo.name} size={16} color={statusInfo.color} />
+                    <Text style={[styles.statusText, {color: statusInfo.color}]}>{statusInfo.text}</Text>
+                </View>
+                <TouchableOpacity onPress={resetChatHistory} style={styles.headerButton}>
+                    <Feather name="refresh-cw" size={20} color={colors.text} />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={onClose} style={styles.headerButton} accessibilityRole="button" accessibilityLabel="Close chatbot">
                   <Feather name="x" size={24} color={colors.text} />
                 </TouchableOpacity>
               </View>
@@ -394,11 +403,10 @@ export const ChatbotModal: React.FC<{
                 <View style={styles.chipContainer}>
                   <SuggestionChip text="Apa itu Black Rot?" onPress={() => handleSuggestionPress("Apa itu Black Rot?")} themeColors={colors} />
                   <SuggestionChip text="Gejala Esca" onPress={() => handleSuggestionPress("Gejala Esca")} themeColors={colors} />
+                   <SuggestionChip text="Cara menangani Hawar" onPress={() => handleSuggestionPress("Cara menangani Hawar")} themeColors={colors} />
                 </View>
               )}
             </ScrollView>
-
-            <ErrorFooter status={connectionStatus} onRetry={checkServerConnection} themeColors={colors} />
 
             <View style={[styles.inputContainer, { borderTopColor: colors.border }]}>
               <TextInput
@@ -416,13 +424,14 @@ export const ChatbotModal: React.FC<{
                 onChangeText={setInput}
                 onSubmitEditing={handleSend}
                 returnKeyType="send"
+                editable={!isTyping}
               />
               <TouchableOpacity
                 onPress={handleSend}
-                style={[styles.sendButton, { backgroundColor: colors.tint }]}
-                disabled={isTyping}
+                style={[styles.sendButton, { backgroundColor: isTyping || !input.trim() ? colors.tabIconDefault : colors.tint }]}
+                disabled={isTyping || !input.trim()}
               >
-                <Feather name="send" size={20} color="#fff" />
+                {isTyping ? <ActivityIndicator size="small" color="#fff" /> : <Feather name="send" size={20} color="#fff" />}
               </TouchableOpacity>
             </View>
           </SafeAreaView>
@@ -466,7 +475,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 16,
   },
-  closeButton: {},
+  headerButton: {},
+  statusIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 8,
+    backgroundColor: 'rgba(0,0,0,0.05)'
+  },
+  statusText: {
+    fontSize: 12,
+    fontWeight: '600'
+  },
   chatContainer: { flexGrow: 1, padding: 15 },
   messageContainer: {
     marginVertical: 5,
@@ -538,21 +560,4 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
   },
   typingDot: { width: 8, height: 8, borderRadius: 4, marginHorizontal: 3 },
-  errorFooter: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderTopWidth: 1,
-    gap: 10,
-  },
-  errorFooterText: {
-    flex: 1,
-    fontSize: 14,
-  },
-  retryButton: {
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-  }
 });

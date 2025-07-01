@@ -1,5 +1,5 @@
 import os
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, session
 from PIL import Image
 import numpy as np
 import tensorflow as tf
@@ -12,6 +12,9 @@ load_dotenv()
 
 # --- Inisialisasi Aplikasi Flask ---
 app = Flask(__name__)
+# Tambahkan secret key untuk menggunakan session, penting untuk produksi
+app.secret_key = os.getenv("FLASK_SECRET_KEY", os.urandom(24))
+
 
 # --- Konfigurasi ---
 MODEL_PATH = 'model/model.tflite'
@@ -99,23 +102,48 @@ def chat_handler():
     
     user_prompt = request.json['prompt']
 
-    # Instruksi sistem untuk memformat output Gemini
+    # --- BARU: Kelola riwayat percakapan dalam session ---
+    if 'chat_history' not in session:
+        session['chat_history'] = []
+
+    # Gabungkan riwayat untuk konteks
+    history_for_prompt = "\n".join([f"{msg['role']}: {msg['text']}" for msg in session.get('chat_history', [])])
+
+    # --- PERBAIKAN: System prompt yang lebih cerdas ---
     system_instruction = (
-        "Anda adalah GrapeCheck Bot, asisten ahli untuk penyakit tanaman anggur. "
-        "Jawab pertanyaan pengguna dengan **singkat, padat, dan jelas**. "
-        "Gunakan format yang rapi. Jika jawaban memerlukan beberapa langkah atau poin, "
-        "gunakan **poin-poin (bullet points)** atau **penomoran** untuk mempermudah pembacaan. "
-        "Fokus hanya pada informasi yang paling penting.\n\n"
-        f"Pertanyaan: \"{user_prompt}\""
+        "Anda adalah GrapeCheck Bot, seorang ahli botani digital yang ramah dan berspesialisasi dalam kesehatan tanaman anggur. "
+        "Tugas Anda adalah membantu pengguna mengidentifikasi penyakit, memberikan saran perawatan, dan menjawab pertanyaan terkait budidaya anggur berdasarkan riwayat percakapan. "
+        "Selalu berikan jawaban yang **akurat, ringkas, dan mudah dipahami**. "
+        "Ketika memberikan saran, gunakan **poin-poin bernomor** atau **bullet points** untuk langkah-langkah yang jelas. "
+        "Jika Anda tidak yakin atau pertanyaannya di luar topik anggur, katakan dengan sopan bahwa Anda hanya bisa membantu seputar tanaman anggur. "
+        "Selalu sapa pengguna dengan ramah.\n\n"
+        f"Riwayat Percakapan:\n{history_for_prompt}\n\n"
+        f"Pertanyaan Pengguna Saat Ini: \"{user_prompt}\""
     )
     
     try:
-        # Kirim prompt yang sudah diberi instruksi ke Gemini
         response = model.generate_content(system_instruction)
-        return jsonify({'response': response.text})
+        bot_response_text = response.text
+
+        # Simpan percakapan ke session
+        session['chat_history'].append({"role": "user", "text": user_prompt})
+        session['chat_history'].append({"role": "bot", "text": bot_response_text})
+        # Batasi riwayat agar tidak terlalu panjang (misal: 10 interaksi terakhir)
+        session['chat_history'] = session['chat_history'][-20:] 
+        session.modified = True
+        
+        return jsonify({'response': bot_response_text})
     except Exception as e:
         print(f"Error saat berkomunikasi dengan Gemini API: {e}")
         return jsonify({'error': 'Terjadi kesalahan internal saat memproses permintaan Anda.'}), 500
+
+# --- BARU: Endpoint untuk mereset percakapan ---
+@app.route('/chat/reset', methods=['POST'])
+def chat_reset():
+    """Mereset riwayat percakapan di session."""
+    session.pop('chat_history', None)
+    return jsonify({'status': 'ok', 'message': 'Riwayat percakapan berhasil direset.'})
+
 
 # --- Menjalankan Aplikasi ---
 if __name__ == '__main__':
