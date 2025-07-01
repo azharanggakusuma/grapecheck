@@ -19,7 +19,7 @@ import Colors from "@/constants/Colors";
 import { LinearGradient } from "expo-linear-gradient";
 import { CHAT_URL } from "@/constants/api";
 import Markdown from 'react-native-markdown-display';
-import { staticChatResponses } from "@/constants/staticChatData"; // Import data statis
+import { staticChatResponses } from "@/constants/staticChatData";
 
 interface Message {
   id: string;
@@ -31,7 +31,7 @@ interface Message {
 // Define timeouts
 const INITIAL_CHECK_TIMEOUT_MS = 5000; // 5 seconds for initial connection check
 const CHAT_TIMEOUT_MS = 10000;       // 10 seconds for regular chat prompts
-const TYPING_DELAY_MS = 1000;       // Delay for static responses to show typing animation (e.g., 1 second)
+const TYPING_DELAY_MS = 1000;       // Delay for static responses to show typing animation
 const INITIAL_GREETING_DELAY_MS = 1200; // Delay for initial bot greeting animation
 
 type ConnectionStatus = 'connecting' | 'connected_server' | 'connected_static' | 'error';
@@ -222,7 +222,6 @@ export const ChatbotModal: React.FC<{
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('connecting');
-  const [useStaticMode, setUseStaticMode] = useState(false); // Flag to force static mode
   const scrollViewRef = useRef<ScrollView>(null);
   
   const getCurrentTime = () => {
@@ -233,81 +232,70 @@ export const ChatbotModal: React.FC<{
       .padStart(2, "0")}`;
   };
 
-  // Function to perform initial server check
   const checkServerConnection = async () => {
-    setConnectionStatus('connecting'); // Set status to connecting
+    setConnectionStatus('connecting');
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), INITIAL_CHECK_TIMEOUT_MS); // Set timeout for initial check
+    const timeoutId = setTimeout(() => controller.abort(), INITIAL_CHECK_TIMEOUT_MS);
 
     try {
-      // Attempt a lightweight request to the backend
       const response = await fetch(CHAT_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: "ping" }), // Send a dummy prompt or use a /health endpoint
+        body: JSON.stringify({ prompt: "ping" }),
         signal: controller.signal,
       });
-      clearTimeout(timeoutId); // Clear timeout if fetch completes in time
+      clearTimeout(timeoutId);
 
       if (response.ok) {
-        setConnectionStatus('connected_server'); // Set status to connected_server
-        setUseStaticMode(false); // Disable static mode
+        setConnectionStatus('connected_server');
       } else {
-        // Server responded but with an error status
-        setConnectionStatus('connected_static'); // Set status to connected_static
-        setUseStaticMode(true); // Enable static mode
+        setConnectionStatus('connected_static');
       }
-    } catch (error: any) {
-      clearTimeout(timeoutId); // Ensure timeout is cleared even on error
-      console.error("Initial connection check failed:", error); // Log error
-      setConnectionStatus('connected_static'); // Set status to connected_static
-      setUseStaticMode(true); // Enable static mode
+    } catch (error) {
+      clearTimeout(timeoutId);
+      console.error("Initial connection check failed:", error);
+      setConnectionStatus('connected_static');
     }
   };
 
-  // Effect to handle modal visibility and initial connection check
   useEffect(() => {
     if (visible) {
-      setMessages([]); // Clear messages on open
-      setIsTyping(false); // Initially, NO typing when modal opens
-      setConnectionStatus('connecting'); // Show connecting status immediately
-      checkServerConnection(); // Start connection check
-    } else {
-      // Reset all states when modal is closed
       setMessages([]);
       setIsTyping(false);
       setConnectionStatus('connecting');
-      setUseStaticMode(false);
+      checkServerConnection();
     }
   }, [visible]);
 
-  // Effect to handle initial greeting after connection status is determined
   useEffect(() => {
-    // Trigger when connectionStatus changes, modal is visible, and no messages yet
     if (visible && messages.length === 0 && (connectionStatus === 'connected_server' || connectionStatus === 'connected_static')) {
-      setIsTyping(true); // Start typing animation for greeting
+      setIsTyping(true);
       setTimeout(() => {
+        const greetingText =
+          connectionStatus === 'connected_server'
+            ? "Halo! Saya GrapeCheck Bot. Ada yang bisa saya bantu?"
+            : "Halo! Saat ini saya sedang offline, namun saya tetap bisa menjawab beberapa pertanyaan umum. Ada yang bisa saya bantu?";
+
         setMessages([
           {
             id: "1",
-            text: "Halo! Saya GrapeCheck Bot. Ada yang bisa saya bantu?",
+            text: greetingText,
             sender: "bot",
             time: getCurrentTime(),
           },
         ]);
-        setIsTyping(false); // Hide typing indicator after greeting
-      }, INITIAL_GREETING_DELAY_MS); // Use new constant for clarity
+        setIsTyping(false);
+      }, INITIAL_GREETING_DELAY_MS);
     }
-  }, [visible, connectionStatus]); // Trigger when connectionStatus changes and modal is visible
-
+  }, [visible, connectionStatus]);
 
   const sendPromptToBackend = async (prompt: string) => {
-    setIsTyping(true); // Start typing animation
-    let botResponseText = staticChatResponses.default; // Default to a general static response
+    setIsTyping(true);
+    let botResponseText = staticChatResponses.default;
 
-    if (!useStaticMode) { // Only try backend if not in static mode yet
+    if (connectionStatus === 'connected_server') {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), CHAT_TIMEOUT_MS); // Set timeout for chat prompt
+        const timeoutId = setTimeout(() => controller.abort(), CHAT_TIMEOUT_MS);
 
         try {
             const response = await fetch(CHAT_URL, {
@@ -316,37 +304,26 @@ export const ChatbotModal: React.FC<{
                 body: JSON.stringify({ prompt }),
                 signal: controller.signal,
             });
-            clearTimeout(timeoutId); // Clear timeout if fetch completes in time
+            clearTimeout(timeoutId);
 
             if (response.ok) {
                 const data = await response.json();
-                if (data.response) {
-                    botResponseText = data.response; // Use backend response
-                }
+                botResponseText = data.response || staticChatResponses.default;
             } else {
-                // Server responded with an error status (e.g., 404, 500), switch to static mode for future chats
-                setUseStaticMode(true);
                 setConnectionStatus('connected_static');
-                // Try to get a specific static response for the prompt if available, otherwise default
                 botResponseText = staticChatResponses[prompt.toLowerCase()] || staticChatResponses.default;
                 console.error(`Backend error: ${response.status} ${response.statusText}`);
             }
-        } catch (error: any) {
-            clearTimeout(timeoutId); // Ensure timeout is cleared even on error
-            console.error("Error sending prompt to backend:", error); // Log error
-            // Network error or timeout, switch to static mode for future chats
-            setUseStaticMode(true);
+        } catch (error) {
+            clearTimeout(timeoutId);
+            console.error("Error sending prompt to backend:", error);
             setConnectionStatus('connected_static');
-            // Try to get a specific static response for the prompt if available, otherwise default
             botResponseText = staticChatResponses[prompt.toLowerCase()] || staticChatResponses.default;
         }
     } else {
-        // Already in static mode, get response directly
-        // Try to get a specific static response for the prompt if available, otherwise default
         botResponseText = staticChatResponses[prompt.toLowerCase()] || staticChatResponses.default;
     }
 
-    // Simulate typing delay for all bot responses (server or static)
     setTimeout(() => {
         const botResponse: Message = {
             id: (Date.now() + 1).toString(),
@@ -355,9 +332,9 @@ export const ChatbotModal: React.FC<{
             time: getCurrentTime(),
         };
         setMessages((prev) => [...prev, botResponse]);
-        setIsTyping(false); // Stop typing after message appears
+        setIsTyping(false);
     }, TYPING_DELAY_MS);
-};
+  };
 
   const handleSend = () => {
     if (input.trim().length === 0) return;
@@ -383,36 +360,25 @@ export const ChatbotModal: React.FC<{
     sendPromptToBackend(suggestion);
   };
 
-  const getStatusText = () => {
+  const getStatusInfo = () => {
+    if (isTyping) {
+        return { text: 'Mengetik...', color: colors.tint, icon: 'robot-happy-outline' as const };
+    }
     switch (connectionStatus) {
-      case 'connecting':
-        return 'Menghubungkan...';
-      case 'connected_server':
-        return 'Terhubung (Server)';
-      case 'connected_static':
-        return 'Terhubung (Data Statis)';
-      case 'error': // This case might be less used with current logic
-        return 'Terjadi Kesalahan';
-      default:
-        return 'Offline';
+        case 'connecting':
+            return { text: 'Menghubungkan...', color: colors.warning, icon: 'timer-sand' as const };
+        case 'connected_server':
+            return { text: 'Online', color: colors.success, icon: 'robot-happy-outline' as const };
+        case 'connected_static':
+            return { text: 'Offline (Kemampuan terbatas)', color: colors.tabIconDefault, icon: 'robot-confused-outline' as const };
+        case 'error':
+            return { text: 'Gagal terhubung', color: colors.error, icon: 'robot-dead-outline' as const };
+        default:
+            return { text: 'Offline', color: colors.tabIconDefault, icon: 'robot-confused-outline' as const };
     }
   };
 
-  const getStatusColor = () => {
-    if (isTyping) return colors.tint; // Typing overrides connection status color
-    switch (connectionStatus) {
-      case 'connecting':
-        return colors.warning; // Kuning untuk menghubungkan
-      case 'connected_server':
-        return colors.success; // Hijau untuk terhubung ke server
-      case 'connected_static':
-        return colors.tabIconDefault; // Abu-abu untuk terhubung statis
-      case 'error':
-        return colors.error; // Merah untuk error
-      default:
-        return colors.tabIconDefault;
-    }
-  };
+  const statusInfo = getStatusInfo();
 
   useEffect(() => {
     scrollViewRef.current?.scrollToEnd({ animated: true });
@@ -436,7 +402,7 @@ export const ChatbotModal: React.FC<{
             <View style={[styles.header, { borderBottomColor: colors.border }]}>
               <View style={styles.headerTitleContainer}>
                 <MaterialCommunityIcons
-                  name="robot-happy-outline"
+                  name={statusInfo.icon}
                   size={24}
                   color={colors.tint}
                 />
@@ -444,13 +410,8 @@ export const ChatbotModal: React.FC<{
                   <Text style={[styles.headerTitle, { color: colors.text }]}>
                     GrapeCheck Bot
                   </Text>
-                  <Text
-                    style={[
-                      styles.headerStatus,
-                      { color: getStatusColor() }, // Dynamic color
-                    ]}
-                  >
-                    {isTyping ? "Mengetik..." : getStatusText()} {/* Dynamic text */}
+                  <Text style={[styles.headerStatus, { color: statusInfo.color }]}>
+                    {statusInfo.text}
                   </Text>
                 </View>
               </View>
