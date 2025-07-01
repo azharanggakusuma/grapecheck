@@ -1,4 +1,4 @@
-// app/(tabs)/check.tsx
+// app/(tabs)/checkScreen.tsx
 
 import React, { useState, useCallback, useRef, useEffect } from "react";
 import {
@@ -22,7 +22,7 @@ import { BlurView } from "expo-blur";
 import * as Progress from "react-native-progress";
 import { useGlobalRefresh } from "@/components/contexts/GlobalRefreshContext";
 import { LinearGradient } from "expo-linear-gradient";
-import { BACKEND_URL } from "@/constants/api";
+import { CLASSIFY_URL } from "@/constants/api"; // <-- PERUBAHAN 1: Impor CLASSIFY_URL
 
 const { width } = Dimensions.get("window");
 const IMAGE_SIZE = width * 0.85;
@@ -318,7 +318,7 @@ export default function CheckScreen() {
     formData.append("file", { uri, name: filename, type } as any);
 
     try {
-      const response = await fetch(BACKEND_URL, {
+      const response = await fetch(CLASSIFY_URL, { // <-- PERUBAHAN 2: Gunakan CLASSIFY_URL
         method: "POST",
         body: formData,
         headers: { "Content-Type": "multipart/form-data" },
