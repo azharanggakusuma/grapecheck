@@ -1,53 +1,185 @@
 // components/chatbot/ChatbotModal.tsx
-import React from 'react';
-import { Modal, View, Text, StyleSheet, TouchableOpacity, SafeAreaView, KeyboardAvoidingView, Platform, TextInput } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import React, { useState, useRef, useEffect } from 'react';
+import { 
+  Modal, 
+  View, 
+  Text, 
+  StyleSheet, 
+  TouchableOpacity, 
+  SafeAreaView, 
+  KeyboardAvoidingView, 
+  Platform, 
+  TextInput,
+  ScrollView,
+  Animated,
+} from 'react-native';
+import { Feather } from '@expo/vector-icons'; // <-- Impor diperbaiki
 import { useTheme } from '@/components/ui/ThemeProvider';
 import Colors from '@/constants/Colors';
+import { LinearGradient } from 'expo-linear-gradient';
 
-interface ChatbotModalProps {
-  visible: boolean;
-  onClose: () => void;
+// Tipe untuk setiap pesan
+interface Message {
+  id: string;
+  text: string;
+  sender: 'user' | 'bot';
 }
 
-export const ChatbotModal: React.FC<ChatbotModalProps> = ({ visible, onClose }) => {
-  const { theme } = useTheme();
-  const colors = Colors[theme];
+// Komponen untuk bubble chat
+const MessageBubble = ({ message, themeColors }: { message: Message, themeColors: any }) => {
+  const isBot = message.sender === 'bot';
+  const slideAnim = useRef(new Animated.Value(isBot ? -50 : 50)).current;
+  const opacityAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(opacityAnim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.spring(slideAnim, {
+        toValue: 0,
+        speed: 12,
+        bounciness: 6,
+        useNativeDriver: true,
+      })
+    ]).start();
+  }, []);
+
+  const bubbleStyle = isBot ? styles.botBubble : styles.userBubble;
+  const textStyle = isBot ? { color: themeColors.text } : { color: '#FFFFFF' };
+  const transformStyle = { transform: [{ translateX: slideAnim }, { scale: opacityAnim }] };
 
   return (
-    <Modal
-      animationType="slide"
-      transparent={true}
-      visible={visible}
-      onRequestClose={onClose}
-    >
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.modalOverlay}
+    <Animated.View style={[
+      styles.messageContainer, 
+      isBot ? styles.botMessageContainer : styles.userMessageContainer,
+      transformStyle,
+      { opacity: opacityAnim }
+    ]}>
+      {isBot && (
+        <LinearGradient colors={[`${themeColors.tint}2A`, `${themeColors.tint}0A`]} style={styles.botAvatar}>
+          {/* --- PERBAIKAN: Menggunakan ikon 'cpu' yang valid --- */}
+          <Feather name="cpu" size={20} color={themeColors.tint} />
+        </LinearGradient>
+      )}
+      <LinearGradient
+        colors={isBot ? [themeColors.surface, themeColors.surface] : [`${themeColors.primaryLight}`, `${themeColors.tint}`]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={[styles.messageBubble, bubbleStyle, { borderColor: themeColors.border }]}
       >
-        <View style={[styles.modalContent, { backgroundColor: colors.surface }]}>
+        <Text style={[styles.messageText, textStyle]}>{message.text}</Text>
+      </LinearGradient>
+    </Animated.View>
+  );
+};
+
+// Komponen untuk chip saran
+const SuggestionChip = ({ text, onPress, themeColors }: { text: string, onPress: () => void, themeColors: any }) => (
+  <TouchableOpacity onPress={onPress} style={[styles.chip, { backgroundColor: themeColors.surface, borderColor: themeColors.border }]}>
+    <Text style={[styles.chipText, { color: themeColors.tint }]}>{text}</Text>
+  </TouchableOpacity>
+);
+
+// Komponen utama Modal Chatbot
+export const ChatbotModal: React.FC<{ visible: boolean; onClose: () => void; }> = ({ visible, onClose }) => {
+  const { theme } = useTheme();
+  const colors = Colors[theme];
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState('');
+  const scrollViewRef = useRef<ScrollView>(null);
+
+  useEffect(() => {
+    if (visible && messages.length === 0) {
+      setMessages([
+        { id: '1', text: 'Halo! Saya GrapeCheck Bot. Ada yang bisa saya bantu terkait penyakit daun anggur?', sender: 'bot' }
+      ]);
+    }
+  }, [visible]);
+
+  const handleSend = () => {
+    if (input.trim().length === 0) return;
+
+    const newMessage: Message = { id: Date.now().toString(), text: input, sender: 'user' };
+    setMessages(prev => [...prev, newMessage]);
+    
+    const userMessage = input; // Simpan input sebelum direset
+    setInput('');
+
+    setTimeout(() => {
+      const botResponse: Message = {
+        id: (Date.now() + 1).toString(),
+        text: `Maaf, saya masih dalam tahap pengembangan dan belum bisa memproses permintaan "${userMessage}".`,
+        sender: 'bot',
+      };
+      setMessages(prev => [...prev, botResponse]);
+    }, 1000);
+  };
+  
+  const handleSuggestionPress = (suggestion: string) => {
+    const newMessage: Message = { id: Date.now().toString(), text: suggestion, sender: 'user' };
+    setMessages(prev => [...prev, newMessage]);
+
+    setTimeout(() => {
+      const botResponse: Message = {
+        id: (Date.now() + 1).toString(),
+        text: `Maaf, saya masih dalam tahap pengembangan dan belum bisa memproses permintaan "${suggestion}".`,
+        sender: 'bot',
+      };
+      setMessages(prev => [...prev, botResponse]);
+    }, 1000);
+  };
+
+  useEffect(() => {
+    scrollViewRef.current?.scrollToEnd({ animated: true });
+  }, [messages]);
+
+  return (
+    <Modal animationType="slide" transparent={true} visible={visible} onRequestClose={onClose}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.modalOverlay}>
+        <View style={[styles.modalContent, { backgroundColor: colors.background }]}>
           <SafeAreaView style={{ flex: 1 }}>
             {/* Header Modal */}
             <View style={[styles.header, { borderBottomColor: colors.border }]}>
-              <Text style={[styles.headerTitle, { color: colors.text }]}>GrapeCheck Bot</Text>
+              <View style={styles.headerTitleContainer}>
+                {/* --- PERBAIKAN: Menggunakan ikon 'cpu' yang valid --- */}
+                <Feather name="cpu" size={22} color={colors.tint} />
+                <Text style={[styles.headerTitle, { color: colors.text }]}>GrapeCheck Bot</Text>
+              </View>
               <TouchableOpacity onPress={onClose} style={styles.closeButton}>
                 <Feather name="x" size={24} color={colors.text} />
               </TouchableOpacity>
             </View>
 
-            {/* Konten Chat (Placeholder) */}
-            <View style={styles.chatContainer}>
-              <Text style={{ color: colors.tabIconDefault }}>Tanyakan sesuatu tentang penyakit anggur...</Text>
-            </View>
+            {/* Konten Chat */}
+            <ScrollView 
+              ref={scrollViewRef}
+              contentContainerStyle={styles.chatContainer}
+              showsVerticalScrollIndicator={false}
+            >
+              {messages.map(msg => <MessageBubble key={msg.id} message={msg} themeColors={colors} />)}
+              {messages.length === 1 && (
+                <View style={styles.chipContainer}>
+                    <SuggestionChip text="Apa itu Black Rot?" onPress={() => handleSuggestionPress("Apa itu Black Rot?")} themeColors={colors} />
+                    <SuggestionChip text="Gejala Esca" onPress={() => handleSuggestionPress("Gejala Esca")} themeColors={colors} />
+                </View>
+              )}
+            </ScrollView>
 
             {/* Input Chat */}
             <View style={[styles.inputContainer, { borderTopColor: colors.border }]}>
               <TextInput
-                style={[styles.textInput, { color: colors.text, backgroundColor: colors.background }]}
-                placeholder="Ketik pesanmu..."
+                style={[styles.textInput, { color: colors.text, backgroundColor: colors.surface, borderColor: colors.border }]}
+                placeholder="Ketik pertanyaanmu..."
                 placeholderTextColor={colors.tabIconDefault}
+                value={input}
+                onChangeText={setInput}
+                onSubmitEditing={handleSend}
+                returnKeyType="send"
               />
-              <TouchableOpacity style={[styles.sendButton, { backgroundColor: colors.tint }]}>
+              <TouchableOpacity onPress={handleSend} style={[styles.sendButton, { backgroundColor: colors.tint }]}>
                 <Feather name="send" size={20} color="#fff" />
               </TouchableOpacity>
             </View>
@@ -58,6 +190,7 @@ export const ChatbotModal: React.FC<ChatbotModalProps> = ({ visible, onClose }) 
   );
 };
 
+// ... (Styles tetap sama, tidak perlu diubah)
 const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
@@ -65,50 +198,108 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.5)',
   },
   modalContent: {
-    height: '85%',
+    height: '92%',
     width: '100%',
-    borderTopRightRadius: 20,
-    borderTopLeftRadius: 20,
+    borderTopRightRadius: 24,
+    borderTopLeftRadius: 24,
     overflow: 'hidden',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    padding: 15,
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
     borderBottomWidth: 1,
+  },
+  headerTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   headerTitle: {
     fontSize: 18,
     fontWeight: 'bold',
+    marginLeft: 10,
   },
-  closeButton: {
-    position: 'absolute',
-    right: 15,
-  },
+  closeButton: {},
   chatContainer: {
-    flex: 1,
-    padding: 20,
+    flexGrow: 1,
+    padding: 15,
+  },
+  messageContainer: {
+    marginVertical: 5,
+    maxWidth: '85%',
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+  },
+  botMessageContainer: {
+    alignSelf: 'flex-start',
+  },
+  userMessageContainer: {
+    alignSelf: 'flex-end',
+  },
+  botAvatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     justifyContent: 'center',
     alignItems: 'center',
+    marginRight: 8,
+  },
+  messageBubble: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+  },
+  botBubble: {
+    borderTopLeftRadius: 5,
+    borderWidth: 1,
+  },
+  userBubble: {
+    borderTopRightRadius: 5,
+  },
+  messageText: {
+    fontSize: 15.5,
+    lineHeight: 22,
+  },
+  chipContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'flex-start',
+    marginTop: 10,
+    marginLeft: 44, // align with bot messages
+  },
+  chip: {
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 20,
+    marginRight: 8,
+    marginBottom: 8,
+    borderWidth: 1,
+  },
+  chipText: {
+    fontSize: 14,
+    fontWeight: '500',
   },
   inputContainer: {
     flexDirection: 'row',
-    padding: 10,
+    padding: 12,
     borderTopWidth: 1,
     alignItems: 'center',
   },
   textInput: {
     flex: 1,
-    height: 40,
-    borderRadius: 20,
-    paddingHorizontal: 15,
+    height: 44,
+    borderRadius: 22,
+    paddingHorizontal: 18,
     marginRight: 10,
+    fontSize: 16,
+    borderWidth: 1,
   },
   sendButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     justifyContent: 'center',
     alignItems: 'center',
   },
