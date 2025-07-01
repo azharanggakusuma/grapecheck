@@ -13,20 +13,20 @@ import {
   ScrollView,
   Animated,
 } from "react-native";
-// --- PERUBAHAN IMPOR: Tambahkan MaterialCommunityIcons ---
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useTheme } from "@/components/ui/ThemeProvider";
 import Colors from "@/constants/Colors";
 import { LinearGradient } from "expo-linear-gradient";
-import { CHAT_URL } from "@/constants/api"; 
+import { CHAT_URL } from "@/constants/api";
+import Markdown from 'react-native-markdown-display';
 
-// (Interface Message dan komponen SuggestionChip tidak berubah)
 interface Message {
   id: string;
   text: string;
   sender: "user" | "bot";
   time: string;
 }
+
 const SuggestionChip = ({ text, onPress, themeColors }: any) => (
   <TouchableOpacity
     onPress={onPress}
@@ -39,7 +39,6 @@ const SuggestionChip = ({ text, onPress, themeColors }: any) => (
   </TouchableOpacity>
 );
 
-// --- Komponen Animasi Mengetik ---
 const TypingIndicator = ({ themeColors }: { themeColors: any }) => {
   const animations = [
     useRef(new Animated.Value(0)).current,
@@ -73,7 +72,6 @@ const TypingIndicator = ({ themeColors }: { themeColors: any }) => {
         colors={[`${themeColors.tint}2A`, `${themeColors.tint}0A`]}
         style={styles.botAvatar}
       >
-        {/* --- ICON ROBOT --- */}
         <MaterialCommunityIcons
           name="robot-happy-outline"
           size={22}
@@ -108,7 +106,6 @@ const TypingIndicator = ({ themeColors }: { themeColors: any }) => {
   );
 };
 
-// --- Komponen Bubble Chat ---
 const MessageBubble = ({
   message,
   themeColors,
@@ -119,6 +116,7 @@ const MessageBubble = ({
   const isBot = message.sender === "bot";
   const slideAnim = useRef(new Animated.Value(isBot ? -50 : 50)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
+  
   useEffect(() => {
     Animated.parallel([
       Animated.timing(opacityAnim, {
@@ -135,6 +133,24 @@ const MessageBubble = ({
     ]).start();
   }, []);
 
+  const markdownStyle = StyleSheet.create({
+    body: {
+      color: isBot ? themeColors.text : "#FFFFFF",
+      fontSize: 15.5,
+      lineHeight: 22,
+    },
+    heading1: {
+      color: isBot ? themeColors.text : "#FFFFFF",
+      fontWeight: 'bold',
+      fontSize: 20,
+      marginTop: 10,
+      marginBottom: 5,
+    },
+    bullet_list_icon: {
+      color: isBot ? themeColors.tabIconDefault : "#FFFFFF99",
+    },
+  });
+
   return (
     <Animated.View
       style={[
@@ -148,12 +164,7 @@ const MessageBubble = ({
           colors={[`${themeColors.tint}2A`, `${themeColors.tint}0A`]}
           style={styles.botAvatar}
         >
-          {/* --- ICON ROBOT --- */}
-          <MaterialCommunityIcons
-            name="robot-happy-outline"
-            size={22}
-            color={themeColors.tint}
-          />
+          <MaterialCommunityIcons name="robot-happy-outline" size={22} color={themeColors.tint} />
         </LinearGradient>
       )}
       <LinearGradient
@@ -170,14 +181,15 @@ const MessageBubble = ({
           { borderColor: themeColors.border },
         ]}
       >
-        <Text
-          style={[
-            styles.messageText,
-            { color: isBot ? themeColors.text : "#FFFFFF" },
-          ]}
-        >
-          {message.text}
-        </Text>
+        {isBot ? (
+          <Markdown style={markdownStyle}>
+            {message.text}
+          </Markdown>
+        ) : (
+          <Text style={[styles.messageText, { color: "#FFFFFF" }]}>
+            {message.text}
+          </Text>
+        )}
         <Text
           style={[
             styles.timeText,
@@ -191,7 +203,6 @@ const MessageBubble = ({
   );
 };
 
-// --- Komponen utama Modal Chatbot ---
 export const ChatbotModal: React.FC<{
   visible: boolean;
   onClose: () => void;
@@ -202,6 +213,7 @@ export const ChatbotModal: React.FC<{
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
+  
   const getCurrentTime = () => {
     const now = new Date();
     return `${now.getHours().toString().padStart(2, "0")}:${now
@@ -235,15 +247,11 @@ export const ChatbotModal: React.FC<{
     try {
       const response = await fetch(CHAT_URL, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ prompt: prompt }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt }),
       });
 
-      if (!response.ok) {
-        throw new Error('Gagal mendapatkan respons dari server.');
-      }
+      if (!response.ok) throw new Error('Gagal mendapatkan respons dari server.');
 
       const data = await response.json();
       const botResponse: Message = {
@@ -292,7 +300,6 @@ export const ChatbotModal: React.FC<{
     sendPromptToBackend(suggestion);
   };
 
-
   useEffect(() => {
     scrollViewRef.current?.scrollToEnd({ animated: true });
   }, [messages, isTyping]);
@@ -314,7 +321,6 @@ export const ChatbotModal: React.FC<{
           <SafeAreaView style={{ flex: 1 }}>
             <View style={[styles.header, { borderBottomColor: colors.border }]}>
               <View style={styles.headerTitleContainer}>
-                {/* --- ICON ROBOT --- */}
                 <MaterialCommunityIcons
                   name="robot-happy-outline"
                   size={24}
