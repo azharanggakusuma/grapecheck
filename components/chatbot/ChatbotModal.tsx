@@ -547,21 +547,27 @@ export const ChatbotModal: React.FC<{
               <View style={styles.headerActions}>
                 <TouchableOpacity
                   onPress={resetChatHistory}
-                  style={styles.headerButton}
+                  style={[
+                    styles.headerButton,
+                    { backgroundColor: colors.surface },
+                  ]}
                 >
                   <Feather
                     name="refresh-cw"
-                    size={20}
+                    size={18}
                     color={colors.tabIconDefault}
                   />
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={onClose}
-                  style={styles.headerButton}
+                  style={[
+                    styles.headerButton,
+                    { backgroundColor: colors.border },
+                  ]}
                   accessibilityRole="button"
                   accessibilityLabel="Close chatbot"
                 >
-                  <Feather name="x" size={24} color={colors.text} />
+                  <Feather name="x" size={20} color={colors.text} />
                 </TouchableOpacity>
               </View>
             </View>
@@ -703,9 +709,15 @@ const styles = StyleSheet.create({
   headerActions: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 16,
+    gap: 12,
   },
-  headerButton: {},
+  headerButton: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    justifyContent: "center",
+    alignItems: "center",
+  },
   statusIndicator: {
     flexDirection: "row",
     alignItems: "center",
@@ -755,6 +767,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "600",
     marginBottom: 10,
+    opacity: 0.8,
   },
   chipContainer: {
     flexDirection: "row",
