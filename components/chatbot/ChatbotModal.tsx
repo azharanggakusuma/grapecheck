@@ -235,9 +235,9 @@ export const ChatbotModal: React.FC<{
 
   // Function to perform initial server check
   const checkServerConnection = async () => {
-    setConnectionStatus('connecting');
+    setConnectionStatus('connecting'); // Set status to connecting
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), INITIAL_CHECK_TIMEOUT_MS);
+    const timeoutId = setTimeout(() => controller.abort(), INITIAL_CHECK_TIMEOUT_MS); // Set timeout for initial check
 
     try {
       // Attempt a lightweight request to the backend
@@ -247,21 +247,21 @@ export const ChatbotModal: React.FC<{
         body: JSON.stringify({ prompt: "ping" }), // Send a dummy prompt or use a /health endpoint
         signal: controller.signal,
       });
-      clearTimeout(timeoutId);
+      clearTimeout(timeoutId); // Clear timeout if fetch completes in time
 
       if (response.ok) {
-        setConnectionStatus('connected_server');
-        setUseStaticMode(false);
+        setConnectionStatus('connected_server'); // Set status to connected_server
+        setUseStaticMode(false); // Disable static mode
       } else {
         // Server responded but with an error status
-        setConnectionStatus('connected_static');
-        setUseStaticMode(true);
+        setConnectionStatus('connected_static'); // Set status to connected_static
+        setUseStaticMode(true); // Enable static mode
       }
     } catch (error: any) {
-      clearTimeout(timeoutId);
-      console.error("Initial connection check failed:", error);
-      setConnectionStatus('connected_static');
-      setUseStaticMode(true);
+      clearTimeout(timeoutId); // Ensure timeout is cleared even on error
+      console.error("Initial connection check failed:", error); // Log error
+      setConnectionStatus('connected_static'); // Set status to connected_static
+      setUseStaticMode(true); // Enable static mode
     }
   };
 
@@ -283,6 +283,7 @@ export const ChatbotModal: React.FC<{
 
   // Effect to handle initial greeting after connection status is determined
   useEffect(() => {
+    // Trigger when connectionStatus changes, modal is visible, and no messages yet
     if (visible && messages.length === 0 && (connectionStatus === 'connected_server' || connectionStatus === 'connected_static')) {
       setIsTyping(true); // Start typing animation for greeting
       setTimeout(() => {
@@ -297,7 +298,7 @@ export const ChatbotModal: React.FC<{
         setIsTyping(false); // Hide typing indicator after greeting
       }, INITIAL_GREETING_DELAY_MS); // Use new constant for clarity
     }
-  }, [visible, connectionStatus]); // Trigger when connectionStatus changes and modal is visible and no messages yet
+  }, [visible, connectionStatus]); // Trigger when connectionStatus changes and modal is visible
 
 
   const sendPromptToBackend = async (prompt: string) => {
@@ -306,7 +307,7 @@ export const ChatbotModal: React.FC<{
 
     if (!useStaticMode) { // Only try backend if not in static mode yet
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), CHAT_TIMEOUT_MS);
+        const timeoutId = setTimeout(() => controller.abort(), CHAT_TIMEOUT_MS); // Set timeout for chat prompt
 
         try {
             const response = await fetch(CHAT_URL, {
@@ -315,15 +316,15 @@ export const ChatbotModal: React.FC<{
                 body: JSON.stringify({ prompt }),
                 signal: controller.signal,
             });
-            clearTimeout(timeoutId);
+            clearTimeout(timeoutId); // Clear timeout if fetch completes in time
 
             if (response.ok) {
                 const data = await response.json();
                 if (data.response) {
-                    botResponseText = data.response;
+                    botResponseText = data.response; // Use backend response
                 }
             } else {
-                // Server responded with an error status, switch to static mode
+                // Server responded with an error status (e.g., 404, 500), switch to static mode for future chats
                 setUseStaticMode(true);
                 setConnectionStatus('connected_static');
                 // Try to get a specific static response for the prompt if available, otherwise default
@@ -331,9 +332,9 @@ export const ChatbotModal: React.FC<{
                 console.error(`Backend error: ${response.status} ${response.statusText}`);
             }
         } catch (error: any) {
-            clearTimeout(timeoutId);
-            console.error("Error sending prompt to backend:", error);
-            // Network error or timeout, switch to static mode
+            clearTimeout(timeoutId); // Ensure timeout is cleared even on error
+            console.error("Error sending prompt to backend:", error); // Log error
+            // Network error or timeout, switch to static mode for future chats
             setUseStaticMode(true);
             setConnectionStatus('connected_static');
             // Try to get a specific static response for the prompt if available, otherwise default
