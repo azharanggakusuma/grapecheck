@@ -12,94 +12,64 @@ import {
   TextInput,
   ScrollView,
   Animated,
+  Easing,
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useTheme } from '@/components/ui/ThemeProvider';
 import Colors from '@/constants/Colors';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as Haptics from 'expo-haptics';
 
-// Tipe untuk setiap pesan
 interface Message {
   id: string;
   text: string;
   sender: 'user' | 'bot';
 }
 
-// --- Komponen Animasi Mengetik (Sudah Diperbarui) ---
 const TypingIndicator = ({ themeColors }: { themeColors: any }) => {
-  const yAnim1 = useRef(new Animated.Value(0)).current;
-  const yAnim2 = useRef(new Animated.Value(0)).current;
-  const yAnim3 = useRef(new Animated.Value(0)).current;
+  const animations = [useRef(new Animated.Value(0)).current, useRef(new Animated.Value(0)).current, useRef(new Animated.Value(0)).current];
 
   useEffect(() => {
-    const createAnimation = (animValue: Animated.Value) => 
-      Animated.sequence([
-        Animated.timing(animValue, { toValue: -5, duration: 300, useNativeDriver: true }),
-        Animated.timing(animValue, { toValue: 0, duration: 300, useNativeDriver: true }),
-      ]);
-
-    const loop = Animated.loop(
-      Animated.stagger(150, [
-        createAnimation(yAnim1),
-        createAnimation(yAnim2),
-        createAnimation(yAnim3),
-      ])
-    );
+    const createAnimation = (anim: Animated.Value) => Animated.sequence([
+      Animated.timing(anim, { toValue: -6, duration: 400, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+      Animated.timing(anim, { toValue: 0, duration: 400, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+    ]);
+    const loop = Animated.loop(Animated.stagger(200, animations.map(createAnimation)));
     loop.start();
-    
     return () => loop.stop();
   }, []);
 
   return (
-    // Pembungkus agar tata letaknya sama seperti pesan bot
     <View style={[styles.messageContainer, styles.botMessageContainer]}>
-      {/* Avatar Bot */}
       <LinearGradient colors={[`${themeColors.tint}2A`, `${themeColors.tint}0A`]} style={styles.botAvatar}>
         <Feather name="cpu" size={20} color={themeColors.tint} />
       </LinearGradient>
-      {/* Animasi titik-titik */}
       <View style={[styles.messageBubble, styles.botBubble, styles.typingBubble, { backgroundColor: themeColors.surface, borderColor: themeColors.border }]}>
-        <Animated.View style={[styles.typingDot, { backgroundColor: themeColors.tabIconDefault, transform: [{ translateY: yAnim1 }] }]} />
-        <Animated.View style={[styles.typingDot, { backgroundColor: themeColors.tabIconDefault, transform: [{ translateY: yAnim2 }] }]} />
-        <Animated.View style={[styles.typingDot, { backgroundColor: themeColors.tabIconDefault, transform: [{ translateY: yAnim3 }] }]} />
+        {animations.map((anim, index) => (
+          <Animated.View key={index} style={[styles.typingDot, { backgroundColor: themeColors.tabIconDefault, transform: [{ translateY: anim }] }]} />
+        ))}
       </View>
     </View>
   );
 };
 
-
-// Komponen untuk bubble chat
 const MessageBubble = ({ message, themeColors }: { message: Message, themeColors: any }) => {
   const isBot = message.sender === 'bot';
-  const slideAnim = useRef(new Animated.Value(isBot ? -50 : 50)).current;
+  const scaleAnim = useRef(new Animated.Value(0.5)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     Animated.parallel([
-      Animated.timing(opacityAnim, {
-        toValue: 1,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-      Animated.spring(slideAnim, {
-        toValue: 0,
-        speed: 12,
-        bounciness: 6,
-        useNativeDriver: true,
-      })
+      Animated.timing(opacityAnim, { toValue: 1, duration: 300, useNativeDriver: true }),
+      Animated.spring(scaleAnim, { toValue: 1, speed: 15, bounciness: 10, useNativeDriver: true })
     ]).start();
   }, []);
-
-  const bubbleStyle = isBot ? styles.botBubble : styles.userBubble;
-  const textStyle = isBot ? { color: themeColors.text } : { color: '#FFFFFF' };
-  const transformStyle = { transform: [{ translateX: slideAnim }, { scale: opacityAnim }] };
 
   return (
     <Animated.View style={[
       styles.messageContainer, 
       isBot ? styles.botMessageContainer : styles.userMessageContainer,
-      transformStyle,
-      { opacity: opacityAnim }
+      { opacity: opacityAnim, transform: [{ scale: scaleAnim }] }
     ]}>
       {isBot && (
         <LinearGradient colors={[`${themeColors.tint}2A`, `${themeColors.tint}0A`]} style={styles.botAvatar}>
@@ -107,25 +77,35 @@ const MessageBubble = ({ message, themeColors }: { message: Message, themeColors
         </LinearGradient>
       )}
       <LinearGradient
-        colors={isBot ? [themeColors.surface, themeColors.surface] : [`${themeColors.primaryLight}`, `${themeColors.tint}`]}
+        colors={isBot ? [themeColors.surface, themeColors.surface] : [`#22C55E`, `#00880C`]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
-        style={[styles.messageBubble, bubbleStyle, { borderColor: themeColors.border }]}
+        style={[styles.messageBubble, isBot ? styles.botBubble : styles.userBubble, { borderColor: themeColors.border }]}
       >
-        <Text style={[styles.messageText, textStyle]}>{message.text}</Text>
+        <Text style={[styles.messageText, { color: isBot ? themeColors.text : '#FFFFFF' }]}>{message.text}</Text>
       </LinearGradient>
     </Animated.View>
   );
 };
 
-// Komponen untuk chip saran
-const SuggestionChip = ({ text, onPress, themeColors }: { text: string, onPress: () => void, themeColors: any }) => (
-  <TouchableOpacity onPress={onPress} style={[styles.chip, { backgroundColor: themeColors.surface, borderColor: themeColors.border }]}>
-    <Text style={[styles.chipText, { color: themeColors.tint }]}>{text}</Text>
-  </TouchableOpacity>
-);
+const AnimatedSuggestionChip = ({ text, onPress, themeColors, index }: { text: string; onPress: () => void; themeColors: any; index: number }) => {
+  const opacityAnim = useRef(new Animated.Value(0)).current;
+  const transformAnim = useRef(new Animated.Value(20)).current;
 
-// Komponen utama Modal Chatbot
+  useEffect(() => {
+    Animated.timing(opacityAnim, { toValue: 1, duration: 500, delay: 200 + index * 100, useNativeDriver: true }).start();
+    Animated.spring(transformAnim, { toValue: 0, speed: 12, bounciness: 8, delay: 200 + index * 100, useNativeDriver: true }).start();
+  }, []);
+
+  return (
+    <Animated.View style={{ opacity: opacityAnim, transform: [{ translateY: transformAnim }] }}>
+      <TouchableOpacity onPress={onPress} style={[styles.chip, { backgroundColor: themeColors.surface, borderColor: themeColors.border }]}>
+        <Text style={[styles.chipText, { color: themeColors.tint }]}>{text}</Text>
+      </TouchableOpacity>
+    </Animated.View>
+  );
+};
+
 export const ChatbotModal: React.FC<{ visible: boolean; onClose: () => void; }> = ({ visible, onClose }) => {
   const { theme } = useTheme();
   const colors = Colors[theme];
@@ -133,24 +113,29 @@ export const ChatbotModal: React.FC<{ visible: boolean; onClose: () => void; }> 
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
+  const sendButtonScale = useRef(new Animated.Value(1)).current;
 
+  const handleSendPressIn = () => Animated.spring(sendButtonScale, { toValue: 0.85, useNativeDriver: true }).start();
+  const handleSendPressOut = () => Animated.spring(sendButtonScale, { toValue: 1, friction: 3, tension: 50, useNativeDriver: true }).start();
+  
   useEffect(() => {
     if (visible && messages.length === 0) {
       setIsTyping(true);
       setTimeout(() => {
-        setMessages([
-          { id: '1', text: 'Halo! Saya GrapeCheck Bot. Ada yang bisa saya bantu terkait penyakit daun anggur?', sender: 'bot' }
-        ]);
         setIsTyping(false);
+        setMessages([{ id: '1', text: 'Halo! Saya GrapeCheck Bot. Ada yang bisa saya bantu?', sender: 'bot' }]);
       }, 1200);
     } else if (!visible) {
+      setTimeout(() => {
         setMessages([]);
         setIsTyping(false);
+      }, 300); // Reset after modal close animation
     }
   }, [visible]);
 
   const handleSend = () => {
     if (input.trim().length === 0) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
     const newMessage: Message = { id: Date.now().toString(), text: input, sender: 'user' };
     setMessages(prev => [...prev, newMessage]);
@@ -160,27 +145,20 @@ export const ChatbotModal: React.FC<{ visible: boolean; onClose: () => void; }> 
     setIsTyping(true);
 
     setTimeout(() => {
-      const botResponse: Message = {
-        id: (Date.now() + 1).toString(),
-        text: `Maaf, saya masih dalam tahap pengembangan dan belum bisa memproses permintaan "${userMessage}".`,
-        sender: 'bot',
-      };
+      const botResponse: Message = { id: (Date.now() + 1).toString(), text: `Jawaban untuk "${userMessage}" akan segera hadir. Fitur ini masih dalam pengembangan.`, sender: 'bot' };
       setIsTyping(false);
       setMessages(prev => [...prev, botResponse]);
     }, 1500 + Math.random() * 500);
   };
   
   const handleSuggestionPress = (suggestion: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     const newMessage: Message = { id: Date.now().toString(), text: suggestion, sender: 'user' };
     setMessages(prev => [...prev, newMessage]);
     setIsTyping(true);
 
     setTimeout(() => {
-      const botResponse: Message = {
-        id: (Date.now() + 1).toString(),
-        text: `Maaf, saya masih dalam tahap pengembangan dan belum bisa memproses permintaan "${suggestion}".`,
-        sender: 'bot',
-      };
+      const botResponse: Message = { id: (Date.now() + 1).toString(), text: `Jawaban untuk "${suggestion}" akan segera hadir. Fitur ini masih dalam pengembangan.`, sender: 'bot' };
       setIsTyping(false);
       setMessages(prev => [...prev, botResponse]);
     }, 1500 + Math.random() * 500);
@@ -190,58 +168,58 @@ export const ChatbotModal: React.FC<{ visible: boolean; onClose: () => void; }> 
     scrollViewRef.current?.scrollToEnd({ animated: true });
   }, [messages, isTyping]);
 
+  const suggestions = ["Apa itu penyakit Black Rot?", "Gejala penyakit Esca", "Cara mencegah jamur"];
+
   return (
     <Modal animationType="slide" transparent={true} visible={visible} onRequestClose={onClose}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.modalOverlay}>
+      <View style={styles.modalOverlay}>
         <View style={[styles.modalContent, { backgroundColor: colors.background }]}>
           <SafeAreaView style={{ flex: 1 }}>
-            {/* Header Modal */}
             <View style={[styles.header, { borderBottomColor: colors.border }]}>
               <View style={styles.headerTitleContainer}>
                 <Feather name="cpu" size={22} color={colors.tint} />
                 <Text style={[styles.headerTitle, { color: colors.text }]}>GrapeCheck Bot</Text>
               </View>
               <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-                <Feather name="x" size={24} color={colors.text} />
+                <View style={[styles.closeButtonInner, { backgroundColor: colors.surface }]}>
+                    <Feather name="x" size={18} color={colors.text} />
+                </View>
               </TouchableOpacity>
             </View>
 
-            {/* Konten Chat */}
-            <ScrollView 
-              ref={scrollViewRef}
-              contentContainerStyle={styles.chatContainer}
-              showsVerticalScrollIndicator={false}
-            >
+            <ScrollView ref={scrollViewRef} contentContainerStyle={styles.chatContainer}>
               {messages.map(msg => <MessageBubble key={msg.id} message={msg} themeColors={colors} />)}
-              
               {isTyping && <TypingIndicator themeColors={colors} />}
-
               {messages.length === 1 && !isTyping && (
                 <View style={styles.chipContainer}>
-                    <SuggestionChip text="Apa itu Black Rot?" onPress={() => handleSuggestionPress("Apa itu Black Rot?")} themeColors={colors} />
-                    <SuggestionChip text="Gejala Esca" onPress={() => handleSuggestionPress("Gejala Esca")} themeColors={colors} />
+                    {suggestions.map((item, index) => (
+                      <AnimatedSuggestionChip key={item} text={item} onPress={() => handleSuggestionPress(item)} themeColors={colors} index={index} />
+                    ))}
                 </View>
               )}
             </ScrollView>
 
-            {/* Input Chat */}
-            <View style={[styles.inputContainer, { borderTopColor: colors.border }]}>
-              <TextInput
-                style={[styles.textInput, { color: colors.text, backgroundColor: colors.surface, borderColor: colors.border }]}
-                placeholder="Ketik pertanyaanmu..."
-                placeholderTextColor={colors.tabIconDefault}
-                value={input}
-                onChangeText={setInput}
-                onSubmitEditing={handleSend}
-                returnKeyType="send"
-              />
-              <TouchableOpacity onPress={handleSend} style={[styles.sendButton, { backgroundColor: colors.tint }]}>
-                <Feather name="send" size={20} color="#fff" />
-              </TouchableOpacity>
-            </View>
+            <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} keyboardVerticalOffset={Platform.OS === 'ios' ? 10 : 0}>
+                <View style={[styles.inputContainer, { borderTopColor: colors.border }]}>
+                    <TextInput
+                    style={[styles.textInput, { color: colors.text, backgroundColor: colors.surface, borderColor: colors.border }]}
+                    placeholder="Tulis pesan..."
+                    placeholderTextColor={colors.tabIconDefault}
+                    value={input}
+                    onChangeText={setInput}
+                    onSubmitEditing={handleSend}
+                    returnKeyType="send"
+                    />
+                    <TouchableOpacity onPress={handleSend} onPressIn={handleSendPressIn} onPressOut={handleSendPressOut}>
+                        <Animated.View style={[styles.sendButton, { backgroundColor: colors.tint, transform: [{ scale: sendButtonScale }] }]}>
+                            <Feather name="send" size={20} color="#fff" />
+                        </Animated.View>
+                    </TouchableOpacity>
+                </View>
+            </KeyboardAvoidingView>
           </SafeAreaView>
         </View>
-      </KeyboardAvoidingView>
+      </View>
     </Modal>
   );
 };
@@ -253,36 +231,51 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.5)',
   },
   modalContent: {
-    height: '92%',
+    height: '95%',
     width: '100%',
-    borderTopRightRadius: 24,
-    borderTopLeftRadius: 24,
+    borderTopRightRadius: 28,
+    borderTopLeftRadius: 28,
     overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -10 },
+    shadowOpacity: 0.1,
+    shadowRadius: 20,
+    elevation: 20,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 12,
+    paddingVertical: 14,
     paddingHorizontal: 20,
     borderBottomWidth: 1,
   },
   headerTitleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 12
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
-    marginLeft: 10,
+    fontWeight: '700',
   },
-  closeButton: {},
+  closeButton: {
+    padding: 5
+  },
+  closeButtonInner: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
   chatContainer: {
     flexGrow: 1,
-    padding: 15,
+    paddingVertical: 10,
+    paddingHorizontal: 15,
   },
   messageContainer: {
-    marginVertical: 5,
+    marginVertical: 6,
     maxWidth: '85%',
     flexDirection: 'row',
     alignItems: 'flex-end',
@@ -294,42 +287,41 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-end',
   },
   botAvatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 8,
+    marginRight: 10,
   },
   messageBubble: {
     paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 20,
+    paddingHorizontal: 18,
+    borderRadius: 22,
   },
   botBubble: {
-    borderTopLeftRadius: 5,
+    borderTopLeftRadius: 6,
     borderWidth: 1,
   },
   userBubble: {
-    borderTopRightRadius: 5,
+    borderTopRightRadius: 6,
   },
   messageText: {
-    fontSize: 15.5,
-    lineHeight: 22,
+    fontSize: 16,
+    lineHeight: 23,
   },
   chipContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'flex-start',
     marginTop: 10,
-    marginLeft: 44,
+    marginLeft: 48,
+    gap: 8,
   },
   chip: {
-    paddingVertical: 8,
-    paddingHorizontal: 14,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
     borderRadius: 20,
-    marginRight: 8,
-    marginBottom: 8,
     borderWidth: 1,
   },
   chipText: {
@@ -341,29 +333,28 @@ const styles = StyleSheet.create({
     padding: 12,
     borderTopWidth: 1,
     alignItems: 'center',
+    gap: 10,
   },
   textInput: {
     flex: 1,
-    height: 44,
-    borderRadius: 22,
-    paddingHorizontal: 18,
-    marginRight: 10,
+    height: 48,
+    borderRadius: 24,
+    paddingHorizontal: 20,
     fontSize: 16,
     borderWidth: 1,
   },
   sendButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  // Style untuk typing indicator yang baru
   typingBubble: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 15, // Disesuaikan agar titik-titik di tengah
-    paddingHorizontal: 16,
+    paddingVertical: 15,
+    paddingHorizontal: 18,
   },
   typingDot: {
     width: 8,
