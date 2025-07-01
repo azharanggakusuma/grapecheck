@@ -32,6 +32,7 @@ interface Message {
 const INITIAL_CHECK_TIMEOUT_MS = 5000; // 5 seconds for initial connection check
 const CHAT_TIMEOUT_MS = 10000;       // 10 seconds for regular chat prompts
 const TYPING_DELAY_MS = 1000;       // Delay for static responses to show typing animation (e.g., 1 second)
+const INITIAL_GREETING_DELAY_MS = 1200; // Delay for initial bot greeting animation
 
 type ConnectionStatus = 'connecting' | 'connected_server' | 'connected_static' | 'error';
 
@@ -264,13 +265,26 @@ export const ChatbotModal: React.FC<{
     }
   };
 
+  // Effect to handle modal visibility and initial connection check
   useEffect(() => {
     if (visible) {
       setMessages([]); // Clear messages on open
-      setIsTyping(true); // Show typing indicator for initial greeting
-      checkServerConnection(); // Perform initial check
+      setIsTyping(false); // Initially, NO typing when modal opens
+      setConnectionStatus('connecting'); // Show connecting status immediately
+      checkServerConnection(); // Start connection check
+    } else {
+      // Reset all states when modal is closed
+      setMessages([]);
+      setIsTyping(false);
+      setConnectionStatus('connecting');
+      setUseStaticMode(false);
+    }
+  }, [visible]);
 
-      // Initial bot greeting message
+  // Effect to handle initial greeting after connection status is determined
+  useEffect(() => {
+    if (visible && messages.length === 0 && (connectionStatus === 'connected_server' || connectionStatus === 'connected_static')) {
+      setIsTyping(true); // Start typing animation for greeting
       setTimeout(() => {
         setMessages([
           {
@@ -281,15 +295,10 @@ export const ChatbotModal: React.FC<{
           },
         ]);
         setIsTyping(false); // Hide typing indicator after greeting
-      }, 1200); // Small delay for greeting animation
-    } else {
-      // Reset states when modal is closed
-      setMessages([]);
-      setIsTyping(false);
-      setConnectionStatus('connecting');
-      setUseStaticMode(false);
+      }, INITIAL_GREETING_DELAY_MS); // Use new constant for clarity
     }
-  }, [visible]);
+  }, [visible, connectionStatus]); // Trigger when connectionStatus changes and modal is visible and no messages yet
+
 
   const sendPromptToBackend = async (prompt: string) => {
     setIsTyping(true); // Start typing animation
@@ -314,7 +323,7 @@ export const ChatbotModal: React.FC<{
                     botResponseText = data.response;
                 }
             } else {
-                // Server responded with an error status (e.g., 404, 500)
+                // Server responded with an error status, switch to static mode
                 setUseStaticMode(true);
                 setConnectionStatus('connected_static');
                 // Try to get a specific static response for the prompt if available, otherwise default
