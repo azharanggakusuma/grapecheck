@@ -23,37 +23,37 @@ const border = '#E5E7E9'; // (Untuk light mode) Border terang
 
 export default {
   light: {
-    text: text,
-    background: backgroundLight,
-    tint: primary,
-    primaryLight: primaryLight,
-    surface: surfaceLight,
-    success: success,
-    warning: warning,
-    error: error,
-    info: textSecondary, // <-- WARNA BARU UNTUK MODE OFFLINE
-    border: border,
-    tabBar: surfaceLight,
-    tabIconDefault: textSecondary,
-    tabIconSelected: primary,
-    confidenceBar: '#D1FAE5',
-    blurTint: 'rgba(249, 250, 251, 0.85)',
+    text: text, //
+    background: backgroundLight, //
+    tint: primary, //
+    primaryLight: primaryLight, //
+    surface: surfaceLight, //
+    success: success, //
+    warning: warning, //
+    error: error, //
+    info: textSecondary, 
+    border: border, //
+    tabBar: surfaceLight, //
+    tabIconDefault: textSecondary, //
+    tabIconSelected: primary, //
+    confidenceBar: '#D1FAE5', //
+    blurTint: 'rgba(249, 250, 251, 0.85)', //
   },
   dark: {
-    text: textDark,
-    background: backgroundDark,
-    tint: primaryLight,
-    primaryLight: primaryLight,
-    surface: surfaceDark,
-    success: success,
-    warning: warning,
-    error: error,
-    info: tabIconDefaultDark, // <-- WARNA BARU UNTUK MODE OFFLINE
-    border: borderDark,
-    tabBar: surfaceDark,
-    tabIconDefault: tabIconDefaultDark,
-    tabIconSelected: primaryLight,
-    confidenceBar: '#064E3B',
-    blurTint: blurTintDark,
+    text: textDark, //
+    background: backgroundDark, //
+    tint: primaryLight, //
+    primaryLight: primaryLight, //
+    surface: surfaceDark, //
+    success: success, //
+    warning: warning, //
+    error: error, //
+    info: tabIconDefaultDark, 
+    border: borderDark, //
+    tabBar: surfaceDark, //
+    tabIconDefault: tabIconDefaultDark, //
+    tabIconSelected: primaryLight, //
+    confidenceBar: '#064E3B', //
+    blurTint: blurTintDark, //
   },
 };

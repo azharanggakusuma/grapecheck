@@ -56,6 +56,7 @@ const findBestMatch = (userInput: string): string => {
     }
   }
 
+  // Hanya kembalikan jawaban jika setidaknya ada satu kata kunci yang cocok
   return maxScore > 0 ? staticChatResponses[bestMatchKey as keyof typeof staticChatResponses] : staticChatResponses.default;
 };
 
@@ -313,6 +314,8 @@ export const ChatbotModal: React.FC<{
   }, [visible]);
 
   useEffect(() => {
+    // Efek ini hanya dijalankan sekali saat status koneksi sudah ditentukan
+    // dan belum ada pesan sama sekali.
     if (visible && messages.length === 0 && (connectionStatus === 'connected_server' || connectionStatus === 'connected_static')) {
       const greetingText =
         connectionStatus === 'connected_server'
@@ -323,7 +326,8 @@ export const ChatbotModal: React.FC<{
         setMessages([{ id: "1", text: greetingText, sender: "bot", time: getCurrentTime() }]);
       }, 500);
     }
-  }, [connectionStatus, visible, messages.length]);
+  }, [connectionStatus, visible]);
+
 
   const sendPromptToBackend = async (prompt: string) => {
     setIsTyping(true);
