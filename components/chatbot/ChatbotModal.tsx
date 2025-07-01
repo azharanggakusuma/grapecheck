@@ -12,6 +12,7 @@ import {
   TextInput,
   ScrollView,
   Animated,
+  ActivityIndicator,
 } from "react-native";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useTheme } from "@/components/ui/ThemeProvider";
@@ -21,6 +22,7 @@ import { CHAT_URL } from "@/constants/api";
 import Markdown from 'react-native-markdown-display';
 import { staticChatResponses } from "@/constants/staticChatData";
 
+// --- INTERFACES & TYPES ---
 interface Message {
   id: string;
   text: string;
@@ -28,13 +30,9 @@ interface Message {
   time: string;
 }
 
-// Define timeouts
-const INITIAL_CHECK_TIMEOUT_MS = 5000; // 5 seconds for initial connection check
-const CHAT_TIMEOUT_MS = 10000;       // 10 seconds for regular chat prompts
-const TYPING_DELAY_MS = 1000;       // Delay for static responses to show typing animation
-const INITIAL_GREETING_DELAY_MS = 1200; // Delay for initial bot greeting animation
-
 type ConnectionStatus = 'connecting' | 'connected_server' | 'connected_static' | 'error';
+
+// --- SUB-COMPONENTS ---
 
 const SuggestionChip = ({ text, onPress, themeColors }: any) => (
   <TouchableOpacity
@@ -43,174 +41,195 @@ const SuggestionChip = ({ text, onPress, themeColors }: any) => (
       styles.chip,
       { backgroundColor: themeColors.surface, borderColor: themeColors.border },
     ]}
+    accessibilityRole="button"
+    accessibilityLabel={`Suggestion: ${text}`}
   >
     <Text style={[styles.chipText, { color: themeColors.tint }]}>{text}</Text>
   </TouchableOpacity>
 );
 
 const TypingIndicator = ({ themeColors }: { themeColors: any }) => {
-  const animations = [
-    useRef(new Animated.Value(0)).current,
-    useRef(new Animated.Value(0)).current,
-    useRef(new Animated.Value(0)).current,
-  ];
-  useEffect(() => {
-    const createAnimation = (anim: Animated.Value) =>
-      Animated.sequence([
-        Animated.timing(anim, {
-          toValue: -5,
-          duration: 400,
-          useNativeDriver: true,
-        }),
-        Animated.timing(anim, {
-          toValue: 0,
-          duration: 400,
-          useNativeDriver: true,
-        }),
-      ]);
-    const loop = Animated.loop(
-      Animated.stagger(150, animations.map(createAnimation))
-    );
-    loop.start();
-    return () => loop.stop();
-  }, []);
-
-  return (
-    <View style={[styles.messageContainer, styles.botMessageContainer]}>
-      <LinearGradient
-        colors={[`${themeColors.tint}2A`, `${themeColors.tint}0A`]}
-        style={styles.botAvatar}
-      >
-        <MaterialCommunityIcons
-          name="robot-happy-outline"
-          size={22}
-          color={themeColors.tint}
-        />
-      </LinearGradient>
-      <View
-        style={[
-          styles.messageBubble,
-          styles.botBubble,
-          styles.typingBubble,
-          {
-            backgroundColor: themeColors.surface,
-            borderColor: themeColors.border,
-          },
-        ]}
-      >
-        {animations.map((anim, index) => (
-          <Animated.View
-            key={index}
+    const animations = [
+        useRef(new Animated.Value(0)).current,
+        useRef(new Animated.Value(0)).current,
+        useRef(new Animated.Value(0)).current,
+      ];
+      useEffect(() => {
+        const createAnimation = (anim: Animated.Value) =>
+          Animated.sequence([
+            Animated.timing(anim, {
+              toValue: -5,
+              duration: 400,
+              useNativeDriver: true,
+            }),
+            Animated.timing(anim, {
+              toValue: 0,
+              duration: 400,
+              useNativeDriver: true,
+            }),
+          ]);
+        const loop = Animated.loop(
+          Animated.stagger(150, animations.map(createAnimation))
+        );
+        loop.start();
+        return () => loop.stop();
+      }, []);
+    
+      return (
+        <View style={[styles.messageContainer, styles.botMessageContainer]}>
+          <LinearGradient
+            colors={[`${themeColors.tint}2A`, `${themeColors.tint}0A`]}
+            style={styles.botAvatar}
+          >
+            <MaterialCommunityIcons
+              name="robot-happy-outline"
+              size={22}
+              color={themeColors.tint}
+            />
+          </LinearGradient>
+          <View
             style={[
-              styles.typingDot,
+              styles.messageBubble,
+              styles.botBubble,
+              styles.typingBubble,
               {
-                backgroundColor: themeColors.tabIconDefault,
-                transform: [{ translateY: anim }],
+                backgroundColor: themeColors.surface,
+                borderColor: themeColors.border,
               },
             ]}
-          />
-        ))}
-      </View>
+          >
+            {animations.map((anim, index) => (
+              <Animated.View
+                key={index}
+                style={[
+                  styles.typingDot,
+                  {
+                    backgroundColor: themeColors.tabIconDefault,
+                    transform: [{ translateY: anim }],
+                  },
+                ]}
+              />
+            ))}
+          </View>
+        </View>
+      );
+};
+
+const MessageBubble = ({ message, themeColors }: { message: Message; themeColors: any; }) => {
+    const isBot = message.sender === "bot";
+    const slideAnim = useRef(new Animated.Value(isBot ? -50 : 50)).current;
+    const opacityAnim = useRef(new Animated.Value(0)).current;
+    
+    useEffect(() => {
+      Animated.parallel([
+        Animated.timing(opacityAnim, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.spring(slideAnim, {
+          toValue: 0,
+          speed: 12,
+          bounciness: 6,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }, []);
+  
+    const markdownStyle = StyleSheet.create({
+      body: {
+        color: isBot ? themeColors.text : "#FFFFFF",
+        fontSize: 15.5,
+        lineHeight: 22,
+      },
+      heading1: {
+        color: isBot ? themeColors.text : "#FFFFFF",
+        fontWeight: 'bold',
+        fontSize: 20,
+        marginTop: 10,
+        marginBottom: 5,
+      },
+      bullet_list_icon: {
+        color: isBot ? themeColors.tabIconDefault : "#FFFFFF99",
+      },
+    });
+  
+    return (
+      <Animated.View
+        style={[
+          styles.messageContainer,
+          isBot ? styles.botMessageContainer : styles.userMessageContainer,
+          { opacity: opacityAnim, transform: [{ translateX: slideAnim }] },
+        ]}
+      >
+        {isBot && (
+          <LinearGradient
+            colors={[`${themeColors.tint}2A`, `${themeColors.tint}0A`]}
+            style={styles.botAvatar}
+          >
+            <MaterialCommunityIcons name="robot-happy-outline" size={22} color={themeColors.tint} />
+          </LinearGradient>
+        )}
+        <LinearGradient
+          colors={
+            isBot
+              ? [themeColors.surface, themeColors.surface]
+              : [`${themeColors.primaryLight}`, `${themeColors.tint}`]
+          }
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={[
+            styles.messageBubble,
+            isBot ? styles.botBubble : styles.userBubble,
+            { borderColor: themeColors.border },
+          ]}
+        >
+          {isBot ? (
+            <Markdown style={markdownStyle}>
+              {message.text}
+            </Markdown>
+          ) : (
+            <Text style={[styles.messageText, { color: "#FFFFFF" }]}>
+              {message.text}
+            </Text>
+          )}
+          <Text
+            style={[
+              styles.timeText,
+              { color: isBot ? themeColors.tabIconDefault : "#FFFFFF99" },
+            ]}
+          >
+            {message.time}
+          </Text>
+        </LinearGradient>
+      </Animated.View>
+    );
+};
+
+const ErrorFooter = ({ status, onRetry, themeColors }: { status: ConnectionStatus, onRetry: () => void, themeColors: any }) => {
+  if (status !== 'connected_static' && status !== 'error') {
+    return null;
+  }
+
+  const isConnecting = status === 'connecting';
+
+  return (
+    <View style={[styles.errorFooter, { backgroundColor: themeColors.surface, borderTopColor: themeColors.border }]}>
+      <Feather name="wifi-off" size={20} color={themeColors.tabIconDefault} />
+      <Text style={[styles.errorFooterText, { color: themeColors.tabIconDefault }]}>
+        Koneksi gagal.
+      </Text>
+      <TouchableOpacity onPress={onRetry} disabled={isConnecting} style={styles.retryButton}>
+        <Text style={{ color: themeColors.tint, fontWeight: 'bold' }}>
+          {isConnecting ? 'Mencoba...' : 'Coba Lagi'}
+        </Text>
+      </TouchableOpacity>
     </View>
   );
 };
 
-const MessageBubble = ({
-  message,
-  themeColors,
-}: {
-  message: Message;
-  themeColors: any;
-}) => {
-  const isBot = message.sender === "bot";
-  const slideAnim = useRef(new Animated.Value(isBot ? -50 : 50)).current;
-  const opacityAnim = useRef(new Animated.Value(0)).current;
-  
-  useEffect(() => {
-    Animated.parallel([
-      Animated.timing(opacityAnim, {
-        toValue: 1,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-      Animated.spring(slideAnim, {
-        toValue: 0,
-        speed: 12,
-        bounciness: 6,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  }, []);
 
-  const markdownStyle = StyleSheet.create({
-    body: {
-      color: isBot ? themeColors.text : "#FFFFFF",
-      fontSize: 15.5,
-      lineHeight: 22,
-    },
-    heading1: {
-      color: isBot ? themeColors.text : "#FFFFFF",
-      fontWeight: 'bold',
-      fontSize: 20,
-      marginTop: 10,
-      marginBottom: 5,
-    },
-    bullet_list_icon: {
-      color: isBot ? themeColors.tabIconDefault : "#FFFFFF99",
-    },
-  });
-
-  return (
-    <Animated.View
-      style={[
-        styles.messageContainer,
-        isBot ? styles.botMessageContainer : styles.userMessageContainer,
-        { opacity: opacityAnim, transform: [{ translateX: slideAnim }] },
-      ]}
-    >
-      {isBot && (
-        <LinearGradient
-          colors={[`${themeColors.tint}2A`, `${themeColors.tint}0A`]}
-          style={styles.botAvatar}
-        >
-          <MaterialCommunityIcons name="robot-happy-outline" size={22} color={themeColors.tint} />
-        </LinearGradient>
-      )}
-      <LinearGradient
-        colors={
-          isBot
-            ? [themeColors.surface, themeColors.surface]
-            : [`${themeColors.primaryLight}`, `${themeColors.tint}`]
-        }
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={[
-          styles.messageBubble,
-          isBot ? styles.botBubble : styles.userBubble,
-          { borderColor: themeColors.border },
-        ]}
-      >
-        {isBot ? (
-          <Markdown style={markdownStyle}>
-            {message.text}
-          </Markdown>
-        ) : (
-          <Text style={[styles.messageText, { color: "#FFFFFF" }]}>
-            {message.text}
-          </Text>
-        )}
-        <Text
-          style={[
-            styles.timeText,
-            { color: isBot ? themeColors.tabIconDefault : "#FFFFFF99" },
-          ]}
-        >
-          {message.time}
-        </Text>
-      </LinearGradient>
-    </Animated.View>
-  );
-};
+// --- MAIN COMPONENT ---
 
 export const ChatbotModal: React.FC<{
   visible: boolean;
@@ -226,16 +245,14 @@ export const ChatbotModal: React.FC<{
   
   const getCurrentTime = () => {
     const now = new Date();
-    return `${now.getHours().toString().padStart(2, "0")}:${now
-      .getMinutes()
-      .toString()
-      .padStart(2, "0")}`;
+    return `${now.getHours().toString().padStart(2, "0")}:${now.getMinutes().toString().padStart(2, "0")}`;
   };
 
   const checkServerConnection = async () => {
     setConnectionStatus('connecting');
+    setIsTyping(true);
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), INITIAL_CHECK_TIMEOUT_MS);
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
 
     try {
       const response = await fetch(CHAT_URL, {
@@ -245,49 +262,36 @@ export const ChatbotModal: React.FC<{
         signal: controller.signal,
       });
       clearTimeout(timeoutId);
-
-      if (response.ok) {
-        setConnectionStatus('connected_server');
-      } else {
-        setConnectionStatus('connected_static');
-      }
+      setConnectionStatus(response.ok ? 'connected_server' : 'connected_static');
     } catch (error) {
       clearTimeout(timeoutId);
-      console.error("Initial connection check failed:", error);
-      setConnectionStatus('connected_static');
+      console.error("Connection check failed:", error);
+      setConnectionStatus('error');
+    } finally {
+      setIsTyping(false);
     }
   };
 
   useEffect(() => {
     if (visible) {
       setMessages([]);
-      setIsTyping(false);
-      setConnectionStatus('connecting');
+      setInput('');
       checkServerConnection();
     }
   }, [visible]);
 
   useEffect(() => {
     if (visible && messages.length === 0 && (connectionStatus === 'connected_server' || connectionStatus === 'connected_static')) {
-      setIsTyping(true);
+      const greetingText =
+        connectionStatus === 'connected_server'
+          ? "Halo! Saya GrapeCheck Bot. Ada yang bisa saya bantu terkait penyakit daun anggur?"
+          : "Halo! Saat ini saya sedang offline, namun saya tetap bisa menjawab beberapa pertanyaan umum. Ada yang bisa saya bantu?";
+      
       setTimeout(() => {
-        const greetingText =
-          connectionStatus === 'connected_server'
-            ? "Halo! Saya GrapeCheck Bot. Ada yang bisa saya bantu?"
-            : "Halo! Saat ini saya sedang offline, namun saya tetap bisa menjawab beberapa pertanyaan umum. Ada yang bisa saya bantu?";
-
-        setMessages([
-          {
-            id: "1",
-            text: greetingText,
-            sender: "bot",
-            time: getCurrentTime(),
-          },
-        ]);
-        setIsTyping(false);
-      }, INITIAL_GREETING_DELAY_MS);
+        setMessages([{ id: "1", text: greetingText, sender: "bot", time: getCurrentTime() }]);
+      }, 500);
     }
-  }, [visible, connectionStatus]);
+  }, [connectionStatus, visible]);
 
   const sendPromptToBackend = async (prompt: string) => {
     setIsTyping(true);
@@ -295,7 +299,7 @@ export const ChatbotModal: React.FC<{
 
     if (connectionStatus === 'connected_server') {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), CHAT_TIMEOUT_MS);
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
 
         try {
             const response = await fetch(CHAT_URL, {
@@ -325,132 +329,78 @@ export const ChatbotModal: React.FC<{
     }
 
     setTimeout(() => {
-        const botResponse: Message = {
-            id: (Date.now() + 1).toString(),
-            text: botResponseText,
-            sender: "bot",
-            time: getCurrentTime(),
-        };
-        setMessages((prev) => [...prev, botResponse]);
+        setMessages((prev) => [...prev, { id: Date.now().toString(), text: botResponseText, sender: "bot", time: getCurrentTime() }]);
         setIsTyping(false);
-    }, TYPING_DELAY_MS);
+    }, 1000);
   };
 
   const handleSend = () => {
-    if (input.trim().length === 0) return;
-    const newMessage: Message = {
-      id: Date.now().toString(),
-      text: input,
-      sender: "user",
-      time: getCurrentTime(),
-    };
+    if (input.trim().length === 0 || isTyping) return;
+    const newMessage: Message = { id: Date.now().toString(), text: input, sender: "user", time: getCurrentTime() };
     setMessages((prev) => [...prev, newMessage]);
     sendPromptToBackend(input);
     setInput("");
   };
 
   const handleSuggestionPress = (suggestion: string) => {
-    const newMessage: Message = {
-      id: Date.now().toString(),
-      text: suggestion,
-      sender: "user",
-      time: getCurrentTime(),
-    };
+    const newMessage: Message = { id: Date.now().toString(), text: suggestion, sender: "user", time: getCurrentTime() };
     setMessages((prev) => [...prev, newMessage]);
     sendPromptToBackend(suggestion);
   };
 
-  const getStatusInfo = () => {
-    if (isTyping) {
-        return { text: 'Mengetik...', color: colors.tint, icon: 'robot-happy-outline' as const };
-    }
+  const getStatusIcon = () => {
+    if (isTyping && messages.length > 0) return { name: 'dots-horizontal' as const, color: colors.tint };
     switch (connectionStatus) {
-        case 'connecting':
-            return { text: 'Menghubungkan...', color: colors.warning, icon: 'timer-sand' as const };
-        case 'connected_server':
-            return { text: 'Online', color: colors.success, icon: 'robot-happy-outline' as const };
-        case 'connected_static':
-            return { text: 'Offline (Kemampuan terbatas)', color: colors.tabIconDefault, icon: 'robot-confused-outline' as const };
-        case 'error':
-            return { text: 'Gagal terhubung', color: colors.error, icon: 'robot-dead-outline' as const };
-        default:
-            return { text: 'Offline', color: colors.tabIconDefault, icon: 'robot-confused-outline' as const };
+      case 'connecting':
+        return { name: 'wifi-off' as const, color: colors.warning };
+      case 'connected_server':
+        return { name: 'wifi-strength-4' as const, color: colors.success };
+      case 'connected_static':
+      case 'error':
+        return { name: 'wifi-off' as const, color: colors.error };
+      default:
+        return { name: 'wifi-off' as const, color: colors.tabIconDefault };
     }
   };
-
-  const statusInfo = getStatusInfo();
 
   useEffect(() => {
     scrollViewRef.current?.scrollToEnd({ animated: true });
   }, [messages, isTyping]);
+  
+  const statusIcon = getStatusIcon();
 
   return (
-    <Modal
-      animationType="slide"
-      transparent={true}
-      visible={visible}
-      onRequestClose={onClose}
-    >
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={styles.modalOverlay}
-      >
-        <View
-          style={[styles.modalContent, { backgroundColor: colors.background }]}
-        >
+    <Modal animationType="slide" transparent={true} visible={visible} onRequestClose={onClose}>
+      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.modalOverlay}>
+        <View style={[styles.modalContent, { backgroundColor: colors.background }]}>
           <SafeAreaView style={{ flex: 1 }}>
             <View style={[styles.header, { borderBottomColor: colors.border }]}>
               <View style={styles.headerTitleContainer}>
-                <MaterialCommunityIcons
-                  name={statusInfo.icon}
-                  size={24}
-                  color={colors.tint}
-                />
-                <View>
-                  <Text style={[styles.headerTitle, { color: colors.text }]}>
-                    GrapeCheck Bot
-                  </Text>
-                  <Text style={[styles.headerStatus, { color: statusInfo.color }]}>
-                    {statusInfo.text}
-                  </Text>
-                </View>
+                <MaterialCommunityIcons name="robot-happy-outline" size={26} color={colors.tint} />
+                <Text style={[styles.headerTitle, { color: colors.text }]}>GrapeCheck Bot</Text>
               </View>
-              <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-                <Feather name="x" size={24} color={colors.text} />
-              </TouchableOpacity>
+              <View style={styles.headerActions}>
+                <MaterialCommunityIcons name={statusIcon.name} size={22} color={statusIcon.color} />
+                <TouchableOpacity onPress={onClose} style={styles.closeButton} accessibilityRole="button" accessibilityLabel="Close chatbot">
+                  <Feather name="x" size={24} color={colors.text} />
+                </TouchableOpacity>
+              </View>
             </View>
 
-            <ScrollView
-              ref={scrollViewRef}
-              contentContainerStyle={styles.chatContainer}
-            >
-              {messages.map((msg) => (
-                <MessageBubble
-                  key={msg.id}
-                  message={msg}
-                  themeColors={colors}
-                />
-              ))}
+            <ScrollView ref={scrollViewRef} contentContainerStyle={styles.chatContainer}>
+              {messages.map((msg) => ( <MessageBubble key={msg.id} message={msg} themeColors={colors} /> ))}
               {isTyping && <TypingIndicator themeColors={colors} />}
               {messages.length === 1 && !isTyping && (
                 <View style={styles.chipContainer}>
-                  <SuggestionChip
-                    text="Apa itu Black Rot?"
-                    onPress={() => handleSuggestionPress("Apa itu Black Rot?")}
-                    themeColors={colors}
-                  />
-                  <SuggestionChip
-                    text="Gejala Esca"
-                    onPress={() => handleSuggestionPress("Gejala Esca")}
-                    themeColors={colors}
-                  />
+                  <SuggestionChip text="Apa itu Black Rot?" onPress={() => handleSuggestionPress("Apa itu Black Rot?")} themeColors={colors} />
+                  <SuggestionChip text="Gejala Esca" onPress={() => handleSuggestionPress("Gejala Esca")} themeColors={colors} />
                 </View>
               )}
             </ScrollView>
 
-            <View
-              style={[styles.inputContainer, { borderTopColor: colors.border }]}
-            >
+            <ErrorFooter status={connectionStatus} onRetry={checkServerConnection} themeColors={colors} />
+
+            <View style={[styles.inputContainer, { borderTopColor: colors.border }]}>
               <TextInput
                 style={[
                   styles.textInput,
@@ -470,6 +420,7 @@ export const ChatbotModal: React.FC<{
               <TouchableOpacity
                 onPress={handleSend}
                 style={[styles.sendButton, { backgroundColor: colors.tint }]}
+                disabled={isTyping}
               >
                 <Feather name="send" size={20} color="#fff" />
               </TouchableOpacity>
@@ -480,6 +431,8 @@ export const ChatbotModal: React.FC<{
     </Modal>
   );
 };
+
+// --- STYLES ---
 
 const styles = StyleSheet.create({
   modalOverlay: {
@@ -498,13 +451,21 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingVertical: 10,
-    paddingHorizontal: 20,
+    paddingVertical: 12,
+    paddingHorizontal: 15,
     borderBottomWidth: 1,
   },
-  headerTitleContainer: { flexDirection: "row", alignItems: "center" },
-  headerTitle: { fontSize: 18, fontWeight: "bold", marginLeft: 12 },
-  headerStatus: { fontSize: 13, marginLeft: 12, fontWeight: "500" },
+  headerTitleContainer: { 
+    flexDirection: "row", 
+    alignItems: "center",
+    gap: 12,
+  },
+  headerTitle: { fontSize: 18, fontWeight: "bold" },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+  },
   closeButton: {},
   chatContainer: { flexGrow: 1, padding: 15 },
   messageContainer: {
@@ -577,4 +538,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
   },
   typingDot: { width: 8, height: 8, borderRadius: 4, marginHorizontal: 3 },
+  errorFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderTopWidth: 1,
+    gap: 10,
+  },
+  errorFooterText: {
+    flex: 1,
+    fontSize: 14,
+  },
+  retryButton: {
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+  }
 });
