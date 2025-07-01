@@ -47,6 +47,9 @@ except Exception as e:
     interpreter = None
 
 def preprocess_image(image: Image.Image) -> np.ndarray:
+    """
+    Fungsi untuk memproses gambar agar sesuai dengan input model.
+    """
     img_resized = image.resize((224, 224))
     img_array = tf.keras.preprocessing.image.img_to_array(img_resized)
     img_array_normalized = img_array / 255.0
@@ -55,13 +58,20 @@ def preprocess_image(image: Image.Image) -> np.ndarray:
 
 @app.route('/classify', methods=['POST'])
 def classify_image_api():
+    """
+    Endpoint API untuk menerima gambar, melakukan klasifikasi dengan TFLite, dan mengembalikan JSON.
+    """
     if interpreter is None:
-        return jsonify({'error': 'Kesalahan pada server: Model klasifikasi tidak dapat dimuat.'}), 500
+        return jsonify({'error': 'Kesalahan pada server: Model tidak dapat dimuat.'}), 500
+
     if 'file' not in request.files:
         return jsonify({'error': 'Request tidak valid, tidak ada "file" yang dikirim.'}), 400
+
     file = request.files['file']
+
     if file.filename == '':
         return jsonify({'error': 'Tidak ada file yang dipilih.'}), 400
+
     try:
         image = Image.open(file.stream).convert('RGB')
         processed_image = preprocess_image(image)
@@ -79,18 +89,34 @@ def classify_image_api():
 
 @app.route('/chat', methods=['POST'])
 def chat_handler():
+    """
+    Endpoint untuk menerima prompt, memberinya instruksi, dan meneruskannya ke Gemini.
+    """
     if model is None:
         return jsonify({'error': 'Kesalahan pada server: Model Gemini tidak dapat dimuat.'}), 500
     if not request.json or 'prompt' not in request.json:
         return jsonify({'error': 'Request tidak valid, "prompt" tidak ditemukan.'}), 400
     
     user_prompt = request.json['prompt']
+
+    # Instruksi sistem untuk memformat output Gemini
+    system_instruction = (
+        "Anda adalah GrapeCheck Bot, asisten ahli untuk penyakit tanaman anggur. "
+        "Jawab pertanyaan pengguna dengan **singkat, padat, dan jelas**. "
+        "Gunakan format yang rapi. Jika jawaban memerlukan beberapa langkah atau poin, "
+        "gunakan **poin-poin (bullet points)** atau **penomoran** untuk mempermudah pembacaan. "
+        "Fokus hanya pada informasi yang paling penting.\n\n"
+        f"Pertanyaan: \"{user_prompt}\""
+    )
+    
     try:
-        response = model.generate_content(user_prompt)
+        # Kirim prompt yang sudah diberi instruksi ke Gemini
+        response = model.generate_content(system_instruction)
         return jsonify({'response': response.text})
     except Exception as e:
         print(f"Error saat berkomunikasi dengan Gemini API: {e}")
         return jsonify({'error': 'Terjadi kesalahan internal saat memproses permintaan Anda.'}), 500
 
+# --- Menjalankan Aplikasi ---
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
