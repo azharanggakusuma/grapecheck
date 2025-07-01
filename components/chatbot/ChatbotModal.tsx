@@ -18,6 +18,7 @@ import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useTheme } from "@/components/ui/ThemeProvider";
 import Colors from "@/constants/Colors";
 import { LinearGradient } from "expo-linear-gradient";
+import { CHAT_URL } from "@/constants/api"; 
 
 // (Interface Message dan komponen SuggestionChip tidak berubah)
 interface Message {
@@ -229,6 +230,44 @@ export const ChatbotModal: React.FC<{
     }
   }, [visible]);
 
+  const sendPromptToBackend = async (prompt: string) => {
+    setIsTyping(true);
+    try {
+      const response = await fetch(CHAT_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ prompt: prompt }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Gagal mendapatkan respons dari server.');
+      }
+
+      const data = await response.json();
+      const botResponse: Message = {
+        id: (Date.now() + 1).toString(),
+        text: data.response || "Maaf, saya tidak mengerti.",
+        sender: "bot",
+        time: getCurrentTime(),
+      };
+      setMessages((prev) => [...prev, botResponse]);
+
+    } catch (error) {
+      console.error("Error sending prompt to backend:", error);
+      const errorResponse: Message = {
+        id: (Date.now() + 1).toString(),
+        text: "Maaf, terjadi kesalahan koneksi. Coba lagi nanti.",
+        sender: "bot",
+        time: getCurrentTime(),
+      };
+      setMessages((prev) => [...prev, errorResponse]);
+    } finally {
+      setIsTyping(false);
+    }
+  };
+
   const handleSend = () => {
     if (input.trim().length === 0) return;
     const newMessage: Message = {
@@ -238,18 +277,8 @@ export const ChatbotModal: React.FC<{
       time: getCurrentTime(),
     };
     setMessages((prev) => [...prev, newMessage]);
+    sendPromptToBackend(input);
     setInput("");
-    setIsTyping(true);
-    setTimeout(() => {
-      const botResponse: Message = {
-        id: (Date.now() + 1).toString(),
-        text: `Maaf, saya masih dalam tahap pengembangan.`,
-        sender: "bot",
-        time: getCurrentTime(),
-      };
-      setIsTyping(false);
-      setMessages((prev) => [...prev, botResponse]);
-    }, 1500 + Math.random() * 500);
   };
 
   const handleSuggestionPress = (suggestion: string) => {
@@ -260,18 +289,9 @@ export const ChatbotModal: React.FC<{
       time: getCurrentTime(),
     };
     setMessages((prev) => [...prev, newMessage]);
-    setIsTyping(true);
-    setTimeout(() => {
-      const botResponse: Message = {
-        id: (Date.now() + 1).toString(),
-        text: `Fitur untuk "${suggestion}" akan segera hadir.`,
-        sender: "bot",
-        time: getCurrentTime(),
-      };
-      setIsTyping(false);
-      setMessages((prev) => [...prev, botResponse]);
-    }, 1500 + Math.random() * 500);
+    sendPromptToBackend(suggestion);
   };
+
 
   useEffect(() => {
     scrollViewRef.current?.scrollToEnd({ animated: true });
