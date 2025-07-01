@@ -32,7 +32,7 @@ interface Message {
 
 type ConnectionStatus = 'connecting' | 'connected_server' | 'connected_static';
 
-// --- FUNGSI LOGIKA BARU ---
+// --- FUNGSI LOGIKA ---
 const findBestMatch = (userInput: string): string => {
   const userWords = new Set(userInput.toLowerCase().split(/\s+/).filter(word => word.length > 2));
   let bestMatchKey = 'default';
@@ -56,7 +56,6 @@ const findBestMatch = (userInput: string): string => {
     }
   }
 
-  // Hanya kembalikan jawaban jika setidaknya ada satu kata kunci yang cocok
   return maxScore > 0 ? staticChatResponses[bestMatchKey as keyof typeof staticChatResponses] : staticChatResponses.default;
 };
 
@@ -263,6 +262,7 @@ export const ChatbotModal: React.FC<{
   const [isTyping, setIsTyping] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('connecting');
   const scrollViewRef = useRef<ScrollView>(null);
+  const pulseAnim = useRef(new Animated.Value(1)).current;
 
   const getCurrentTime = () => {
     const now = new Date();
@@ -347,12 +347,12 @@ export const ChatbotModal: React.FC<{
                 botResponseText = data.response || staticChatResponses.default;
             } else {
                 setConnectionStatus('connected_static');
-                botResponseText = findBestMatch(prompt); // Use findBestMatch on fail
+                botResponseText = findBestMatch(prompt);
             }
         } catch (error) {
             clearTimeout(timeoutId);
             setConnectionStatus('connected_static');
-            botResponseText = findBestMatch(prompt); // Use findBestMatch on error
+            botResponseText = findBestMatch(prompt);
         }
     } else {
         botResponseText = findBestMatch(prompt);
@@ -378,15 +378,33 @@ export const ChatbotModal: React.FC<{
     sendPromptToBackend(suggestion);
   };
 
+  const isTypingStatus = isTyping && messages.length > 0;
+
+  useEffect(() => {
+    const shouldAnimate = isTypingStatus || connectionStatus === 'connecting';
+    
+    if (shouldAnimate) {
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulseAnim, { toValue: 0.6, duration: 800, useNativeDriver: true }),
+          Animated.timing(pulseAnim, { toValue: 1, duration: 800, useNativeDriver: true }),
+        ])
+      ).start();
+    } else {
+      pulseAnim.stopAnimation();
+      pulseAnim.setValue(1);
+    }
+  }, [isTypingStatus, connectionStatus, pulseAnim]);
+
   const getStatusInfo = () => {
-    if (isTyping && messages.length > 0) return { color: colors.tint, text: 'Mengetik...' };
+    if (isTypingStatus) return { color: colors.tint, text: 'Mengetik...' };
     switch (connectionStatus) {
       case 'connecting':
         return { color: colors.warning, text: 'Menyambungkan...' };
       case 'connected_server':
         return { color: colors.success, text: 'Online' };
       case 'connected_static':
-        return { color: colors.warning, text: 'Mode Offline' };
+        return { color: colors.info, text: 'Mode Offline' };
       default:
         return { color: colors.tabIconDefault, text: 'Tidak Diketahui' };
     }
@@ -397,8 +415,7 @@ export const ChatbotModal: React.FC<{
   }, [messages, isTyping]);
 
   const statusInfo = getStatusInfo();
-  const isTypingStatus = isTyping && messages.length > 0;
-
+  
   return (
     <Modal animationType="slide" transparent={true} visible={visible} onRequestClose={onClose}>
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.modalOverlay}>
@@ -409,12 +426,12 @@ export const ChatbotModal: React.FC<{
                 <MaterialCommunityIcons name="robot-happy-outline" size={30} color={colors.tint} />
                 <View style={{backgroundColor: 'transparent', marginLeft: 12}}>
                   <Text style={[styles.headerTitle, { color: colors.text }]}>GrapeCheck Bot</Text>
-                  <View style={styles.statusIndicator}>
+                  <Animated.View style={[styles.statusIndicator, {opacity: pulseAnim}]}>
                     {!isTypingStatus && <View style={[styles.statusDot, {backgroundColor: statusInfo.color}]} />}
                     <Text style={[styles.statusText, { color: statusInfo.color, marginLeft: isTypingStatus ? 0 : 6 }]}>
                       {statusInfo.text}
                     </Text>
-                  </View>
+                  </Animated.View>
                 </View>
               </View>
               <View style={styles.headerActions}>
