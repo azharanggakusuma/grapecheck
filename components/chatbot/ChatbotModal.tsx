@@ -246,10 +246,7 @@ export const ChatbotModal: React.FC<{
     setIsTyping(true);
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => {
-        console.log("Connection timed out. Aborting request.");
-        controller.abort();
-    }, 5000); // Timeout 5 detik
+    const timeoutId = setTimeout(() => controller.abort(), 5000); // Set timeout 5 detik
 
     try {
         const response = await fetch(CHAT_URL, {
@@ -262,13 +259,9 @@ export const ChatbotModal: React.FC<{
         clearTimeout(timeoutId); // Hapus timeout jika fetch berhasil
 
         setConnectionStatus(response.ok ? 'connected_server' : 'connected_static');
-    } catch (error: any) {
-        clearTimeout(timeoutId); // Pastikan timeout dihapus jika ada error lain
-        if (error.name === 'AbortError') {
-            console.log("Fetch aborted due to timeout.");
-        } else {
-            console.error("Connection check failed:", error);
-        }
+    } catch (error) {
+        clearTimeout(timeoutId);
+        // Apapun errornya (termasuk AbortError dari timeout), ganti ke mode offline
         setConnectionStatus('connected_static');
     } finally {
         setIsTyping(false);
@@ -277,7 +270,8 @@ export const ChatbotModal: React.FC<{
 
   const resetChatHistory = async () => {
       try {
-          await fetch(CHAT_RESET_URL, { method: 'POST' });
+          // Tetap coba reset, tapi tidak error jika gagal
+          await fetch(CHAT_RESET_URL, { method: 'POST', signal: AbortSignal.timeout(3000) });
       } catch (error) {
           console.log("Could not reset server history, proceeding in offline mode.");
       } finally {
@@ -328,11 +322,9 @@ export const ChatbotModal: React.FC<{
             } else {
                 setConnectionStatus('connected_static');
                 botResponseText = staticChatResponses.default;
-                console.error(`Backend error: ${response.status} ${response.statusText}`);
             }
         } catch (error) {
             clearTimeout(timeoutId);
-            console.error("Error sending prompt, switching to offline mode:", error);
             setConnectionStatus('connected_static');
             botResponseText = staticChatResponses.default;
         }
