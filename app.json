@@ -4,7 +4,7 @@
     "slug": "grapecheck",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/logo3.jpeg",
     "scheme": "grapecheck",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
