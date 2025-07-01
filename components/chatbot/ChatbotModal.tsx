@@ -13,27 +13,38 @@ import {
   ScrollView,
   Animated,
 } from "react-native";
-import { Feather } from "@expo/vector-icons";
+// --- PERUBAHAN IMPOR: Tambahkan MaterialCommunityIcons ---
+import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useTheme } from "@/components/ui/ThemeProvider";
 import Colors from "@/constants/Colors";
 import { LinearGradient } from "expo-linear-gradient";
 
-// Tipe untuk setiap pesan
+// (Interface Message dan komponen SuggestionChip tidak berubah)
 interface Message {
   id: string;
   text: string;
   sender: "user" | "bot";
   time: string;
 }
+const SuggestionChip = ({ text, onPress, themeColors }: any) => (
+  <TouchableOpacity
+    onPress={onPress}
+    style={[
+      styles.chip,
+      { backgroundColor: themeColors.surface, borderColor: themeColors.border },
+    ]}
+  >
+    <Text style={[styles.chipText, { color: themeColors.tint }]}>{text}</Text>
+  </TouchableOpacity>
+);
 
-// Komponen Animasi Mengetik
+// --- Komponen Animasi Mengetik ---
 const TypingIndicator = ({ themeColors }: { themeColors: any }) => {
   const animations = [
     useRef(new Animated.Value(0)).current,
     useRef(new Animated.Value(0)).current,
     useRef(new Animated.Value(0)).current,
   ];
-
   useEffect(() => {
     const createAnimation = (anim: Animated.Value) =>
       Animated.sequence([
@@ -48,7 +59,6 @@ const TypingIndicator = ({ themeColors }: { themeColors: any }) => {
           useNativeDriver: true,
         }),
       ]);
-
     const loop = Animated.loop(
       Animated.stagger(150, animations.map(createAnimation))
     );
@@ -62,7 +72,12 @@ const TypingIndicator = ({ themeColors }: { themeColors: any }) => {
         colors={[`${themeColors.tint}2A`, `${themeColors.tint}0A`]}
         style={styles.botAvatar}
       >
-        <Feather name="cpu" size={20} color={themeColors.tint} />
+        {/* --- ICON ROBOT --- */}
+        <MaterialCommunityIcons
+          name="robot-happy-outline"
+          size={22}
+          color={themeColors.tint}
+        />
       </LinearGradient>
       <View
         style={[
@@ -92,7 +107,7 @@ const TypingIndicator = ({ themeColors }: { themeColors: any }) => {
   );
 };
 
-// Komponen Bubble Chat
+// --- Komponen Bubble Chat ---
 const MessageBubble = ({
   message,
   themeColors,
@@ -103,7 +118,6 @@ const MessageBubble = ({
   const isBot = message.sender === "bot";
   const slideAnim = useRef(new Animated.Value(isBot ? -50 : 50)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
-
   useEffect(() => {
     Animated.parallel([
       Animated.timing(opacityAnim, {
@@ -133,7 +147,12 @@ const MessageBubble = ({
           colors={[`${themeColors.tint}2A`, `${themeColors.tint}0A`]}
           style={styles.botAvatar}
         >
-          <Feather name="cpu" size={20} color={themeColors.tint} />
+          {/* --- ICON ROBOT --- */}
+          <MaterialCommunityIcons
+            name="robot-happy-outline"
+            size={22}
+            color={themeColors.tint}
+          />
         </LinearGradient>
       )}
       <LinearGradient
@@ -171,28 +190,7 @@ const MessageBubble = ({
   );
 };
 
-// Komponen untuk chip saran
-const SuggestionChip = ({
-  text,
-  onPress,
-  themeColors,
-}: {
-  text: string;
-  onPress: () => void;
-  themeColors: any;
-}) => (
-  <TouchableOpacity
-    onPress={onPress}
-    style={[
-      styles.chip,
-      { backgroundColor: themeColors.surface, borderColor: themeColors.border },
-    ]}
-  >
-    <Text style={[styles.chipText, { color: themeColors.tint }]}>{text}</Text>
-  </TouchableOpacity>
-);
-
-// Komponen utama Modal Chatbot
+// --- Komponen utama Modal Chatbot ---
 export const ChatbotModal: React.FC<{
   visible: boolean;
   onClose: () => void;
@@ -203,7 +201,6 @@ export const ChatbotModal: React.FC<{
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
-
   const getCurrentTime = () => {
     const now = new Date();
     return `${now.getHours().toString().padStart(2, "0")}:${now
@@ -241,10 +238,8 @@ export const ChatbotModal: React.FC<{
       time: getCurrentTime(),
     };
     setMessages((prev) => [...prev, newMessage]);
-    const userMessage = input;
     setInput("");
     setIsTyping(true);
-
     setTimeout(() => {
       const botResponse: Message = {
         id: (Date.now() + 1).toString(),
@@ -266,7 +261,6 @@ export const ChatbotModal: React.FC<{
     };
     setMessages((prev) => [...prev, newMessage]);
     setIsTyping(true);
-
     setTimeout(() => {
       const botResponse: Message = {
         id: (Date.now() + 1).toString(),
@@ -298,15 +292,18 @@ export const ChatbotModal: React.FC<{
           style={[styles.modalContent, { backgroundColor: colors.background }]}
         >
           <SafeAreaView style={{ flex: 1 }}>
-            {/* Header dengan Status */}
             <View style={[styles.header, { borderBottomColor: colors.border }]}>
               <View style={styles.headerTitleContainer}>
-                <Feather name="cpu" size={22} color={colors.tint} />
+                {/* --- ICON ROBOT --- */}
+                <MaterialCommunityIcons
+                  name="robot-happy-outline"
+                  size={24}
+                  color={colors.tint}
+                />
                 <View>
                   <Text style={[styles.headerTitle, { color: colors.text }]}>
                     GrapeCheck Bot
                   </Text>
-                  {/* --- PERUBAHAN: Teks Status --- */}
                   <Text
                     style={[
                       styles.headerStatus,
@@ -404,38 +401,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderBottomWidth: 1,
   },
-  headerTitleContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginLeft: 12,
-  },
-  // --- BARU: Style untuk status ---
-  headerStatus: {
-    fontSize: 13,
-    marginLeft: 12,
-    fontWeight: "500",
-  },
+  headerTitleContainer: { flexDirection: "row", alignItems: "center" },
+  headerTitle: { fontSize: 18, fontWeight: "bold", marginLeft: 12 },
+  headerStatus: { fontSize: 13, marginLeft: 12, fontWeight: "500" },
   closeButton: {},
-  chatContainer: {
-    flexGrow: 1,
-    padding: 15,
-  },
+  chatContainer: { flexGrow: 1, padding: 15 },
   messageContainer: {
     marginVertical: 5,
     maxWidth: "85%",
     flexDirection: "row",
     alignItems: "flex-end",
   },
-  botMessageContainer: {
-    alignSelf: "flex-start",
-  },
-  userMessageContainer: {
-    alignSelf: "flex-end",
-  },
+  botMessageContainer: { alignSelf: "flex-start" },
+  userMessageContainer: { alignSelf: "flex-end" },
   botAvatar: {
     width: 36,
     height: 36,
@@ -449,23 +427,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 20,
   },
-  botBubble: {
-    borderTopLeftRadius: 5,
-    borderWidth: 1,
-  },
-  userBubble: {
-    borderTopRightRadius: 5,
-  },
-  messageText: {
-    fontSize: 15.5,
-    lineHeight: 22,
-    marginBottom: 5,
-  },
-  timeText: {
-    fontSize: 11,
-    textAlign: "right",
-    opacity: 0.8,
-  },
+  botBubble: { borderTopLeftRadius: 5, borderWidth: 1 },
+  userBubble: { borderTopRightRadius: 5 },
+  messageText: { fontSize: 15.5, lineHeight: 22, marginBottom: 5 },
+  timeText: { fontSize: 11, textAlign: "right", opacity: 0.8 },
   chipContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -481,10 +446,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     borderWidth: 1,
   },
-  chipText: {
-    fontSize: 14,
-    fontWeight: "500",
-  },
+  chipText: { fontSize: 14, fontWeight: "500" },
   inputContainer: {
     flexDirection: "row",
     padding: 12,
@@ -513,10 +475,5 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     paddingHorizontal: 18,
   },
-  typingDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginHorizontal: 3,
-  },
+  typingDot: { width: 8, height: 8, borderRadius: 4, marginHorizontal: 3 },
 });
