@@ -32,6 +32,34 @@ interface Message {
 
 type ConnectionStatus = 'connecting' | 'connected_server' | 'connected_static';
 
+// --- FUNGSI LOGIKA BARU ---
+const findBestMatch = (userInput: string): string => {
+  const userWords = new Set(userInput.toLowerCase().split(/\s+/).filter(word => word.length > 2));
+  let bestMatchKey = 'default';
+  let maxScore = 0;
+
+  for (const key in staticChatResponses) {
+    if (key === 'default') continue;
+    
+    const keyWords = new Set(key.toLowerCase().split(' '));
+    let currentScore = 0;
+
+    userWords.forEach(word => {
+      if (keyWords.has(word)) {
+        currentScore++;
+      }
+    });
+
+    if (currentScore > maxScore) {
+      maxScore = currentScore;
+      bestMatchKey = key;
+    }
+  }
+
+  // Hanya kembalikan jawaban jika setidaknya ada satu kata kunci yang cocok
+  return maxScore > 0 ? staticChatResponses[bestMatchKey as keyof typeof staticChatResponses] : staticChatResponses.default;
+};
+
 // --- SUB-KOMPONEN ---
 
 const SuggestionChip = ({ text, onPress, themeColors }: any) => (
@@ -246,7 +274,7 @@ export const ChatbotModal: React.FC<{
     setIsTyping(true);
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000); // Set timeout 5 detik
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
 
     try {
         const response = await fetch(CHAT_URL, {
@@ -256,12 +284,11 @@ export const ChatbotModal: React.FC<{
             signal: controller.signal,
         });
 
-        clearTimeout(timeoutId); // Hapus timeout jika fetch berhasil
+        clearTimeout(timeoutId);
 
         setConnectionStatus(response.ok ? 'connected_server' : 'connected_static');
     } catch (error) {
         clearTimeout(timeoutId);
-        // Apapun errornya (termasuk AbortError dari timeout), ganti ke mode offline
         setConnectionStatus('connected_static');
     } finally {
         setIsTyping(false);
@@ -270,7 +297,6 @@ export const ChatbotModal: React.FC<{
 
   const resetChatHistory = async () => {
       try {
-          // Tetap coba reset, tapi tidak error jika gagal
           await fetch(CHAT_RESET_URL, { method: 'POST', signal: AbortSignal.timeout(3000) });
       } catch (error) {
           console.log("Could not reset server history, proceeding in offline mode.");
@@ -321,15 +347,15 @@ export const ChatbotModal: React.FC<{
                 botResponseText = data.response || staticChatResponses.default;
             } else {
                 setConnectionStatus('connected_static');
-                botResponseText = staticChatResponses.default;
+                botResponseText = findBestMatch(prompt); // Use findBestMatch on fail
             }
         } catch (error) {
             clearTimeout(timeoutId);
             setConnectionStatus('connected_static');
-            botResponseText = staticChatResponses.default;
+            botResponseText = findBestMatch(prompt); // Use findBestMatch on error
         }
     } else {
-        botResponseText = staticChatResponses[prompt.toLowerCase()] || staticChatResponses.default;
+        botResponseText = findBestMatch(prompt);
     }
 
     setTimeout(() => {
