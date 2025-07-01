@@ -18,7 +18,7 @@ import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useTheme } from "@/components/ui/ThemeProvider";
 import Colors from "@/constants/Colors";
 import { LinearGradient } from "expo-linear-gradient";
-import { CHAT_URL, CHAT_RESET_URL } from "@/constants/api"; // Ambil URL baru
+import { CHAT_URL, CHAT_RESET_URL } from "@/constants/api";
 import Markdown from 'react-native-markdown-display';
 import { staticChatResponses } from "@/constants/staticChatData";
 
@@ -32,7 +32,7 @@ interface Message {
 
 type ConnectionStatus = 'connecting' | 'connected_server' | 'connected_static' | 'error';
 
-// --- SUB-KOMPONEN (Tidak ada perubahan signifikan, hanya perbaikan minor) ---
+// --- SUB-KOMPONEN ---
 
 const SuggestionChip = ({ text, onPress, themeColors }: any) => (
   <TouchableOpacity
@@ -136,7 +136,6 @@ const MessageBubble = ({ message, themeColors }: { message: Message; themeColors
       ]).start();
     }, []);
   
-    // --- PERBAIKAN: Gaya Markdown yang lebih kaya ---
     const markdownStyle = StyleSheet.create({
       body: {
         color: isBot ? themeColors.text : "#FFFFFF",
@@ -198,7 +197,7 @@ const MessageBubble = ({ message, themeColors }: { message: Message; themeColors
           style={[
             styles.messageBubble,
             isBot ? styles.botBubble : styles.userBubble,
-            { borderColor: themeColors.border },
+            isBot && { borderWidth: 1, borderColor: themeColors.border },
           ]}
         >
           {isBot ? (
@@ -270,7 +269,7 @@ export const ChatbotModal: React.FC<{
       try {
           await fetch(CHAT_RESET_URL, { method: 'POST' });
           setMessages([]);
-          checkServerConnection(); // Check connection and provide new greeting
+          checkServerConnection();
       } catch (error) {
           console.error("Failed to reset chat history on server:", error);
       }
@@ -301,7 +300,7 @@ export const ChatbotModal: React.FC<{
 
     if (connectionStatus === 'connected_server') {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 15000); // Longer timeout for generation
+        const timeoutId = setTimeout(() => controller.abort(), 15000);
 
         try {
             const response = await fetch(CHAT_URL, {
@@ -350,8 +349,8 @@ export const ChatbotModal: React.FC<{
     sendPromptToBackend(suggestion);
   };
 
-  const getStatusIcon = () => {
-    if (isTyping && messages.length > 0) return { name: 'dots-horizontal' as const, color: colors.tint };
+  const getStatusInfo = () => {
+    if (isTyping && messages.length > 0) return { name: 'dots-horizontal' as const, color: colors.tint, text: 'Mengetik...' };
     switch (connectionStatus) {
       case 'connecting':
         return { name: 'wifi-off' as const, color: colors.warning, text: 'Menyambungkan...' };
@@ -370,7 +369,7 @@ export const ChatbotModal: React.FC<{
     scrollViewRef.current?.scrollToEnd({ animated: true });
   }, [messages, isTyping]);
   
-  const statusInfo = getStatusIcon();
+  const statusInfo = getStatusInfo();
 
   return (
     <Modal animationType="slide" transparent={true} visible={visible} onRequestClose={onClose}>
@@ -379,16 +378,19 @@ export const ChatbotModal: React.FC<{
           <SafeAreaView style={{ flex: 1 }}>
             <View style={[styles.header, { borderBottomColor: colors.border }]}>
               <View style={styles.headerTitleContainer}>
-                <MaterialCommunityIcons name="robot-happy-outline" size={26} color={colors.tint} />
-                <Text style={[styles.headerTitle, { color: colors.text }]}>GrapeCheck Bot</Text>
+                <MaterialCommunityIcons name="robot-happy-outline" size={30} color={colors.tint} />
+                <View style={{backgroundColor: 'transparent', marginLeft: 12}}>
+                  <Text style={[styles.headerTitle, { color: colors.text }]}>GrapeCheck Bot</Text>
+                   {/* --- Status dipindahkan ke sini --- */}
+                  <View style={styles.statusIndicator}>
+                    <View style={[styles.statusDot, {backgroundColor: statusInfo.color}]} />
+                    <Text style={[styles.statusText, {color: statusInfo.color}]}>{statusInfo.text}</Text>
+                  </View>
+                </View>
               </View>
               <View style={styles.headerActions}>
-                <View style={styles.statusIndicator}>
-                    <MaterialCommunityIcons name={statusInfo.name} size={16} color={statusInfo.color} />
-                    <Text style={[styles.statusText, {color: statusInfo.color}]}>{statusInfo.text}</Text>
-                </View>
                 <TouchableOpacity onPress={resetChatHistory} style={styles.headerButton}>
-                    <Feather name="refresh-cw" size={20} color={colors.text} />
+                    <Feather name="refresh-cw" size={20} color={colors.tabIconDefault} />
                 </TouchableOpacity>
                 <TouchableOpacity onPress={onClose} style={styles.headerButton} accessibilityRole="button" accessibilityLabel="Close chatbot">
                   <Feather name="x" size={24} color={colors.text} />
@@ -465,9 +467,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
   headerTitleContainer: { 
+    flex: 1,
     flexDirection: "row", 
     alignItems: "center",
-    gap: 12,
   },
   headerTitle: { fontSize: 18, fontWeight: "bold" },
   headerActions: {
@@ -480,14 +482,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    borderRadius: 8,
-    backgroundColor: 'rgba(0,0,0,0.05)'
+    marginTop: 2,
+    backgroundColor: 'transparent'
+  },
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
   },
   statusText: {
-    fontSize: 12,
-    fontWeight: '600'
+    fontSize: 13,
+    fontWeight: '500'
   },
   chatContainer: { flexGrow: 1, padding: 15 },
   messageContainer: {
@@ -511,7 +516,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 20,
   },
-  botBubble: { borderTopLeftRadius: 5, borderWidth: 1 },
+  botBubble: { borderTopLeftRadius: 5 },
   userBubble: { borderTopRightRadius: 5 },
   messageText: { fontSize: 15.5, lineHeight: 22, marginBottom: 5 },
   timeText: { fontSize: 11, textAlign: "right", opacity: 0.8 },

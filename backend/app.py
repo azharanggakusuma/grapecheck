@@ -1,3 +1,4 @@
+# backend/app.py
 import os
 from flask import Flask, request, jsonify, session
 from PIL import Image
@@ -7,25 +8,18 @@ from werkzeug.utils import secure_filename
 import google.generativeai as genai
 from dotenv import load_dotenv
 
-# Muat environment variables dari file .env
 load_dotenv()
 
-# --- Inisialisasi Aplikasi Flask ---
 app = Flask(__name__)
-# Tambahkan secret key untuk menggunakan session, penting untuk produksi
 app.secret_key = os.getenv("FLASK_SECRET_KEY", os.urandom(24))
 
-
-# --- Konfigurasi ---
 MODEL_PATH = 'model/model.tflite'
 UPLOAD_FOLDER = 'uploads'
 
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
-# --- Konfigurasi Gemini API ---
 try:
-    # Ambil API Key dari environment variable yang sudah dimuat
     GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
     if not GEMINI_API_KEY:
         raise ValueError("GEMINI_API_KEY tidak ditemukan di file .env Anda.")
@@ -37,7 +31,6 @@ except Exception as e:
     print(f"Error saat inisialisasi Gemini: {e}")
     model = None
 
-# --- Memuat Model TFLite ---
 try:
     interpreter = tf.lite.Interpreter(model_path=MODEL_PATH)
     interpreter.allocate_tensors()
@@ -50,9 +43,6 @@ except Exception as e:
     interpreter = None
 
 def preprocess_image(image: Image.Image) -> np.ndarray:
-    """
-    Fungsi untuk memproses gambar agar sesuai dengan input model.
-    """
     img_resized = image.resize((224, 224))
     img_array = tf.keras.preprocessing.image.img_to_array(img_resized)
     img_array_normalized = img_array / 255.0
@@ -61,9 +51,6 @@ def preprocess_image(image: Image.Image) -> np.ndarray:
 
 @app.route('/classify', methods=['POST'])
 def classify_image_api():
-    """
-    Endpoint API untuk menerima gambar, melakukan klasifikasi dengan TFLite, dan mengembalikan JSON.
-    """
     if interpreter is None:
         return jsonify({'error': 'Kesalahan pada server: Model tidak dapat dimuat.'}), 500
 
@@ -92,9 +79,6 @@ def classify_image_api():
 
 @app.route('/chat', methods=['POST'])
 def chat_handler():
-    """
-    Endpoint untuk menerima prompt, memberinya instruksi, dan meneruskannya ke Gemini.
-    """
     if model is None:
         return jsonify({'error': 'Kesalahan pada server: Model Gemini tidak dapat dimuat.'}), 500
     if not request.json or 'prompt' not in request.json:
@@ -102,19 +86,16 @@ def chat_handler():
     
     user_prompt = request.json['prompt']
 
-    # --- BARU: Kelola riwayat percakapan dalam session ---
     if 'chat_history' not in session:
         session['chat_history'] = []
 
-    # Gabungkan riwayat untuk konteks
     history_for_prompt = "\n".join([f"{msg['role']}: {msg['text']}" for msg in session.get('chat_history', [])])
 
-    # --- PERBAIKAN: System prompt yang lebih cerdas ---
     system_instruction = (
         "Anda adalah GrapeCheck Bot, seorang ahli botani digital yang ramah dan berspesialisasi dalam kesehatan tanaman anggur. "
         "Tugas Anda adalah membantu pengguna mengidentifikasi penyakit, memberikan saran perawatan, dan menjawab pertanyaan terkait budidaya anggur berdasarkan riwayat percakapan. "
         "Selalu berikan jawaban yang **akurat, ringkas, dan mudah dipahami**. "
-        "Ketika memberikan saran, gunakan **poin-poin bernomor** atau **bullet points** untuk langkah-langkah yang jelas. "
+        "Ketika memberikan saran, **selalu gunakan format Markdown** seperti **poin-poin bernomor** atau **bullet points** untuk langkah-langkah yang jelas. "
         "Jika Anda tidak yakin atau pertanyaannya di luar topik anggur, katakan dengan sopan bahwa Anda hanya bisa membantu seputar tanaman anggur. "
         "Selalu sapa pengguna dengan ramah.\n\n"
         f"Riwayat Percakapan:\n{history_for_prompt}\n\n"
@@ -125,10 +106,8 @@ def chat_handler():
         response = model.generate_content(system_instruction)
         bot_response_text = response.text
 
-        # Simpan percakapan ke session
         session['chat_history'].append({"role": "user", "text": user_prompt})
         session['chat_history'].append({"role": "bot", "text": bot_response_text})
-        # Batasi riwayat agar tidak terlalu panjang (misal: 10 interaksi terakhir)
         session['chat_history'] = session['chat_history'][-20:] 
         session.modified = True
         
@@ -137,14 +116,10 @@ def chat_handler():
         print(f"Error saat berkomunikasi dengan Gemini API: {e}")
         return jsonify({'error': 'Terjadi kesalahan internal saat memproses permintaan Anda.'}), 500
 
-# --- BARU: Endpoint untuk mereset percakapan ---
 @app.route('/chat/reset', methods=['POST'])
 def chat_reset():
-    """Mereset riwayat percakapan di session."""
     session.pop('chat_history', None)
     return jsonify({'status': 'ok', 'message': 'Riwayat percakapan berhasil direset.'})
 
-
-# --- Menjalankan Aplikasi ---
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
