@@ -13,7 +13,7 @@ import {
   ScrollView,
   Animated,
 } from 'react-native';
-import { Feather } from '@expo/vector-icons'; // <-- Impor diperbaiki
+import { Feather } from '@expo/vector-icons';
 import { useTheme } from '@/components/ui/ThemeProvider';
 import Colors from '@/constants/Colors';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -24,6 +24,49 @@ interface Message {
   text: string;
   sender: 'user' | 'bot';
 }
+
+// --- Komponen Animasi Mengetik (Sudah Diperbarui) ---
+const TypingIndicator = ({ themeColors }: { themeColors: any }) => {
+  const yAnim1 = useRef(new Animated.Value(0)).current;
+  const yAnim2 = useRef(new Animated.Value(0)).current;
+  const yAnim3 = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const createAnimation = (animValue: Animated.Value) => 
+      Animated.sequence([
+        Animated.timing(animValue, { toValue: -5, duration: 300, useNativeDriver: true }),
+        Animated.timing(animValue, { toValue: 0, duration: 300, useNativeDriver: true }),
+      ]);
+
+    const loop = Animated.loop(
+      Animated.stagger(150, [
+        createAnimation(yAnim1),
+        createAnimation(yAnim2),
+        createAnimation(yAnim3),
+      ])
+    );
+    loop.start();
+    
+    return () => loop.stop();
+  }, []);
+
+  return (
+    // Pembungkus agar tata letaknya sama seperti pesan bot
+    <View style={[styles.messageContainer, styles.botMessageContainer]}>
+      {/* Avatar Bot */}
+      <LinearGradient colors={[`${themeColors.tint}2A`, `${themeColors.tint}0A`]} style={styles.botAvatar}>
+        <Feather name="cpu" size={20} color={themeColors.tint} />
+      </LinearGradient>
+      {/* Animasi titik-titik */}
+      <View style={[styles.messageBubble, styles.botBubble, styles.typingBubble, { backgroundColor: themeColors.surface, borderColor: themeColors.border }]}>
+        <Animated.View style={[styles.typingDot, { backgroundColor: themeColors.tabIconDefault, transform: [{ translateY: yAnim1 }] }]} />
+        <Animated.View style={[styles.typingDot, { backgroundColor: themeColors.tabIconDefault, transform: [{ translateY: yAnim2 }] }]} />
+        <Animated.View style={[styles.typingDot, { backgroundColor: themeColors.tabIconDefault, transform: [{ translateY: yAnim3 }] }]} />
+      </View>
+    </View>
+  );
+};
+
 
 // Komponen untuk bubble chat
 const MessageBubble = ({ message, themeColors }: { message: Message, themeColors: any }) => {
@@ -60,7 +103,6 @@ const MessageBubble = ({ message, themeColors }: { message: Message, themeColors
     ]}>
       {isBot && (
         <LinearGradient colors={[`${themeColors.tint}2A`, `${themeColors.tint}0A`]} style={styles.botAvatar}>
-          {/* --- PERBAIKAN: Menggunakan ikon 'cpu' yang valid --- */}
           <Feather name="cpu" size={20} color={themeColors.tint} />
         </LinearGradient>
       )}
@@ -89,13 +131,21 @@ export const ChatbotModal: React.FC<{ visible: boolean; onClose: () => void; }> 
   const colors = Colors[theme];
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
 
   useEffect(() => {
     if (visible && messages.length === 0) {
-      setMessages([
-        { id: '1', text: 'Halo! Saya GrapeCheck Bot. Ada yang bisa saya bantu terkait penyakit daun anggur?', sender: 'bot' }
-      ]);
+      setIsTyping(true);
+      setTimeout(() => {
+        setMessages([
+          { id: '1', text: 'Halo! Saya GrapeCheck Bot. Ada yang bisa saya bantu terkait penyakit daun anggur?', sender: 'bot' }
+        ]);
+        setIsTyping(false);
+      }, 1200);
+    } else if (!visible) {
+        setMessages([]);
+        setIsTyping(false);
     }
   }, [visible]);
 
@@ -105,8 +155,9 @@ export const ChatbotModal: React.FC<{ visible: boolean; onClose: () => void; }> 
     const newMessage: Message = { id: Date.now().toString(), text: input, sender: 'user' };
     setMessages(prev => [...prev, newMessage]);
     
-    const userMessage = input; // Simpan input sebelum direset
+    const userMessage = input;
     setInput('');
+    setIsTyping(true);
 
     setTimeout(() => {
       const botResponse: Message = {
@@ -114,13 +165,15 @@ export const ChatbotModal: React.FC<{ visible: boolean; onClose: () => void; }> 
         text: `Maaf, saya masih dalam tahap pengembangan dan belum bisa memproses permintaan "${userMessage}".`,
         sender: 'bot',
       };
+      setIsTyping(false);
       setMessages(prev => [...prev, botResponse]);
-    }, 1000);
+    }, 1500 + Math.random() * 500);
   };
   
   const handleSuggestionPress = (suggestion: string) => {
     const newMessage: Message = { id: Date.now().toString(), text: suggestion, sender: 'user' };
     setMessages(prev => [...prev, newMessage]);
+    setIsTyping(true);
 
     setTimeout(() => {
       const botResponse: Message = {
@@ -128,13 +181,14 @@ export const ChatbotModal: React.FC<{ visible: boolean; onClose: () => void; }> 
         text: `Maaf, saya masih dalam tahap pengembangan dan belum bisa memproses permintaan "${suggestion}".`,
         sender: 'bot',
       };
+      setIsTyping(false);
       setMessages(prev => [...prev, botResponse]);
-    }, 1000);
+    }, 1500 + Math.random() * 500);
   };
 
   useEffect(() => {
     scrollViewRef.current?.scrollToEnd({ animated: true });
-  }, [messages]);
+  }, [messages, isTyping]);
 
   return (
     <Modal animationType="slide" transparent={true} visible={visible} onRequestClose={onClose}>
@@ -144,7 +198,6 @@ export const ChatbotModal: React.FC<{ visible: boolean; onClose: () => void; }> 
             {/* Header Modal */}
             <View style={[styles.header, { borderBottomColor: colors.border }]}>
               <View style={styles.headerTitleContainer}>
-                {/* --- PERBAIKAN: Menggunakan ikon 'cpu' yang valid --- */}
                 <Feather name="cpu" size={22} color={colors.tint} />
                 <Text style={[styles.headerTitle, { color: colors.text }]}>GrapeCheck Bot</Text>
               </View>
@@ -160,7 +213,10 @@ export const ChatbotModal: React.FC<{ visible: boolean; onClose: () => void; }> 
               showsVerticalScrollIndicator={false}
             >
               {messages.map(msg => <MessageBubble key={msg.id} message={msg} themeColors={colors} />)}
-              {messages.length === 1 && (
+              
+              {isTyping && <TypingIndicator themeColors={colors} />}
+
+              {messages.length === 1 && !isTyping && (
                 <View style={styles.chipContainer}>
                     <SuggestionChip text="Apa itu Black Rot?" onPress={() => handleSuggestionPress("Apa itu Black Rot?")} themeColors={colors} />
                     <SuggestionChip text="Gejala Esca" onPress={() => handleSuggestionPress("Gejala Esca")} themeColors={colors} />
@@ -190,7 +246,6 @@ export const ChatbotModal: React.FC<{ visible: boolean; onClose: () => void; }> 
   );
 };
 
-// ... (Styles tetap sama, tidak perlu diubah)
 const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
@@ -267,7 +322,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'flex-start',
     marginTop: 10,
-    marginLeft: 44, // align with bot messages
+    marginLeft: 44,
   },
   chip: {
     paddingVertical: 8,
@@ -302,5 +357,18 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  // Style untuk typing indicator yang baru
+  typingBubble: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 15, // Disesuaikan agar titik-titik di tengah
+    paddingHorizontal: 16,
+  },
+  typingDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginHorizontal: 3,
   },
 });
