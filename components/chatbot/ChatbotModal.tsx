@@ -74,7 +74,7 @@ const TypingIndicator = ({ themeColors }: { themeColors: any }) => {
         loop.start();
         return () => loop.stop();
       }, []);
-    
+
       return (
         <View style={[styles.messageContainer, styles.botMessageContainer]}>
           <LinearGradient
@@ -119,7 +119,7 @@ const MessageBubble = ({ message, themeColors }: { message: Message; themeColors
     const isBot = message.sender === "bot";
     const slideAnim = useRef(new Animated.Value(isBot ? -50 : 50)).current;
     const opacityAnim = useRef(new Animated.Value(0)).current;
-    
+
     useEffect(() => {
       Animated.parallel([
         Animated.timing(opacityAnim, {
@@ -135,7 +135,7 @@ const MessageBubble = ({ message, themeColors }: { message: Message; themeColors
         }),
       ]).start();
     }, []);
-  
+
     const markdownStyle = StyleSheet.create({
       body: {
         color: isBot ? themeColors.text : "#FFFFFF",
@@ -169,7 +169,7 @@ const MessageBubble = ({ message, themeColors }: { message: Message; themeColors
         textDecorationLine: 'underline',
       }
     });
-  
+
     return (
       <Animated.View
         style={[
@@ -235,7 +235,7 @@ export const ChatbotModal: React.FC<{
   const [isTyping, setIsTyping] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('connecting');
   const scrollViewRef = useRef<ScrollView>(null);
-  
+
   const getCurrentTime = () => {
     const now = new Date();
     return `${now.getHours().toString().padStart(2, "0")}:${now.getMinutes().toString().padStart(2, "0")}`;
@@ -287,7 +287,7 @@ export const ChatbotModal: React.FC<{
         connectionStatus === 'connected_server'
           ? "Halo! Saya GrapeCheck Bot. Ada yang bisa saya bantu terkait penyakit daun anggur?"
           : "Halo! Saat ini saya sedang offline, namun saya tetap bisa menjawab beberapa pertanyaan umum. Ada yang bisa saya bantu?";
-      
+
       setTimeout(() => {
         setMessages([{ id: "1", text: greetingText, sender: "bot", time: getCurrentTime() }]);
       }, 500);
@@ -350,26 +350,27 @@ export const ChatbotModal: React.FC<{
   };
 
   const getStatusInfo = () => {
-    if (isTyping && messages.length > 0) return { name: 'dots-horizontal' as const, color: colors.tint, text: 'Mengetik...' };
+    if (isTyping && messages.length > 0) return { color: colors.tint, text: 'Mengetik...' };
     switch (connectionStatus) {
       case 'connecting':
-        return { name: 'wifi-off' as const, color: colors.warning, text: 'Menyambungkan...' };
+        return { color: colors.warning, text: 'Menyambungkan...' };
       case 'connected_server':
-        return { name: 'wifi-strength-4' as const, color: colors.success, text: 'Online' };
+        return { color: colors.success, text: 'Online' };
       case 'connected_static':
-        return { name: 'wifi-strength-2' as const, color: colors.warning, text: 'Mode Offline' };
+        return { color: colors.warning, text: 'Mode Offline' };
       case 'error':
-        return { name: 'wifi-off' as const, color: colors.error, text: 'Gagal Terhubung' };
+        return { color: colors.error, text: 'Gagal Terhubung' };
       default:
-        return { name: 'wifi-off' as const, color: colors.tabIconDefault, text: 'Tidak Diketahui' };
+        return { color: colors.tabIconDefault, text: 'Tidak Diketahui' };
     }
   };
 
   useEffect(() => {
     scrollViewRef.current?.scrollToEnd({ animated: true });
   }, [messages, isTyping]);
-  
+
   const statusInfo = getStatusInfo();
+  const isTypingStatus = isTyping && messages.length > 0;
 
   return (
     <Modal animationType="slide" transparent={true} visible={visible} onRequestClose={onClose}>
@@ -381,10 +382,11 @@ export const ChatbotModal: React.FC<{
                 <MaterialCommunityIcons name="robot-happy-outline" size={30} color={colors.tint} />
                 <View style={{backgroundColor: 'transparent', marginLeft: 12}}>
                   <Text style={[styles.headerTitle, { color: colors.text }]}>GrapeCheck Bot</Text>
-                   {/* --- Status dipindahkan ke sini --- */}
                   <View style={styles.statusIndicator}>
-                    <View style={[styles.statusDot, {backgroundColor: statusInfo.color}]} />
-                    <Text style={[styles.statusText, {color: statusInfo.color}]}>{statusInfo.text}</Text>
+                    {!isTypingStatus && <View style={[styles.statusDot, {backgroundColor: statusInfo.color}]} />}
+                    <Text style={[styles.statusText, { color: statusInfo.color, marginLeft: isTypingStatus ? 0 : 6 }]}>
+                      {statusInfo.text}
+                    </Text>
                   </View>
                 </View>
               </View>
@@ -466,9 +468,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     borderBottomWidth: 1,
   },
-  headerTitleContainer: { 
+  headerTitleContainer: {
     flex: 1,
-    flexDirection: "row", 
+    flexDirection: "row",
     alignItems: "center",
   },
   headerTitle: { fontSize: 18, fontWeight: "bold" },
@@ -481,7 +483,6 @@ const styles = StyleSheet.create({
   statusIndicator: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
     marginTop: 2,
     backgroundColor: 'transparent'
   },
