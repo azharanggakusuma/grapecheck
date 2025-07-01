@@ -30,7 +30,7 @@ interface Message {
   time: string;
 }
 
-type ConnectionStatus = 'connecting' | 'connected_server' | 'connected_static' | 'error';
+type ConnectionStatus = 'connecting' | 'connected_server' | 'connected_static';
 
 // --- SUB-KOMPONEN ---
 
@@ -244,34 +244,45 @@ export const ChatbotModal: React.FC<{
   const checkServerConnection = async () => {
     setConnectionStatus('connecting');
     setIsTyping(true);
+
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    const timeoutId = setTimeout(() => {
+        console.log("Connection timed out. Aborting request.");
+        controller.abort();
+    }, 5000); // Timeout 5 detik
 
     try {
-      const response = await fetch(CHAT_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: "ping" }),
-        signal: controller.signal,
-      });
-      clearTimeout(timeoutId);
-      setConnectionStatus(response.ok ? 'connected_server' : 'connected_static');
-    } catch (error) {
-      clearTimeout(timeoutId);
-      console.error("Connection check failed:", error);
-      setConnectionStatus('error');
+        const response = await fetch(CHAT_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt: "ping" }),
+            signal: controller.signal,
+        });
+
+        clearTimeout(timeoutId); // Hapus timeout jika fetch berhasil
+
+        setConnectionStatus(response.ok ? 'connected_server' : 'connected_static');
+    } catch (error: any) {
+        clearTimeout(timeoutId); // Pastikan timeout dihapus jika ada error lain
+        if (error.name === 'AbortError') {
+            console.log("Fetch aborted due to timeout.");
+        } else {
+            console.error("Connection check failed:", error);
+        }
+        setConnectionStatus('connected_static');
     } finally {
-      setIsTyping(false);
+        setIsTyping(false);
     }
   };
 
   const resetChatHistory = async () => {
       try {
           await fetch(CHAT_RESET_URL, { method: 'POST' });
-          setMessages([]);
-          checkServerConnection();
       } catch (error) {
-          console.error("Failed to reset chat history on server:", error);
+          console.log("Could not reset server history, proceeding in offline mode.");
+      } finally {
+        setMessages([]);
+        checkServerConnection();
       }
   }
 
@@ -315,14 +326,14 @@ export const ChatbotModal: React.FC<{
                 const data = await response.json();
                 botResponseText = data.response || staticChatResponses.default;
             } else {
-                setConnectionStatus('error');
+                setConnectionStatus('connected_static');
                 botResponseText = staticChatResponses.default;
                 console.error(`Backend error: ${response.status} ${response.statusText}`);
             }
         } catch (error) {
             clearTimeout(timeoutId);
-            console.error("Error sending prompt to backend:", error);
-            setConnectionStatus('error');
+            console.error("Error sending prompt, switching to offline mode:", error);
+            setConnectionStatus('connected_static');
             botResponseText = staticChatResponses.default;
         }
     } else {
@@ -358,8 +369,6 @@ export const ChatbotModal: React.FC<{
         return { color: colors.success, text: 'Online' };
       case 'connected_static':
         return { color: colors.warning, text: 'Mode Offline' };
-      case 'error':
-        return { color: colors.error, text: 'Gagal Terhubung' };
       default:
         return { color: colors.tabIconDefault, text: 'Tidak Diketahui' };
     }
