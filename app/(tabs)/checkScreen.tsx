@@ -10,9 +10,9 @@ import {
   Alert,
   Animated,
   Platform,
-  RefreshControl,
   UIManager,
   LayoutAnimation,
+  Easing,
 } from "react-native";
 import { Text, View } from "@/components/ui/Themed";
 import * as ImagePicker from "expo-image-picker";
@@ -22,26 +22,23 @@ import { useTheme } from "@/components/ui/ThemeProvider";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { BlurView } from "expo-blur";
 import * as Progress from "react-native-progress";
-import { useGlobalRefresh } from "@/components/contexts/GlobalRefreshContext";
 import { LinearGradient } from "expo-linear-gradient";
+import * as Haptics from "expo-haptics";
+import Markdown from "react-native-markdown-display";
 import { CLASSIFY_URL } from "@/constants/api";
 import { staticChatResponses } from "@/constants/staticChatData";
-import Markdown from "react-native-markdown-display";
-import * as Haptics from 'expo-haptics'; // Tambahkan ini
 
 const { width } = Dimensions.get("window");
 const IMAGE_SIZE = width * 0.85;
 
-// Aktifkan LayoutAnimation untuk Android
-if (
-  Platform.OS === "android" &&
-  UIManager.setLayoutAnimationEnabledExperimental
-) {
+if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-// Data Detail untuk Setiap Penyakit
+// --- DATA & UTILITIES ---
+
 const diseaseDetails = {
+  // ... (data diseaseDetails tetap sama)
   Busuk: {
     description: staticChatResponses["apa itu penyakit black rot busuk hitam"],
     symptoms:
@@ -64,41 +61,13 @@ const diseaseDetails = {
   },
 };
 
-// Komponen Bagian Info dengan Markdown
-const InfoSection = ({ icon, title, text, colors }: any) => {
-  const markdownStyle = {
-    body: { color: colors.tabIconDefault, fontSize: 14, lineHeight: 22 },
-    strong: { color: colors.text, fontWeight: 'bold' },
-    bullet_list_icon: { color: colors.tint },
-    ordered_list_icon: { color: colors.tint, fontWeight: 'bold' },
-  };
 
-  return (
-    <View style={styles.infoSectionContainer}>
-      <Feather
-        name={icon}
-        size={20}
-        color={colors.tabIconDefault}
-        style={{ marginTop: 2 }}
-      />
-      <View style={styles.infoSectionTextContainer}>
-        <Text style={[styles.detailTitle, { color: colors.text }]}>
-          {title}
-        </Text>
-        <Markdown style={markdownStyle}>{text}</Markdown>
-      </View>
-    </View>
-  );
-};
+// --- UI COMPONENTS ---
 
-// Komponen Overlay Loading
-const LoadingOverlay = ({
-  visible,
-  colors,
-}: {
-  visible: boolean;
-  colors: any;
-}) => {
+const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
+
+const LoadingOverlay = ({ visible, colors }: any) => {
+  // ... (Komponen LoadingOverlay tetap sama)
   const anim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -112,28 +81,16 @@ const LoadingOverlay = ({
   if (!visible) return null;
 
   return (
-    <Animated.View
-      style={[
-        StyleSheet.absoluteFill,
-        styles.overlayContainer,
-        { opacity: anim },
-      ]}
-    >
-      <BlurView
-        intensity={Platform.OS === "ios" ? 25 : 80}
-        tint={colors.blurTint}
-        style={StyleSheet.absoluteFill}
-      />
+    <Animated.View style={[StyleSheet.absoluteFill, styles.overlayContainer, { opacity: anim }]}>
+      <BlurView intensity={Platform.OS === "ios" ? 25 : 80} tint={colors.blurTint} style={StyleSheet.absoluteFill} />
       <Progress.CircleSnail color={colors.tint} size={60} thickness={4} />
-      <Text style={[styles.loadingText, { color: colors.text }]}>
-        Menganalisis...
-      </Text>
+      <Text style={[styles.loadingText, { color: colors.text }]}>Menganalisis...</Text>
     </Animated.View>
   );
 };
 
-// Kartu Hasil Akhir dengan Tampilan Tab
 const ResultCard = ({ prediction, onReset, colors }: any) => {
+  // ... (Komponen ResultCard tetap sama, atau bisa disempurnakan lebih lanjut)
   const [activeTab, setActiveTab] = useState("ringkasan");
   const slideAnim = useRef(new Animated.Value(50)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
@@ -318,16 +275,8 @@ const ResultCard = ({ prediction, onReset, colors }: any) => {
   );
 };
 
-// Kartu Error
-const ErrorCard = ({
-  message,
-  onRetry,
-  colors,
-}: {
-  message: string;
-  onRetry: () => void;
-  colors: any;
-}) => {
+const ErrorCard = ({ message, onRetry, colors }: any) => {
+  // ... (Komponen ErrorCard tetap sama)
   return (
     <View style={[styles.errorCard, { backgroundColor: colors.error + "20" }]}>
       <Feather name="alert-triangle" size={20} color={colors.error} />
@@ -341,36 +290,79 @@ const ErrorCard = ({
   );
 };
 
+/**
+ * Komponen baru untuk tampilan awal sebelum gambar dipilih.
+ */
+const InitialView = ({ onPickImage, colors }: { onPickImage: (useCamera: boolean) => void, colors: any }) => {
+  const breathAnim = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(breathAnim, { toValue: 1.05, duration: 2000, useNativeDriver: true, easing: Easing.ease }),
+        Animated.timing(breathAnim, { toValue: 1, duration: 2000, useNativeDriver: true, easing: Easing.ease })
+      ])
+    ).start();
+  }, []);
+
+  const buttonGradient = colors.theme === "dark"
+      ? [colors.primaryLight, colors.tint]
+      : [colors.primaryLight, colors.tint];
+
+  return (
+    <View style={{ width: "100%", alignItems: "center" }}>
+      <Text style={[styles.heading, { color: colors.text }]}>Analisis Daun Anggur</Text>
+      <Text style={[styles.subtext, { color: colors.tabIconDefault }]}>
+        Unggah atau ambil gambar daun anggur untuk dideteksi oleh AI.
+      </Text>
+      <Animated.View style={{ transform: [{ scale: breathAnim }] }}>
+        <TouchableOpacity
+          onPress={() => onPickImage(false)}
+          style={[styles.imageContainer, { borderColor: colors.border, backgroundColor: colors.surface }]}
+        >
+          <Feather name="upload-cloud" size={48} color={colors.tabIconDefault} />
+          <Text style={[styles.placeholderText, { color: colors.tabIconDefault }]}>Ketuk untuk Memilih Gambar</Text>
+          <Text style={[styles.placeholderSubtext, { color: colors.tabIconDefault }]}>atau gunakan kamera</Text>
+        </TouchableOpacity>
+      </Animated.View>
+
+      <TouchableOpacity style={styles.cameraButton} onPress={() => onPickImage(true)}>
+        <LinearGradient colors={buttonGradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.gradientButton}>
+          <Feather name="camera" size={20} color="#FFFFFF" />
+          <Text style={styles.cameraButtonText}>Ambil Gambar</Text>
+        </LinearGradient>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+
+// --- MAIN SCREEN COMPONENT ---
+
 export default function CheckScreen() {
   const [image, setImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [prediction, setPrediction] = useState<{
-    label: string;
-    confidence: number;
-  } | null>(null);
+  const [prediction, setPrediction] = useState<{ label: string; confidence: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const { theme } = useTheme();
   const colors = Colors[theme];
-  const { refreshApp } = useGlobalRefresh();
-  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const buttonGradient =
-    theme === "dark"
-      ? [colors.primaryLight, colors.tint]
-      : [colors.primaryLight, colors.tint];
+  const contentOpacity = useRef(new Animated.Value(0)).current;
 
-  const handleRefresh = useCallback(() => {
-    setIsRefreshing(true);
-    refreshApp();
-    setTimeout(() => {
-      setIsRefreshing(false);
-      handleReset();
-    }, 1000);
-  }, [refreshApp]);
+  useEffect(() => {
+    Animated.timing(contentOpacity, {
+      toValue: image ? 1 : 0,
+      duration: 500,
+      useNativeDriver: true,
+    }).start();
+  }, [image]);
+
 
   const pickImage = async (useCamera: boolean) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    handleReset(); // Reset state sebelum memilih gambar baru
+
     const options: ImagePicker.ImagePickerOptions = {
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
@@ -384,39 +376,20 @@ export default function CheckScreen() {
         : await ImagePicker.requestMediaLibraryPermissionsAsync();
 
       if (permission.status !== "granted") {
-        Alert.alert(
-          "Izin Diperlukan",
-          `Anda perlu memberikan izin untuk mengakses ${
-            useCamera ? "kamera" : "galeri"
-          }.`
-        );
+        Alert.alert("Izin Diperlukan", `Anda perlu memberikan izin untuk mengakses ${useCamera ? "kamera" : "galeri"}.`);
         return;
       }
 
       const result = useCamera
         ? await ImagePicker.launchCameraAsync(options)
         : await ImagePicker.launchImageLibraryAsync(options);
-
-      if (result.canceled) {
-        // Tambahkan ini untuk menangani kasus pengguna membatalkan pemilihan gambar
-        if (!image) { 
-          Alert.alert("Info", "Anda tidak memilih gambar.");
-        }
-        return;
-      }
+        
+      if (result.canceled) return;
 
       const asset = result.assets[0];
-      if (asset.mimeType && !asset.mimeType.startsWith("image/")) {
-        Alert.alert(
-          "File Tidak Sesuai",
-          "Harap pilih file gambar (contoh: JPG, PNG)."
-        );
-        return;
-      }
-
-      handleReset();
       setImage(asset.uri);
       classifyImage(asset.uri);
+
     } catch (e) {
       Alert.alert("Error", "Gagal membuka gambar.");
       console.error(e);
@@ -457,112 +430,58 @@ export default function CheckScreen() {
     setPrediction(null);
     setError(null);
   };
+  
+  const handleRetry = () => {
+    if (image) {
+      classifyImage(image);
+    } else {
+      handleReset();
+    }
+  }
 
   return (
-    <SafeAreaView
-      style={[styles.safeArea, { backgroundColor: colors.background }]}
-    >
-      <ScrollView
-        contentContainerStyle={styles.scrollContainer}
-        refreshControl={
-          <RefreshControl
-            refreshing={isRefreshing}
-            onRefresh={handleRefresh}
-            tintColor={colors.tint}
-          />
-        }
-      >
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.container}>
-          {prediction ? (
-            <ResultCard
-              prediction={prediction}
-              onReset={handleReset}
-              colors={colors}
-            />
-          ) : (
-            <View style={{ width: "100%", alignItems: "center" }}>
-              <Text style={[styles.heading, { color: colors.text }]}>
-                Analisis Daun Anggur
-              </Text>
-              <Text style={[styles.subtext, { color: colors.tabIconDefault }]}>
-                Unggah atau ambil gambar daun anggur untuk dideteksi oleh AI.
-              </Text>
-              <TouchableOpacity
-                disabled={loading}
-                onPress={() => pickImage(false)}
-                style={[
-                  styles.imageContainer,
-                  {
-                    borderColor: colors.border,
-                    backgroundColor: colors.surface,
-                  },
-                ]}
-              >
-                {image ? (
-                  <Image source={{ uri: image }} style={styles.image} />
-                ) : (
-                  <View style={styles.placeholderContainer}>
-                    <Feather
-                      name="upload-cloud"
-                      size={48}
-                      color={colors.tabIconDefault}
-                    />
-                    <Text
-                      style={[
-                        styles.placeholderText,
-                        { color: colors.tabIconDefault },
-                      ]}
-                    >
-                      Ketuk untuk Memilih Gambar
-                    </Text>
-                    <Text
-                      style={[
-                        styles.placeholderSubtext,
-                        { color: colors.tabIconDefault },
-                      ]}
-                    >
-                      atau gunakan kamera
-                    </Text>
-                  </View>
-                )}
+          {!image && <InitialView onPickImage={pickImage} colors={colors} />}
+
+          {image && (
+            <Animated.View style={{ opacity: contentOpacity, width: '100%', alignItems: 'center' }}>
+              <Text style={[styles.heading, { color: colors.text }]}>Hasil Analisis</Text>
+              
+              <View style={[styles.imageContainer, { borderColor: colors.border, backgroundColor: colors.surface }]}>
+                <Image source={{ uri: image }} style={styles.image} />
                 <LoadingOverlay visible={loading} colors={colors} />
-              </TouchableOpacity>
+              </View>
 
-              <TouchableOpacity
-                style={styles.cameraButton}
-                onPress={() => pickImage(true)}
-                disabled={loading}
-              >
-                <LinearGradient
-                  colors={buttonGradient}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={styles.gradientButton}
+              {error && <ErrorCard message={error} onRetry={handleRetry} colors={colors} />}
+              
+              {prediction && <ResultCard prediction={prediction} onReset={handleReset} colors={colors} />}
+
+              {!prediction && !error && !loading && (
+                 <TouchableOpacity
+                  style={[styles.resetButton, { backgroundColor: colors.border, marginTop: 24, width: '100%' }]}
+                  onPress={handleReset}
                 >
-                  <Feather name="camera" size={20} color="#FFFFFF" />
-                  <Text style={styles.cameraButtonText}>Ambil Gambar</Text>
-                </LinearGradient>
-              </TouchableOpacity>
-
-              {error && (
-                <ErrorCard
-                  message={error}
-                  onRetry={() => (image ? classifyImage(image) : handleReset())}
-                  colors={colors}
-                />
+                  <Text style={[styles.resetButtonText, { color: colors.text }]}>Batalkan & Ulangi</Text>
+                </TouchableOpacity>
               )}
-            </View>
+            </Animated.View>
           )}
+
         </View>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
+
+// --- STYLES ---
+
 const styles = StyleSheet.create({
   safeArea: { flex: 1 },
-  scrollContainer: { flexGrow: 1, justifyContent: "center" },
-  container: { alignItems: "center", padding: 20 },
+  scrollContainer: { flexGrow: 1, justifyContent: "center", paddingVertical: 20 },
+  container: { alignItems: "center", paddingHorizontal: 20 },
   heading: {
     fontSize: 26,
     fontWeight: "bold",
@@ -585,7 +504,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     overflow: "hidden",
-    marginBottom: 16,
+    marginBottom: 24,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.05,
@@ -607,6 +526,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 5,
     elevation: 5,
+    marginTop: 16,
   },
   gradientButton: {
     flexDirection: "row",
@@ -618,14 +538,14 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   cameraButtonText: { color: "#FFFFFF", fontSize: 16, fontWeight: "bold" },
-  overlayContainer: { justifyContent: "center", alignItems: "center" },
+  overlayContainer: { justifyContent: "center", alignItems: "center", backgroundColor: 'rgba(0,0,0,0.1)' },
   loadingText: { marginTop: 16, fontSize: 16, fontWeight: "600" },
 
-  // --- Tampilan Hasil ---
   resultCard: {
     padding: 20,
     borderRadius: 24,
     width: "100%",
+    marginTop: 24,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 10,
@@ -664,8 +584,6 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
   resetButtonText: { fontSize: 16, fontWeight: "bold" },
-
-  // --- Kartu Error ---
   errorCard: {
     flexDirection: "row",
     alignItems: "center",
@@ -677,8 +595,6 @@ const styles = StyleSheet.create({
   },
   errorText: { flex: 1, fontSize: 14, fontWeight: "600" },
   retryText: { fontSize: 14, fontWeight: "bold" },
-  
-  // --- Style Detail Tambahan ---
   separator: {
     height: 1,
     width: "100%",
