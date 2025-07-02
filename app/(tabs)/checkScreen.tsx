@@ -11,7 +11,7 @@ import {
   Animated,
   Platform,
   RefreshControl,
-  UIManager, // <-- PERUBAHAN DI SINI: UIManager diimpor
+  UIManager,
   LayoutAnimation,
 } from "react-native";
 import { Text, View } from "@/components/ui/Themed";
@@ -27,6 +27,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { CLASSIFY_URL } from "@/constants/api";
 import { staticChatResponses } from "@/constants/staticChatData";
 import Markdown from "react-native-markdown-display";
+import * as Haptics from 'expo-haptics'; // Tambahkan ini
 
 const { width } = Dimensions.get("window");
 const IMAGE_SIZE = width * 0.85;
@@ -317,7 +318,6 @@ const ResultCard = ({ prediction, onReset, colors }: any) => {
   );
 };
 
-
 // Kartu Error
 const ErrorCard = ({
   message,
@@ -370,6 +370,7 @@ export default function CheckScreen() {
   }, [refreshApp]);
 
   const pickImage = async (useCamera: boolean) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     const options: ImagePicker.ImagePickerOptions = {
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
@@ -396,20 +397,26 @@ export default function CheckScreen() {
         ? await ImagePicker.launchCameraAsync(options)
         : await ImagePicker.launchImageLibraryAsync(options);
 
-      if (!result.canceled) {
-        const asset = result.assets[0];
-        if (asset.mimeType && !asset.mimeType.startsWith("image/")) {
-          Alert.alert(
-            "File Tidak Sesuai",
-            "Harap pilih file gambar (contoh: JPG, PNG)."
-          );
-          return;
+      if (result.canceled) {
+        // Tambahkan ini untuk menangani kasus pengguna membatalkan pemilihan gambar
+        if (!image) { 
+          Alert.alert("Info", "Anda tidak memilih gambar.");
         }
-
-        handleReset();
-        setImage(asset.uri);
-        classifyImage(asset.uri);
+        return;
       }
+
+      const asset = result.assets[0];
+      if (asset.mimeType && !asset.mimeType.startsWith("image/")) {
+        Alert.alert(
+          "File Tidak Sesuai",
+          "Harap pilih file gambar (contoh: JPG, PNG)."
+        );
+        return;
+      }
+
+      handleReset();
+      setImage(asset.uri);
+      classifyImage(asset.uri);
     } catch (e) {
       Alert.alert("Error", "Gagal membuka gambar.");
       console.error(e);
@@ -435,16 +442,17 @@ export default function CheckScreen() {
       if (response.ok) {
         setPrediction(data);
       } else {
-        throw new Error(data.error || "Gagal melakukan klasifikasi.");
+        throw new Error(data.error || "Gagal melakukan klasifikasi. Pastikan server berjalan.");
       }
     } catch (e: any) {
-      setError(e.message || "Tidak dapat terhubung ke server.");
+      setError(e.message || "Tidak dapat terhubung ke server. Periksa koneksi internet Anda.");
     } finally {
       setLoading(false);
     }
   };
 
   const handleReset = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setImage(null);
     setPrediction(null);
     setError(null);
