@@ -26,7 +26,7 @@ import { CLASSIFY_URL } from "@/constants/api";
 import { staticChatResponses } from "@/constants/staticChatData";
 import { LinearGradient } from "expo-linear-gradient";
 
-const { width } = Dimensions.get("window");
+const { width, height } = Dimensions.get("window");
 
 if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -54,7 +54,7 @@ const diseaseDetails = {
     }
 };
 
-// --- UI SUB-COMPONENTS (Perbaikan) ---
+// --- UI SUB-COMPONENTS (Tidak ada perubahan) ---
 
 const ActionButton = ({ icon, title, subtitle, onPress, colors, isPrimary }: any) => (
   <TouchableOpacity
@@ -262,7 +262,7 @@ const ErrorCard = ({ message, onRetry, colors }: any) => (
 );
 
 
-// --- MAIN SCREEN COMPONENT (Tidak ada perubahan signifikan pada logika) ---
+// --- MAIN SCREEN COMPONENT (Logika tidak berubah, struktur render diperbaiki) ---
 const CheckScreen: React.FC = () => {
     const [image, setImage] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
@@ -344,26 +344,38 @@ const CheckScreen: React.FC = () => {
         }
     }, [prediction, error]);
     
+    // Perubahan utama ada di sini
     return (
         <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-            <ScrollView ref={scrollViewRef} contentContainerStyle={styles.scrollContainer} scrollEnabled={!loading} showsVerticalScrollIndicator={false}>
-                <View style={[styles.container, {minHeight: Dimensions.get('window').height - 150}]}>
-                    {image && !loading && prediction && (
+            <ScrollView
+                ref={scrollViewRef}
+                contentContainerStyle={styles.scrollContainer} // Gunakan flexGrow untuk membuatnya bisa di-scroll saat konten panjang
+                alwaysBounceVertical={false}
+                showsVerticalScrollIndicator={false}
+            >
+                {loading && (
+                    <View style={styles.centerContainer}>
+                        <ShimmerLoading colors={colors} />
+                    </View>
+                )}
+
+                {!loading && !image && (
+                    <View style={styles.centerContainer}>
+                        <InitialView onPickImage={pickImage} colors={colors} />
+                    </View>
+                )}
+
+                {!loading && image && prediction && (
+                    <View style={styles.container}>
                         <ResultView image={image} prediction={prediction} onReset={handleReset} colors={colors} />
-                    )}
-                    
-                    {loading && (
-                         <ShimmerLoading colors={colors} />
-                    )}
-
-                    {!image && !loading && <InitialView onPickImage={pickImage} colors={colors} />}
-
-                    {error && !loading && (
-                         <View style={{width: '100%', alignItems: 'center', justifyContent: 'center', flex: 1}}>
-                            <ErrorCard message={error} onRetry={handleRetry} colors={colors} />
-                        </View>
-                    )}
-                </View>
+                    </View>
+                )}
+                
+                {!loading && error && (
+                    <View style={styles.centerContainer}>
+                        <ErrorCard message={error} onRetry={handleRetry} colors={colors} />
+                    </View>
+                )}
             </ScrollView>
         </SafeAreaView>
     );
@@ -371,12 +383,30 @@ const CheckScreen: React.FC = () => {
 
 export default CheckScreen;
 
+
 // --- STYLES (Perbaikan) ---
 const styles = StyleSheet.create({
     safeArea: { flex: 1 },
     fullWidth: { width: '100%', alignItems: 'center' },
-    scrollContainer: { flexGrow: 1, justifyContent: 'center', paddingVertical: 20 },
-    container: { alignItems: 'center', justifyContent: 'center', paddingHorizontal: 20, width: '100%'},
+    // Container untuk scroll view, memastikan bisa di-scroll jika konten melebihi layar
+    scrollContainer: {
+        flexGrow: 1,
+        justifyContent: 'center', // Tetap di tengah jika konten pendek
+    },
+    // Container untuk konten yang tidak perlu di-scroll (hasil analisis)
+    container: {
+        paddingVertical: 30,
+        paddingHorizontal: 20,
+        alignItems: 'center',
+    },
+    // Container khusus untuk konten yang harus selalu di tengah (tampilan awal, loading, error)
+    centerContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingHorizontal: 20,
+        minHeight: height * 0.7, // Memastikan container ini punya tinggi yg cukup untuk centering
+    },
     heading: { fontSize: 26, fontWeight: '700', marginBottom: 8, textAlign: 'center' },
     subtext: { fontSize: 16, textAlign: 'center', marginBottom: 40, lineHeight: 24, maxWidth: '90%' },
     actionButton: {
@@ -447,7 +477,6 @@ const styles = StyleSheet.create({
       backgroundColor: 'transparent',
     },
     loadingContainer: {
-        flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
         paddingVertical: 20,
