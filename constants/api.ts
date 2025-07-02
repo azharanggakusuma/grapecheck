@@ -6,7 +6,7 @@
 
 // --- Alamat IP Server ---
 // Ganti dengan alamat IP lokal atau alamat server production Anda
-const IP_ADDRESS = "192.168.114.61"; 
+const IP_ADDRESS = "192.168.32.61"; 
 
 // --- URL Endpoint ---
 export const API_BASE_URL = `http://${IP_ADDRESS}:5000`;
