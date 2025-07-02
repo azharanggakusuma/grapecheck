@@ -285,7 +285,7 @@ const CheckScreen: React.FC = () => {
         const type = match ? `image/${match[1]}` : `image`;
         formData.append("file", { uri, name: filename, type } as any);
 
-        const fakeDelay = new Promise(resolve => setTimeout(resolve, 5000));
+        const fakeDelay = new Promise(resolve => setTimeout(resolve, 3000));
         const apiCall = fetch(CLASSIFY_URL, { method: "POST", body: formData, headers: { "Content-Type": "multipart/form-data" } });
 
         try {
