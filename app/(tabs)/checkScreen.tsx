@@ -24,6 +24,8 @@ import { useGlobalRefresh } from "@/components/contexts/GlobalRefreshContext";
 import { LinearGradient } from "expo-linear-gradient";
 import { CLASSIFY_URL } from "@/constants/api";
 import { staticChatResponses } from "@/constants/staticChatData";
+// --- PERUBAHAN BARU ---
+import Markdown from "react-native-markdown-display";
 
 const { width } = Dimensions.get("window");
 const IMAGE_SIZE = width * 0.85;
@@ -52,18 +54,23 @@ const diseaseDetails = {
   },
 };
 
-// --- Komponen Baru: Bagian Info ---
-const InfoSection = ({ icon, title, text, colors }: any) => (
-  <View style={styles.infoSectionContainer}>
-    <Feather name={icon} size={20} color={colors.tabIconDefault} />
-    <View style={styles.infoSectionTextContainer}>
-      <Text style={[styles.detailTitle, { color: colors.text }]}>{title}</Text>
-      <Text style={[styles.detailText, { color: colors.tabIconDefault }]}>
-        {text}
-      </Text>
+// Komponen Bagian Info dengan Markdown
+const InfoSection = ({ icon, title, text, colors }: any) => {
+  const markdownStyle = {
+    body: { color: colors.tabIconDefault, fontSize: 14, lineHeight: 21 },
+    strong: { color: colors.text },
+  };
+
+  return (
+    <View style={styles.infoSectionContainer}>
+      <Feather name={icon} size={20} color={colors.tabIconDefault} style={{ marginTop: 2 }} />
+      <View style={styles.infoSectionTextContainer}>
+        <Text style={[styles.detailTitle, { color: colors.text }]}>{title}</Text>
+        <Markdown style={markdownStyle}>{text}</Markdown>
+      </View>
     </View>
-  </View>
-);
+  );
+};
 
 // Komponen Overlay Loading
 const LoadingOverlay = ({
@@ -106,7 +113,7 @@ const LoadingOverlay = ({
   );
 };
 
-// --- Kartu Hasil yang Dirapikan ---
+// Kartu Hasil yang Dirapikan
 const ResultCard = ({ prediction, onReset, colors }: any) => {
   const slideAnim = useRef(new Animated.Value(50)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
@@ -617,8 +624,6 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   detailText: {
-    fontSize: 14,
-    lineHeight: 21,
-    textAlign: 'left',
+    // Gaya ini sekarang akan di-handle oleh komponen Markdown
   },
 });
