@@ -11,8 +11,6 @@ import {
   Animated,
   Platform,
   RefreshControl,
-  UIManager, // <-- PERUBAHAN DI SINI: UIManager diimpor
-  LayoutAnimation,
 } from "react-native";
 import { Text, View } from "@/components/ui/Themed";
 import * as ImagePicker from "expo-image-picker";
@@ -26,18 +24,11 @@ import { useGlobalRefresh } from "@/components/contexts/GlobalRefreshContext";
 import { LinearGradient } from "expo-linear-gradient";
 import { CLASSIFY_URL } from "@/constants/api";
 import { staticChatResponses } from "@/constants/staticChatData";
+// --- PERUBAHAN BARU ---
 import Markdown from "react-native-markdown-display";
 
 const { width } = Dimensions.get("window");
 const IMAGE_SIZE = width * 0.85;
-
-// Aktifkan LayoutAnimation untuk Android
-if (
-  Platform.OS === "android" &&
-  UIManager.setLayoutAnimationEnabledExperimental
-) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
-}
 
 // Data Detail untuk Setiap Penyakit
 const diseaseDetails = {
@@ -46,19 +37,19 @@ const diseaseDetails = {
     symptoms:
       "Gejalanya adalah:\n- **Daun:** Bercak coklat kecil yang membesar dengan titik-titik hitam di tengahnya.\n- **Buah:** Bercak keputihan yang cepat membesar, berubah menjadi coklat, lalu hitam, dan akhirnya buah mengerut seperti kismis.",
     recommendation:
-      "1.  **Sanitasi:** Buang dan musnahkan semua bagian tanaman yang terinfeksi untuk mengurangi sumber spora.\n2.  **Sirkulasi Udara:** Lakukan pemangkasan untuk meningkatkan aliran udara di sekitar tajuk tanaman.\n3.  **Fungisida:** Aplikasikan fungisida yang direkomendasikan secara preventif, terutama sebelum dan selama musim hujan.",
+      "Segera lakukan pemangkasan pada area yang terinfeksi dan pertimbangkan penggunaan fungisida yang sesuai.",
   },
   Esca: {
     description: staticChatResponses["penyakit esca"],
     symptoms:
-      "Gejala Esca bervariasi, termasuk:\n- Munculnya corak **'garis harimau'** (tiger stripes) pada daun, yaitu area kuning atau merah di antara tulang daun.\n- Pada kasus akut, sebagian atau seluruh tanaman bisa layu dan mati mendadak (apaloplexy).",
+      "Gejala Esca bervariasi, termasuk munculnya corak 'garis harimau' (tiger stripes) pada daun, yaitu area kuning atau merah di antara tulang daun.",
     recommendation:
-      "Penyakit ini sulit ditangani. Fokus pada pencegahan:\n- Jaga kesehatan tanaman secara umum.\n- Lakukan praktik pemangkasan yang baik untuk menghindari luka besar.\n- Pertimbangkan penggunaan produk pelindung luka pangkas.",
+      "Penyakit ini sulit ditangani. Fokus pada pencegahan dengan menjaga kesehatan tanaman dan praktik pemangkasan yang baik.",
   },
   Hawar: {
     description: staticChatResponses["penyakit hawar downy mildew"],
     symptoms:
-      "Gejala utama hawar adalah:\n- **Atas Daun:** Muncul bercak tembus cahaya berwarna kuning atau kemerahan seperti noda minyak (oil spots).\n- **Bawah Daun:** Pada area bercak, akan muncul spora jamur berwarna putih seperti kapas halus, terutama di pagi hari yang lembab.",
+      "Gejala utama hawar adalah:\n- **Atas Daun:** Muncul bercak tembus cahaya berwarna kuning atau kemerahan seperti noda minyak (oil spots).\n- **Bawah Daun:** Pada area bercak, akan muncul spora jamur berwarna putih seperti kapas halus.",
     recommendation: staticChatResponses["penanganan cara mengatasi hawar"],
   },
 };
@@ -66,24 +57,15 @@ const diseaseDetails = {
 // Komponen Bagian Info dengan Markdown
 const InfoSection = ({ icon, title, text, colors }: any) => {
   const markdownStyle = {
-    body: { color: colors.tabIconDefault, fontSize: 14, lineHeight: 22 },
-    strong: { color: colors.text, fontWeight: 'bold' },
-    bullet_list_icon: { color: colors.tint },
-    ordered_list_icon: { color: colors.tint, fontWeight: 'bold' },
+    body: { color: colors.tabIconDefault, fontSize: 14, lineHeight: 21 },
+    strong: { color: colors.text },
   };
 
   return (
     <View style={styles.infoSectionContainer}>
-      <Feather
-        name={icon}
-        size={20}
-        color={colors.tabIconDefault}
-        style={{ marginTop: 2 }}
-      />
+      <Feather name={icon} size={20} color={colors.tabIconDefault} style={{ marginTop: 2 }} />
       <View style={styles.infoSectionTextContainer}>
-        <Text style={[styles.detailTitle, { color: colors.text }]}>
-          {title}
-        </Text>
+        <Text style={[styles.detailTitle, { color: colors.text }]}>{title}</Text>
         <Markdown style={markdownStyle}>{text}</Markdown>
       </View>
     </View>
@@ -131,9 +113,8 @@ const LoadingOverlay = ({
   );
 };
 
-// Kartu Hasil Akhir dengan Tampilan Tab
+// Kartu Hasil yang Dirapikan
 const ResultCard = ({ prediction, onReset, colors }: any) => {
-  const [activeTab, setActiveTab] = useState("ringkasan");
   const slideAnim = useRef(new Animated.Value(50)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
 
@@ -152,11 +133,6 @@ const ResultCard = ({ prediction, onReset, colors }: any) => {
       }),
     ]).start();
   }, []);
-
-  const handleTabPress = (tabName: string) => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    setActiveTab(tabName);
-  };
 
   if (!prediction) return null;
 
@@ -182,30 +158,19 @@ const ResultCard = ({ prediction, onReset, colors }: any) => {
     },
     disease: {
       title: prediction.label,
-      desc: "Penyakit terdeteksi. Silakan lihat detail di bawah untuk informasi dan penanganan.",
+      desc: "Penyakit terdeteksi. Lihat detail di bawah untuk informasi lebih lanjut.",
       icon: "alert-circle",
       color: colors.error,
       details: diseaseDetails[prediction.label as keyof typeof diseaseDetails],
     },
   };
 
-  const { title, desc, icon, color, details } =
-    statusConfig[
-      isNegative ? "negative" : isHealthy ? "healthy" : "disease"
-    ];
-
-  const markdownStyle = {
-    body: { color: colors.tabIconDefault, fontSize: 14, lineHeight: 22 },
-    strong: { color: colors.text, fontWeight: 'bold' },
-    bullet_list_icon: { color: colors.tint },
-    ordered_list_icon: { color: colors.tint, fontWeight: 'bold' },
-  };
-
-  const tabs = [
-    { key: "ringkasan", label: "Ringkasan", icon: "info" },
-    { key: "gejala", label: "Gejala", icon: "bar-chart-2" },
-    { key: "penanganan", label: "Penanganan", icon: "tool" },
-  ];
+  const currentStatus = isNegative
+    ? "negative"
+    : isHealthy
+    ? "healthy"
+    : "disease";
+  const { title, desc, icon, color, details } = statusConfig[currentStatus];
 
   return (
     <Animated.View
@@ -220,71 +185,19 @@ const ResultCard = ({ prediction, onReset, colors }: any) => {
     >
       <View style={[styles.resultHeader, { backgroundColor: "transparent" }]}>
         <Feather name={icon} size={28} color={color} />
-        <Text style={[styles.resultTitle, { color: colors.text }]}>{title}</Text>
+        <Text style={[styles.resultTitle, { color: colors.text }]}>
+          {title}
+        </Text>
       </View>
       <Text style={[styles.resultInfo, { color: colors.tabIconDefault }]}>
         {desc}
       </Text>
 
-      {details && (
-        <>
-          <View style={[styles.tabContainer, { borderColor: colors.border }]}>
-            {tabs.map((tab) => (
-              <TouchableOpacity
-                key={tab.key}
-                onPress={() => handleTabPress(tab.key)}
-                style={[
-                  styles.tabButton,
-                  activeTab === tab.key && {
-                    borderBottomColor: colors.tint,
-                  },
-                ]}
-              >
-                <Feather
-                  name={tab.icon as any}
-                  size={18}
-                  color={
-                    activeTab === tab.key ? colors.tint : colors.tabIconDefault
-                  }
-                />
-                <Text
-                  style={[
-                    styles.tabLabel,
-                    {
-                      color:
-                        activeTab === tab.key
-                          ? colors.tint
-                          : colors.tabIconDefault,
-                    },
-                  ]}
-                >
-                  {tab.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-
-          <View style={styles.tabContent}>
-            {activeTab === "ringkasan" && (
-              <Markdown style={markdownStyle}>{details.description}</Markdown>
-            )}
-            {activeTab === "gejala" && (
-              <Markdown style={markdownStyle}>{details.symptoms}</Markdown>
-            )}
-            {activeTab === "penanganan" && (
-              <Markdown style={markdownStyle}>{details.recommendation}</Markdown>
-            )}
-          </View>
-        </>
-      )}
-
       <View style={[styles.separator, { backgroundColor: colors.border }]} />
-
+      
       <View style={{ backgroundColor: "transparent" }}>
         <View style={styles.confidenceWrapper}>
-          <Text
-            style={[styles.confidenceLabel, { color: colors.tabIconDefault }]}
-          >
+          <Text style={[styles.confidenceLabel, { color: colors.tabIconDefault }]}>
             Tingkat Keyakinan
           </Text>
           <Text style={[styles.confidenceValue, { color: color }]}>
@@ -302,11 +215,31 @@ const ResultCard = ({ prediction, onReset, colors }: any) => {
         />
       </View>
 
+      {details && (
+        <View style={{ backgroundColor: "transparent" }}>
+          <InfoSection
+            icon="file-text"
+            title="Deskripsi Penyakit"
+            text={details.description}
+            colors={colors}
+          />
+          <InfoSection
+            icon="bar-chart-2"
+            title="Gejala Umum"
+            text={details.symptoms}
+            colors={colors}
+          />
+          <InfoSection
+            icon="tool"
+            title="Rekomendasi Awal"
+            text={details.recommendation}
+            colors={colors}
+          />
+        </View>
+      )}
+
       <TouchableOpacity
-        style={[
-          styles.resetButton,
-          { backgroundColor: colors.border, marginTop: 24 },
-        ]}
+        style={[styles.resetButton, { backgroundColor: colors.border, marginTop: 24 }]}
         onPress={onReset}
       >
         <Text style={[styles.resetButtonText, { color: colors.text }]}>
@@ -316,7 +249,6 @@ const ResultCard = ({ prediction, onReset, colors }: any) => {
     </Animated.View>
   );
 };
-
 
 // Kartu Error
 const ErrorCard = ({
@@ -647,7 +579,6 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     marginTop: 4,
     textAlign: "left",
-    marginBottom: 16,
   },
   resetButton: {
     alignItems: "center",
@@ -669,7 +600,7 @@ const styles = StyleSheet.create({
   },
   errorText: { flex: 1, fontSize: 14, fontWeight: "600" },
   retryText: { fontSize: 14, fontWeight: "bold" },
-  
+
   // --- Style Detail Tambahan ---
   separator: {
     height: 1,
@@ -677,42 +608,22 @@ const styles = StyleSheet.create({
     marginVertical: 20,
   },
   infoSectionContainer: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    backgroundColor: "transparent",
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: 'transparent',
     marginTop: 20,
     gap: 12,
   },
   infoSectionTextContainer: {
     flex: 1,
-    backgroundColor: "transparent",
+    backgroundColor: 'transparent',
   },
   detailTitle: {
     fontSize: 16,
-    fontWeight: "bold",
+    fontWeight: 'bold',
     marginBottom: 6,
   },
-  tabContainer: {
-    flexDirection: "row",
-    borderBottomWidth: 1,
-    marginBottom: 16,
-  },
-  tabButton: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 12,
-    gap: 8,
-    borderBottomWidth: 2,
-    borderBottomColor: "transparent",
-  },
-  tabLabel: {
-    fontSize: 14,
-    fontWeight: "600",
-  },
-  tabContent: {
-    minHeight: 150,
-    backgroundColor: "transparent",
+  detailText: {
+    // Gaya ini sekarang akan di-handle oleh komponen Markdown
   },
 });
