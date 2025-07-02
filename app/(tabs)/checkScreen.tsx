@@ -1,6 +1,4 @@
-// app/(tabs)/checkScreen.tsx
-
-import React, { useState, useCallback, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   StyleSheet,
   TouchableOpacity,
@@ -12,6 +10,7 @@ import {
   Platform,
   UIManager,
   LayoutAnimation,
+  Easing,
 } from "react-native";
 import { Text, View } from "@/components/ui/Themed";
 import * as ImagePicker from "expo-image-picker";
@@ -19,12 +18,12 @@ import { Feather } from "@expo/vector-icons";
 import Colors from "@/constants/Colors";
 import { useTheme } from "@/components/ui/ThemeProvider";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { BlurView } from "expo-blur";
 import * as Progress from "react-native-progress";
 import * as Haptics from "expo-haptics";
 import Markdown from "react-native-markdown-display";
 import { CLASSIFY_URL } from "@/constants/api";
 import { staticChatResponses } from "@/constants/staticChatData";
+import { LinearGradient } from "expo-linear-gradient";
 
 const { width } = Dimensions.get("window");
 
@@ -54,7 +53,6 @@ const diseaseDetails = {
     }
 };
 
-
 // --- UI SUB-COMPONENTS ---
 
 const ActionButton = ({ icon, title, subtitle, onPress, colors }: any) => (
@@ -72,7 +70,7 @@ const ActionButton = ({ icon, title, subtitle, onPress, colors }: any) => (
 );
 
 const InitialView = ({ onPickImage, colors }: any) => (
-  <Animated.View style={styles.fullWidth}>
+  <View style={styles.fullWidth}>
     <Text style={[styles.heading, { color: colors.text }]}>Mulai Analisis</Text>
     <Text style={[styles.subtext, { color: colors.tabIconDefault }]}>
       Pilih sumber gambar untuk mendeteksi penyakit pada daun anggur Anda.
@@ -91,8 +89,44 @@ const InitialView = ({ onPickImage, colors }: any) => (
       onPress={() => onPickImage(true)}
       colors={colors}
     />
-  </Animated.View>
+  </View>
 );
+
+const ShimmerLoading = ({ colors }: any) => {
+    const shimmerAnim = useRef(new Animated.Value(0)).current;
+
+    useEffect(() => {
+        Animated.loop(
+            Animated.timing(shimmerAnim, {
+                toValue: 1,
+                duration: 1500,
+                easing: Easing.linear,
+                useNativeDriver: true,
+            })
+        ).start();
+    }, []);
+
+    const translateX = shimmerAnim.interpolate({
+        inputRange: [0, 1],
+        outputRange: [-150, 150],
+    });
+
+    return (
+        <View style={styles.loadingContainer}>
+            <Text style={[styles.loadingText, { color: colors.text }]}>Menganalisis...</Text>
+            <View style={styles.shimmerWrapper}>
+                <Animated.View style={{ transform: [{ translateX }] }}>
+                    <LinearGradient
+                        colors={[colors.surface + '00', colors.tint + '40', colors.surface + '00']}
+                        start={{ x: 0, y: 0.5 }}
+                        end={{ x: 1, y: 0.5 }}
+                        style={styles.shimmerGradient}
+                    />
+                </Animated.View>
+            </View>
+        </View>
+    );
+};
 
 const AccordionSection = ({ title, content, colors }: any) => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -137,87 +171,78 @@ const AccordionSection = ({ title, content, colors }: any) => {
   );
 };
 
+
 const ResultView = ({ image, prediction, onReset, colors }: any) => {
-    if (!prediction) return null;
-  
-    const isNegative = prediction.label.toLowerCase() === 'negative';
-    const isHealthy = !isNegative && prediction.label.toLowerCase().includes("sehat");
-    const confidencePercentage = (prediction.confidence * 100).toFixed(1);
-  
-    const statusConfig = {
-      negative: { title: "Gambar Tidak Dikenali", icon: "x-circle", color: colors.warning, details: null },
-      healthy: { title: "Daun Anggur Sehat", icon: "check-circle", color: colors.success, details: null },
-      disease: {
-        title: diseaseDetails[prediction.label as keyof typeof diseaseDetails]?.title || prediction.label,
-        icon: "alert-circle", color: colors.error,
-        details: diseaseDetails[prediction.label as keyof typeof diseaseDetails]
-      },
-    };
-  
-    const { title, icon, color, details } = statusConfig[isNegative ? "negative" : isHealthy ? "healthy" : "disease"];
-  
-    return (
-      <Animated.View style={styles.fullWidth}>
-        <Text style={[styles.heading, { color: colors.text, marginBottom: 16 }]}>Hasil Analisis</Text>
-        <View style={[styles.imageResultContainer, { shadowColor: '#000' }]}>
-          <Image source={{ uri: image }} style={styles.image} />
-        </View>
-  
-        <View style={[styles.resultCard, { backgroundColor: colors.surface, shadowColor: '#000' }]}>
-          <View style={styles.resultHeader}>
-            <Feather name={icon} size={24} color={color} />
-            <Text style={[styles.resultTitle, { color: color }]}>{title}</Text>
-          </View>
-          <View style={styles.confidenceWrapper}>
-            <Text style={[styles.confidenceLabel, { color: colors.tabIconDefault }]}>Keyakinan Model</Text>
-            <Text style={[styles.confidenceValue, { color: colors.text }]}>{confidencePercentage}%</Text>
-          </View>
-          <Progress.Bar progress={prediction.confidence} width={null} color={color} unfilledColor={colors.confidenceBar} borderWidth={0} height={6} style={styles.progressBar} />
-        </View>
-  
-        {details && (
-          <View style={styles.detailsContainer}>
-            <AccordionSection title="Deskripsi Penyakit" content={details.description} colors={colors} />
-            <AccordionSection title="Gejala Umum" content={details.symptoms} colors={colors} />
-            <AccordionSection title="Rekomendasi Penanganan" content={details.recommendation} colors={colors} />
-          </View>
-        )}
-  
-        <TouchableOpacity onPress={onReset} style={[styles.actionButton, { backgroundColor: colors.surface, shadowColor: colors.text+'20' }]}>
-          <Feather name="refresh-cw" size={24} color={colors.tint} style={styles.actionIcon} />
-          <Text style={[styles.actionTitle, { color: colors.text, flex: 1 }]}>Analisis Gambar Lain</Text>
-        </TouchableOpacity>
-      </Animated.View>
-    );
-  }
-  
-  const LoadingOverlay = ({ visible, colors }: any) => {
-    if (!visible) return null;
-    return (
-      <View style={[StyleSheet.absoluteFill, styles.overlayContainer, { backgroundColor: 'rgba(0,0,0,0.2)'}]}>
-         <BlurView intensity={Platform.OS === "ios" ? 10 : 50} tint={colors.blurTint} style={StyleSheet.absoluteFill} />
-         <Progress.CircleSnail color={colors.tint} size={60} thickness={5} />
-         <Text style={[styles.loadingText, { color: colors.text }]}>Menganalisis...</Text>
-      </View>
-    )
+  if (!prediction) return null;
+
+  const isNegative = prediction.label.toLowerCase() === 'negative';
+  const isHealthy = !isNegative && prediction.label.toLowerCase().includes("sehat");
+  const confidencePercentage = (prediction.confidence * 100).toFixed(1);
+
+  const statusConfig = {
+    negative: { title: "Gambar Tidak Dikenali", icon: "x-circle", color: colors.warning, details: null },
+    healthy: { title: "Daun Anggur Sehat", icon: "check-circle", color: colors.success, details: null },
+    disease: {
+      title: diseaseDetails[prediction.label as keyof typeof diseaseDetails]?.title || prediction.label,
+      icon: "alert-circle", color: colors.error,
+      details: diseaseDetails[prediction.label as keyof typeof diseaseDetails]
+    },
   };
-  
-  const ErrorCard = ({ message, onRetry, colors }: any) => (
-    <View style={[styles.errorCard, { backgroundColor: colors.error + "20" }]}>
-      <Feather name="alert-triangle" size={20} color={colors.error} />
-      <Text style={[styles.errorText, { color: colors.error }]}>{message}</Text>
-      <TouchableOpacity onPress={onRetry}>
-        <Text style={[styles.retryText, { color: colors.tint }]}>Coba Lagi</Text>
+
+  const { title, icon, color, details } = statusConfig[isNegative ? "negative" : isHealthy ? "healthy" : "disease"];
+
+  return (
+    <View style={styles.fullWidth}>
+      <Text style={[styles.heading, { color: colors.text, marginBottom: 16 }]}>Hasil Analisis</Text>
+      <View style={[styles.imageResultContainer, { shadowColor: '#000' }]}>
+        <Image source={{ uri: image }} style={styles.image} />
+      </View>
+
+      <View style={[styles.resultCard, { backgroundColor: colors.surface, shadowColor: '#000' }]}>
+        <View style={styles.resultHeader}>
+          <Feather name={icon} size={24} color={color} />
+          <Text style={[styles.resultTitle, { color: color }]}>{title}</Text>
+        </View>
+        <View style={styles.confidenceWrapper}>
+          <Text style={[styles.confidenceLabel, { color: colors.tabIconDefault }]}>Keyakinan Model</Text>
+          <Text style={[styles.confidenceValue, { color: colors.text }]}>{confidencePercentage}%</Text>
+        </View>
+        <Progress.Bar progress={prediction.confidence} width={null} color={color} unfilledColor={colors.confidenceBar} borderWidth={0} height={6} style={styles.progressBar} />
+      </View>
+
+      {details && (
+        <View style={styles.detailsContainer}>
+          <AccordionSection title="Deskripsi Penyakit" content={details.description} colors={colors} />
+          <AccordionSection title="Gejala Umum" content={details.symptoms} colors={colors} />
+          <AccordionSection title="Rekomendasi Penanganan" content={details.recommendation} colors={colors} />
+        </View>
+      )}
+
+      <TouchableOpacity onPress={onReset} style={[styles.actionButton, { backgroundColor: colors.surface, shadowColor: colors.text+'20' }]}>
+        <Feather name="refresh-cw" size={24} color={colors.tint} style={styles.actionIcon} />
+        <Text style={[styles.actionTitle, { color: colors.text, flex: 1 }]}>Analisis Gambar Lain</Text>
       </TouchableOpacity>
     </View>
   );
+}
+  
+const ErrorCard = ({ message, onRetry, colors }: any) => (
+  <View style={[styles.errorCard, { backgroundColor: colors.error + "20" }]}>
+    <Feather name="alert-triangle" size={20} color={colors.error} />
+    <Text style={[styles.errorText, { color: colors.error }]}>{message}</Text>
+    <TouchableOpacity onPress={onRetry}>
+      <Text style={[styles.retryText, { color: colors.tint }]}>Coba Lagi</Text>
+    </TouchableOpacity>
+  </View>
+);
 
-// --- MAIN SCREEN ---
-export default function CheckScreen() {
+// --- MAIN SCREEN COMPONENT (FIXED) ---
+const CheckScreen: React.FC = () => {
     const [image, setImage] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [prediction, setPrediction] = useState<any>(null);
     const [error, setError] = useState<string | null>(null);
+    const scrollViewRef = useRef<ScrollView>(null);
   
     const { theme } = useTheme();
     const colors = Colors[theme];
@@ -260,8 +285,7 @@ export default function CheckScreen() {
         const type = match ? `image/${match[1]}` : `image`;
         formData.append("file", { uri, name: filename, type } as any);
 
-        // --- PERUBAHAN: FAKE LOADING MINIMAL 3 DETIK ---
-        const fakeDelay = new Promise(resolve => setTimeout(resolve, 3000));
+        const fakeDelay = new Promise(resolve => setTimeout(resolve, 5000));
         const apiCall = fetch(CLASSIFY_URL, { method: "POST", body: formData, headers: { "Content-Type": "multipart/form-data" } });
 
         try {
@@ -282,34 +306,35 @@ export default function CheckScreen() {
     const handleReset = () => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
         setImage(null); setPrediction(null); setError(null);
+        scrollViewRef.current?.scrollTo({ y: 0, animated: true });
     };
   
     const handleRetry = () => image ? classifyImage(image) : handleReset();
+
+    useEffect(() => {
+        if (prediction || error) {
+            scrollViewRef.current?.scrollToEnd({ animated: true });
+        }
+    }, [prediction, error]);
     
     return (
         <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-            <ScrollView contentContainerStyle={styles.scrollContainer}>
+            <ScrollView ref={scrollViewRef} contentContainerStyle={styles.scrollContainer} scrollEnabled={!loading}>
                 <View style={styles.container}>
-                    {!image && <InitialView onPickImage={pickImage} colors={colors} />}
+                    {!image && !loading && <InitialView onPickImage={pickImage} colors={colors} />}
+                    
+                    {loading && (
+                         <ShimmerLoading colors={colors} />
+                    )}
 
                     {image && !loading && prediction && (
                         <ResultView image={image} prediction={prediction} onReset={handleReset} colors={colors} />
                     )}
 
-                    {loading && image && (
-                         <View style={styles.fullWidth}>
-                            <View style={[styles.imageResultContainer, { shadowColor: '#000' }]}>
-                                <Image source={{ uri: image }} style={styles.image} />
-                                <LoadingOverlay visible={true} colors={colors} />
-                            </View>
-                            <Text style={[styles.heading, { color: colors.text, fontSize: 20 }]}>Menganalisis Gambar...</Text>
-                         </View>
-                    )}
-
                     {error && !loading && (
-                         <View style={{width: '100%', marginTop: 20}}>
+                        <View style={{width: '100%', marginTop: 20}}>
                             <ErrorCard message={error} onRetry={handleRetry} colors={colors} />
-                         </View>
+                        </View>
                     )}
                 </View>
             </ScrollView>
@@ -317,16 +342,16 @@ export default function CheckScreen() {
     );
 }
 
+export default CheckScreen;
 
 // --- STYLES ---
 const styles = StyleSheet.create({
     safeArea: { flex: 1 },
     fullWidth: { width: '100%', alignItems: 'center' },
     scrollContainer: { flexGrow: 1, justifyContent: 'center', paddingVertical: 20 },
-    container: { alignItems: 'center', paddingHorizontal: 20 },
+    container: { alignItems: 'center', paddingHorizontal: 20, minHeight: '100%' },
     heading: { fontSize: 28, fontWeight: '700', marginBottom: 8, textAlign: 'center' },
     subtext: { fontSize: 16, textAlign: 'center', marginBottom: 32, lineHeight: 24, maxWidth: '90%' },
-    
     actionButton: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -342,7 +367,6 @@ const styles = StyleSheet.create({
     actionIcon: { marginRight: 16 },
     actionTitle: { fontSize: 16, fontWeight: '600' },
     actionSubtitle: { fontSize: 13, opacity: 0.7, marginTop: 2 },
-  
     imageResultContainer: {
       width: width * 0.6,
       height: width * 0.6,
@@ -355,7 +379,6 @@ const styles = StyleSheet.create({
       overflow: 'hidden',
     },
     image: { width: '100%', height: '100%', borderRadius: 24 },
-  
     resultCard: {
       padding: 20,
       borderRadius: 20,
@@ -372,7 +395,6 @@ const styles = StyleSheet.create({
     confidenceLabel: { fontSize: 14, fontWeight: "500" },
     confidenceValue: { fontSize: 14, fontWeight: "bold" },
     progressBar: { borderRadius: 4, width: "100%" },
-    
     detailsContainer: { width: '100%', gap: 12, marginBottom: 16 },
     accordionContainer: {
       borderRadius: 16,
@@ -393,15 +415,29 @@ const styles = StyleSheet.create({
       paddingBottom: 16,
       backgroundColor: 'transparent',
     },
-    
-    overlayContainer: {
-      position: 'absolute',
-      justifyContent: 'center',
-      alignItems: 'center',
-      width: '100%',
-      height: '100%',
+    loadingContainer: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 20,
     },
-    loadingText: { marginTop: 16, fontSize: 16, fontWeight: "600" },
+    loadingText: {
+        fontSize: 18,
+        fontWeight: '600',
+        letterSpacing: 0.5,
+        marginBottom: 16,
+    },
+    shimmerWrapper: {
+        width: 150,
+        height: 8,
+        backgroundColor: 'rgba(128,128,128,0.1)',
+        borderRadius: 4,
+        overflow: 'hidden',
+    },
+    shimmerGradient: {
+        width: '100%',
+        height: '100%',
+    },
     errorCard: {
       flexDirection: "row",
       alignItems: "center",
@@ -412,4 +448,4 @@ const styles = StyleSheet.create({
     },
     errorText: { flex: 1, fontSize: 14, fontWeight: "600" },
     retryText: { fontSize: 14, fontWeight: "bold" },
-  });
+});
