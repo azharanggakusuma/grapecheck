@@ -22,10 +22,48 @@ import { BlurView } from "expo-blur";
 import * as Progress from "react-native-progress";
 import { useGlobalRefresh } from "@/components/contexts/GlobalRefreshContext";
 import { LinearGradient } from "expo-linear-gradient";
-import { CLASSIFY_URL } from "@/constants/api"; // <-- PERUBAHAN 1: Impor CLASSIFY_URL
+import { CLASSIFY_URL } from "@/constants/api";
+import { staticChatResponses } from "@/constants/staticChatData";
 
 const { width } = Dimensions.get("window");
 const IMAGE_SIZE = width * 0.85;
+
+// Data Detail untuk Setiap Penyakit
+const diseaseDetails = {
+  Busuk: {
+    description: staticChatResponses["apa itu penyakit black rot busuk hitam"],
+    symptoms:
+      "Gejalanya adalah:\n- **Daun:** Bercak coklat kecil yang membesar dengan titik-titik hitam di tengahnya.\n- **Buah:** Bercak keputihan yang cepat membesar, berubah menjadi coklat, lalu hitam, dan akhirnya buah mengerut seperti kismis.",
+    recommendation:
+      "Segera lakukan pemangkasan pada area yang terinfeksi dan pertimbangkan penggunaan fungisida yang sesuai.",
+  },
+  Esca: {
+    description: staticChatResponses["penyakit esca"],
+    symptoms:
+      "Gejala Esca bervariasi, termasuk munculnya corak 'garis harimau' (tiger stripes) pada daun, yaitu area kuning atau merah di antara tulang daun.",
+    recommendation:
+      "Penyakit ini sulit ditangani. Fokus pada pencegahan dengan menjaga kesehatan tanaman dan praktik pemangkasan yang baik.",
+  },
+  Hawar: {
+    description: staticChatResponses["penyakit hawar downy mildew"],
+    symptoms:
+      "Gejala utama hawar adalah:\n- **Atas Daun:** Muncul bercak tembus cahaya berwarna kuning atau kemerahan seperti noda minyak (oil spots).\n- **Bawah Daun:** Pada area bercak, akan muncul spora jamur berwarna putih seperti kapas halus.",
+    recommendation: staticChatResponses["penanganan cara mengatasi hawar"],
+  },
+};
+
+// --- Komponen Baru: Bagian Info ---
+const InfoSection = ({ icon, title, text, colors }: any) => (
+  <View style={styles.infoSectionContainer}>
+    <Feather name={icon} size={20} color={colors.tabIconDefault} />
+    <View style={styles.infoSectionTextContainer}>
+      <Text style={[styles.detailTitle, { color: colors.text }]}>{title}</Text>
+      <Text style={[styles.detailText, { color: colors.tabIconDefault }]}>
+        {text}
+      </Text>
+    </View>
+  </View>
+);
 
 // Komponen Overlay Loading
 const LoadingOverlay = ({
@@ -68,8 +106,8 @@ const LoadingOverlay = ({
   );
 };
 
-// Kartu Hasil Klasifikasi
-const ResultCard = ({ prediction, onReset, colors, theme }: any) => {
+// --- Kartu Hasil yang Dirapikan ---
+const ResultCard = ({ prediction, onReset, colors }: any) => {
   const slideAnim = useRef(new Animated.Value(50)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
 
@@ -102,18 +140,21 @@ const ResultCard = ({ prediction, onReset, colors, theme }: any) => {
       desc: "Pastikan gambar yang Anda unggah adalah daun anggur.",
       icon: "x-circle",
       color: colors.warning,
+      details: null,
     },
     healthy: {
       title: "Daun Anggur Sehat",
       desc: "Tidak ada indikasi penyakit yang terdeteksi. Tetap jaga kesehatan tanaman Anda.",
       icon: "check-circle",
       color: colors.success,
+      details: null,
     },
     disease: {
       title: prediction.label,
-      desc: "Penyakit terdeteksi. Lihat detail untuk informasi dan penanganan lebih lanjut.",
+      desc: "Penyakit terdeteksi. Lihat detail di bawah untuk informasi lebih lanjut.",
       icon: "alert-circle",
       color: colors.error,
+      details: diseaseDetails[prediction.label as keyof typeof diseaseDetails],
     },
   };
 
@@ -122,12 +163,7 @@ const ResultCard = ({ prediction, onReset, colors, theme }: any) => {
     : isHealthy
     ? "healthy"
     : "disease";
-  const { title, desc, icon, color } = statusConfig[currentStatus];
-
-  const buttonGradient =
-    theme === "dark"
-      ? [colors.primaryLight, colors.tint]
-      : [colors.primaryLight, colors.tint];
+  const { title, desc, icon, color, details } = statusConfig[currentStatus];
 
   return (
     <Animated.View
@@ -141,71 +177,68 @@ const ResultCard = ({ prediction, onReset, colors, theme }: any) => {
       ]}
     >
       <View style={[styles.resultHeader, { backgroundColor: "transparent" }]}>
-        <Feather name={icon} size={24} color={color} />
+        <Feather name={icon} size={28} color={color} />
         <Text style={[styles.resultTitle, { color: colors.text }]}>
           {title}
         </Text>
       </View>
-      <View
-        style={[styles.confidenceWrapper, { backgroundColor: "transparent" }]}
-      >
-        <Text
-          style={[styles.confidenceLabel, { color: colors.tabIconDefault }]}
-        >
-          Tingkat Keyakinan
-        </Text>
-        <Text style={[styles.confidenceValue, { color: color }]}>
-          {confidencePercentage}%
-        </Text>
-      </View>
-      <Progress.Bar
-        progress={prediction.confidence}
-        width={null}
-        color={color}
-        unfilledColor={colors.confidenceBar}
-        borderWidth={0}
-        height={8}
-        style={styles.progressBar}
-      />
-      <Text
-        style={[
-          styles.resultInfo,
-          { color: colors.tabIconDefault, textAlign: "left" },
-        ]}
-      >
+      <Text style={[styles.resultInfo, { color: colors.tabIconDefault }]}>
         {desc}
       </Text>
 
-      <View style={[styles.resultActions, { backgroundColor: "transparent" }]}>
-        {!isNegative && (
-          <TouchableOpacity
-            style={styles.detailsButton}
-            onPress={() =>
-              Alert.alert(
-                "Segera Hadir",
-                "Fitur detail penanganan penyakit akan segera tersedia."
-              )
-            }
-          >
-            <LinearGradient
-              colors={buttonGradient}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.gradientButton}
-            >
-              <Text style={styles.detailsButtonText}>Lihat Detail</Text>
-            </LinearGradient>
-          </TouchableOpacity>
-        )}
-        <TouchableOpacity
-          style={[styles.resetButton, { backgroundColor: colors.border }]}
-          onPress={onReset}
-        >
-          <Text style={[styles.resetButtonText, { color: colors.text }]}>
-            Ulangi Analisis
+      <View style={[styles.separator, { backgroundColor: colors.border }]} />
+      
+      <View style={{ backgroundColor: "transparent" }}>
+        <View style={styles.confidenceWrapper}>
+          <Text style={[styles.confidenceLabel, { color: colors.tabIconDefault }]}>
+            Tingkat Keyakinan
           </Text>
-        </TouchableOpacity>
+          <Text style={[styles.confidenceValue, { color: color }]}>
+            {confidencePercentage}%
+          </Text>
+        </View>
+        <Progress.Bar
+          progress={prediction.confidence}
+          width={null}
+          color={color}
+          unfilledColor={colors.confidenceBar}
+          borderWidth={0}
+          height={8}
+          style={styles.progressBar}
+        />
       </View>
+
+      {details && (
+        <View style={{ backgroundColor: "transparent" }}>
+          <InfoSection
+            icon="file-text"
+            title="Deskripsi Penyakit"
+            text={details.description}
+            colors={colors}
+          />
+          <InfoSection
+            icon="bar-chart-2"
+            title="Gejala Umum"
+            text={details.symptoms}
+            colors={colors}
+          />
+          <InfoSection
+            icon="tool"
+            title="Rekomendasi Awal"
+            text={details.recommendation}
+            colors={colors}
+          />
+        </View>
+      )}
+
+      <TouchableOpacity
+        style={[styles.resetButton, { backgroundColor: colors.border, marginTop: 24 }]}
+        onPress={onReset}
+      >
+        <Text style={[styles.resetButtonText, { color: colors.text }]}>
+          Ulangi Analisis
+        </Text>
+      </TouchableOpacity>
     </Animated.View>
   );
 };
@@ -318,7 +351,7 @@ export default function CheckScreen() {
     formData.append("file", { uri, name: filename, type } as any);
 
     try {
-      const response = await fetch(CLASSIFY_URL, { // <-- PERUBAHAN 2: Gunakan CLASSIFY_URL
+      const response = await fetch(CLASSIFY_URL, {
         method: "POST",
         body: formData,
         headers: { "Content-Type": "multipart/form-data" },
@@ -362,7 +395,6 @@ export default function CheckScreen() {
               prediction={prediction}
               onReset={handleReset}
               colors={colors}
-              theme={theme}
             />
           ) : (
             <View style={{ width: "100%", alignItems: "center" }}>
@@ -521,33 +553,26 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
-    marginBottom: 16,
+    marginBottom: 4,
     backgroundColor: "transparent",
   },
-  resultTitle: { fontSize: 22, fontWeight: "bold" },
+  resultTitle: { fontSize: 24, fontWeight: "bold", flexShrink: 1 },
   confidenceWrapper: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "baseline",
     marginBottom: 8,
     backgroundColor: "transparent",
-    width: "100%",
   },
   confidenceLabel: { fontSize: 14, fontWeight: "500" },
   confidenceValue: { fontSize: 20, fontWeight: "bold" },
-  progressBar: { borderRadius: 4, marginBottom: 16, width: "100%" },
+  progressBar: { borderRadius: 4, width: "100%" },
   resultInfo: {
     fontSize: 15,
     lineHeight: 22,
-    marginBottom: 24,
+    marginTop: 4,
     textAlign: "left",
   },
-  resultActions: { gap: 12, width: "100%", backgroundColor: "transparent" },
-  detailsButton: {
-    borderRadius: 16,
-    overflow: "hidden",
-  },
-  detailsButtonText: { fontSize: 16, fontWeight: "bold", color: "#FFFFFF" },
   resetButton: {
     alignItems: "center",
     justifyContent: "center",
@@ -568,4 +593,32 @@ const styles = StyleSheet.create({
   },
   errorText: { flex: 1, fontSize: 14, fontWeight: "600" },
   retryText: { fontSize: 14, fontWeight: "bold" },
+
+  // --- Style Detail Tambahan ---
+  separator: {
+    height: 1,
+    width: "100%",
+    marginVertical: 20,
+  },
+  infoSectionContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: 'transparent',
+    marginTop: 20,
+    gap: 12,
+  },
+  infoSectionTextContainer: {
+    flex: 1,
+    backgroundColor: 'transparent',
+  },
+  detailTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 6,
+  },
+  detailText: {
+    fontSize: 14,
+    lineHeight: 21,
+    textAlign: 'left',
+  },
 });
